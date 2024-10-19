@@ -61,6 +61,7 @@ class EstadosAuxVm(){
     var transicaoData=MutableTransitionState(false)//estado da transicao anomacao que mostra as datas das folgas
     var transicaoModeloTrabalho= MutableTransitionState(false)//estado transicao Modelo de trabalho
     var transicaoFerias=MutableTransitionState(false) //estado transicao anomacao mostra a parte modelo de trabalho
+    var salvandoHorario= mutableStateOf(false)//estado de salvando horario
 }
 
 class Fabricar(){
