@@ -18,12 +18,14 @@ class AgendarAlarmes(private val c: Context,val p: WorkerParameters):Worker(c,p)
             putExtra(AlarmClock.EXTRA_HOUR,22)
             putExtra(AlarmClock.EXTRA_MINUTES, 50)
             putExtra(AlarmClock.EXTRA_MESSAGE, "Alarme de trabalho")
+            putExtra(AlarmClock.EXTRA_VIBRATE,true)
             putExtra(AlarmClock.EXTRA_SKIP_UI, true)
         }
 
         Log.i(Tag,"Alarme agendado")
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_USER_ACTION )
       applicationContext.startActivity(i)
+
         return Result.success()
     }
 
