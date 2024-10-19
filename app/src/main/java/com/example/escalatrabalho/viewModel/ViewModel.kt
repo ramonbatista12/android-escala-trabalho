@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit
 
 class ViewModelTelas(private val db: RoomDb, private val workManager: WorkManager):ViewModel() {
 
-    var scopo =viewModelScope;
+    var scopo =viewModelScope
     var estadosVm =EstadosAuxVm()
     val reposisitorioDatas =RepositorioDatas()//e a clasee responsavel por criar as datas mostradas no calendario
     val fluxo=reposisitorioDatas.getDatas().map {
@@ -55,12 +55,12 @@ class ViewModelTelas(private val db: RoomDb, private val workManager: WorkManage
 
 class EstadosAuxVm(){
     var disparaDialogoFerias =mutableStateOf(false)//estado dialog datas de ferias
-    var disparaDatass = mutableStateOf(false)//estado dialog datas fiogas
-    var transicaoDatPiker =  MutableTransitionState(false)//estado transicao animacao Datapiker selecao hr
-    var telas =  mutableStateOf(TelaNavegacaoSimples.calendario)//estado das telas da navegacao simples
-    var transicaoData =MutableTransitionState(false)//estado da transicao anomacao que mostra as datas das folgas
+    var disparaDatass=mutableStateOf(false)//estado dialog datas fiogas
+    var transicaoDatPiker =MutableTransitionState(false)//estado transicao animacao Datapiker selecao hr
+    var telas=mutableStateOf(TelaNavegacaoSimples.calendario)//estado das telas da navegacao simples
+    var transicaoData=MutableTransitionState(false)//estado da transicao anomacao que mostra as datas das folgas
     var transicaoModeloTrabalho= MutableTransitionState(false)//estado transicao Modelo de trabalho
-    var transicaoFerias = MutableTransitionState(false) //estado transicao anomacao mostra a parte modelo de trabalho
+    var transicaoFerias=MutableTransitionState(false) //estado transicao anomacao mostra a parte modelo de trabalho
 }
 
 class Fabricar(){

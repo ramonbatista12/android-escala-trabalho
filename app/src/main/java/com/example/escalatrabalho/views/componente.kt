@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -225,7 +226,7 @@ fun modeloDeescala(stadoTransicao: MutableTransitionState<Boolean>){
 @Composable
 fun timePicker(){
     val state = rememberTimePickerState(0,59)
-    TimePicker(state = state,modifier = Modifier.height(200.dp))
+    TimePicker(state = state,modifier = Modifier.fillMaxWidth().height(400.dp))
 }
 
 
