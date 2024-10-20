@@ -17,6 +17,7 @@ import com.example.escalatrabalho.repositoriodeDatas.Resultados
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.roomComfigs.RoomDb
 import com.example.escalatrabalho.viewModel.ViewModelTelas
+import com.example.escalatrabalho.views.ResultadosSalvarHora
 import com.example.escalatrabalho.views.TelaNavegacaoSimples
 import com.example.escalatrabalho.worlk.AgendarAlarmes
 import kotlinx.coroutines.delay
@@ -62,6 +63,7 @@ class EstadosAuxVm(){
     var transicaoModeloTrabalho= MutableTransitionState(false)//estado transicao Modelo de trabalho
     var transicaoFerias=MutableTransitionState(false) //estado transicao anomacao mostra a parte modelo de trabalho
     var salvandoHorario= mutableStateOf(false)//estado de salvando horario
+    var salvandoHorariosResultados= mutableStateOf(ResultadosSalvarHora.clicavel)//estado de salvando horarios
 }
 
 class Fabricar(){

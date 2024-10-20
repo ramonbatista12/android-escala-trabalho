@@ -1,6 +1,7 @@
 package com.example.escalatrabalho.views
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
@@ -48,7 +50,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.example.escalatrabalho.R
+import com.example.escalatrabalho.repositoriodeDatas.Resultados
 import com.example.escalatrabalho.viewModel.ViewModelTelas
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -66,7 +71,7 @@ fun horarioDosAlarmes(vm: ViewModelTelas){
     )
     IconButton(//icone que aciona a animacao que mostra o relogio
         onClick = { scope.launch {  vm.estadosVm.transicaoDatPiker.targetState = !vm.estadosVm.transicaoDatPiker.currentState}},
-        modifier = Modifier.align(Alignment.TopEnd)
+        modifier = Modifier.align(Alignment.TopEnd).animateContentSize()
     ) {
         if (!vm.estadosVm.transicaoDatPiker.currentState) Icon(
             Icons.Default.KeyboardArrowDown,
@@ -236,34 +241,58 @@ fun modeloDeescala(stadoTransicao: MutableTransitionState<Boolean>){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun timePicker(vm: ViewModelTelas){
-    val state = rememberTimePickerState(0,59)
-    val scope= rememberCoroutineScope()
-   Column {
-       Row(horizontalArrangement = Arrangement.End,modifier = Modifier.fillMaxWidth())  {
+fun timePicker(vm: ViewModelTelas) {
+    val state = rememberTimePickerState(0, 59)
+    val scope = rememberCoroutineScope()
+    Column {
+        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
 
-       IconButton (onClick = {
-           scope.launch {
-               vm.estadosVm.salvandoHorario.value=true
-               delay(2000)
-               vm.estadosVm.salvandoHorario.value=false
-           }
-       })
-           {
-           if(!vm.estadosVm.salvandoHorario.value)
-               Icon(Icons.Default.Check,null,
-                    modifier = Modifier.size(40.dp)
-                                       .border(width = 0.9.dp,
-                                               color = Color.Black,
-                                               shape = androidx.compose.foundation.shape.CircleShape)
-                                       )
-           else CircularProgressIndicator(modifier = Modifier.size(40.dp)) }
-           Spacer(Modifier.padding(10.dp))
-   }
-       Spacer(Modifier.padding(10.dp))
-       TimePicker(state = state,modifier = Modifier.fillMaxWidth().height(400.dp))
-       }
-   }
+            IconButton(onClick = {
+                scope.launch {
+                    vm.estadosVm.salvandoHorariosResultados.value = ResultadosSalvarHora.salvando
+                    delay(2000)
+                    vm.estadosVm.salvandoHorariosResultados.value = ResultadosSalvarHora.Salvo
+                    delay(1000)
+                    vm.estadosVm.salvandoHorariosResultados.value = ResultadosSalvarHora.clicavel
+                }
+            }, modifier = Modifier.size(50.dp) .border(
+                width = 0.9.dp,
+                color = Color.Black,
+                shape = CircleShape
+            ).animateContentSize())
+            {
+                when ( vm.estadosVm.salvandoHorariosResultados.value ) {
+                  ResultadosSalvarHora.clicavel -> {
+                        Icon(
+                            painterResource(R.drawable.baseline_save_24), null,
+                            modifier = Modifier.size(45.dp)
+
+                        )
+                    }
+
+                  ResultadosSalvarHora.comcluido -> {
+                        CircularProgressIndicator(modifier = Modifier.size(45.dp))
+                    }
+
+
+
+                   ResultadosSalvarHora.Salvo -> {
+                        Icon(Icons.Default.Check,null,modifier = Modifier.size(45.dp))
+                    }
+                    ResultadosSalvarHora.salvando -> {
+                        CircularProgressIndicator()
+                    }
+
+                }
+               }
+                Spacer(Modifier.padding(10.dp))
+            }
+
+            Spacer(Modifier.padding(10.dp))
+            TimePicker(state = state, modifier = Modifier.fillMaxWidth().height(400.dp))
+    }
+
+    }
 
 
 
