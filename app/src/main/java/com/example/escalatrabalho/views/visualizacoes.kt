@@ -114,7 +114,7 @@ Column(modifier = m.fillMaxSize().verticalScroll(state=scrollState)) {
     val scopo = rememberCoroutineScope()//escopo corotina
     horarioDosAlarmes(vm)//botão horario dos alarmes ao clicar aparesera o alarma
     Spacer(Modifier.padding(3.dp))//espaçamento entre os componentes
-    dataDasFolgas(vm.estadosVm.transicaoData,disparaDialogoDatas)//botão data das folgas ao clicar aparesera a data das folgas
+    dataDasFolgas(vm,disparaDialogoDatas)//botão data das folgas ao clicar aparesera a data das folgas
     Spacer(Modifier.padding(3.dp))//espaçamento entre os componentes
     ferias(vm.estadosVm.transicaoFerias,scopo,disparaDialogoFerias)//botão ferias ao clicar aparesera as ferias
     Spacer(Modifier.padding(8.dp))//espaçamento entre os componentes

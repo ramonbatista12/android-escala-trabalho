@@ -11,6 +11,13 @@ import java.util.Date
 class RepositorioDatas {
     private var data = Calendar.getInstance()
     private val tabelaMeses = listOf("Janeiro","Feverreiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro")
+    var mes =0
+    var ano =0
+
+    init {
+        mes=data.get(Calendar.MONTH)
+        ano=data.get(Calendar.YEAR)
+    }
 
      fun getDatas():Flow <List<Datas>> = flow {
         var list = mutableListOf<Datas>()

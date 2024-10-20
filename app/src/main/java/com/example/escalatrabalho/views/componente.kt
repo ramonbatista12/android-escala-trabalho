@@ -1,7 +1,9 @@
 package com.example.escalatrabalho.views
 
 import android.annotation.SuppressLint
+import android.widget.ProgressBar
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.FloatAnimationSpec
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
@@ -32,6 +35,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -40,6 +44,7 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,7 +58,9 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.escalatrabalho.R
+import com.example.escalatrabalho.classesResultados.ResultadosDatasFolgas
 import com.example.escalatrabalho.repositoriodeDatas.Resultados
+import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.viewModel.ViewModelTelas
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -91,42 +98,60 @@ fun horarioDosAlarmes(vm: ViewModelTelas){
 }
 @Composable
 //responsavel por mostrar as datas de folgas
-fun dataDasFolgas(stadoTransicao: MutableTransitionState<Boolean>, diparaDialogoDatas:()->Unit){
+fun dataDasFolgas(vm:ViewModelTelas, diparaDialogoDatas:()->Unit){
+    var fluxo = vm.fluxoDatasFolgas.collectAsState(ResultadosDatasFolgas.caregando())
+    var escopo= rememberCoroutineScope()
+    val progresoo = remember { mutableStateOf(0f) }
     Box(modifier = Modifier.fillMaxWidth()) {
     val scope = rememberCoroutineScope()//corotina interna
     Text(//texto clicavel que aciona a animacao que mostra as datas de folgas
         text = "DataDasFolgas",
         modifier = Modifier.align(Alignment.TopStart)
                            .offset(x = 20.dp)
-                           .clickable { scope.launch { stadoTransicao.targetState = !stadoTransicao.currentState } }
+                           .clickable {
+                               scope.launch { vm.estadosVm.transicaoData.targetState = !vm.estadosVm.transicaoData.currentState
+                               }
+                           }
     )
     IconButton(// icone que aciona a animacao que mostra as datas de folgas
         onClick = {
-            scope.launch {  stadoTransicao.targetState = !stadoTransicao.currentState}
+            scope.launch {  vm.estadosVm.transicaoData.targetState = !vm.estadosVm.transicaoData.currentState }
 
         },
         modifier = Modifier.align(Alignment.TopEnd)
     ) {
-        if (!stadoTransicao.currentState) Icon(
+        if (!vm.estadosVm.transicaoData.currentState) Icon(
             Icons.Default.KeyboardArrowDown,
             contentDescription = "espamdir"
         )
         else Icon(Icons.Default.KeyboardArrowUp, contentDescription = "fechar")
     }
     androidx.compose.animation.AnimatedVisibility(//amimacao que mostra as datas de folgas
-        visibleState = stadoTransicao,
+        visibleState = vm.estadosVm.transicaoData,
         modifier = Modifier.align(Alignment.Center).offset(x=20.dp)
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.heightIn(300.dp).fillMaxWidth()) {
             Spacer(Modifier.padding(30.dp))
-            LazyVerticalGrid (columns = GridCells.FixedSize(170.dp), modifier = Modifier.width(500.dp).height(300.dp), horizontalArrangement = Arrangement.spacedBy(3.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                repeat(10){
-                    item{
-                        itemDatas()
+            LazyVerticalGrid (columns = GridCells.FixedSize(170.dp),
+                              modifier = Modifier.width(500.dp)
+                                                  .height(300.dp),
+                              horizontalArrangement = Arrangement.spacedBy(3.dp),
+                              verticalArrangement = Arrangement.spacedBy(3.dp)) {
+
+                    when (val r=fluxo.value){
+                        is ResultadosDatasFolgas.ok-> {
+                            items(r.lista) { itemDatas(it) }
+                        }
+                        is ResultadosDatasFolgas.erro->{}
+                        is ResultadosDatasFolgas.caregando->{
+                            item{
+                            CircularProgressIndicator(modifier = Modifier.fillMaxWidth())
+                            }
+                        }
                     }
 
                 }
-                item {
+
                     //adiciona um btn adicionar ao fianl da lista vi algo parecido no sistem DO TRABALHO
                     IconButton(onClick = {scope.launch { diparaDialogoDatas()} })  { Icon(Icons.Default.AddCircle,"adicionar data") }
                 }
@@ -135,8 +160,7 @@ fun dataDasFolgas(stadoTransicao: MutableTransitionState<Boolean>, diparaDialogo
 
         }
     }
-}
-}
+
 @Composable
 //responsavel por mostrar as datas de ferias
 //dispara dialogo ferias responsavel por abrir o dialogo de datas de ferias
@@ -300,10 +324,19 @@ fun timePicker(vm: ViewModelTelas) {
 
 
 @Composable
-fun itemDatas(){
+fun itemDatas(item:DatasFolgas){
     Card(modifier = Modifier.width(170.dp).height(40.dp)){
         Box(modifier = Modifier.width(170.dp)){
-            Text(text = "20/30/3445", modifier = Modifier.align(Alignment.CenterStart).offset(x=10.dp))
+            Text(text = "${
+                if(item.data<10) "0" + item.data.toString()
+               else item.data
+            }/${
+                if(item.mes<10) "0" + item.mes.toString()
+               else
+                item.mes
+            }/${
+                item.ano
+            }", modifier = Modifier.align(Alignment.CenterStart).offset(x=10.dp))
             IconButton(onClick = {}, modifier = Modifier.align(Alignment.TopEnd)) { Icon(Icons.Default.Delete, contentDescription = "apagar data") }
 
 

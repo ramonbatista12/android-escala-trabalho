@@ -12,10 +12,13 @@ import androidx.work.Constraints
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.escalatrabalho.classesResultados.ResultadosDatasFolgas
 import com.example.escalatrabalho.repositoriodeDatas.RepositorioDatas
 import com.example.escalatrabalho.repositoriodeDatas.Resultados
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
+import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
 import com.example.escalatrabalho.roomComfigs.RoomDb
+import com.example.escalatrabalho.roomComfigs.repositorio.RepositorioPrincipal
 import com.example.escalatrabalho.viewModel.ViewModelTelas
 import com.example.escalatrabalho.views.ResultadosSalvarHora
 import com.example.escalatrabalho.views.TelaNavegacaoSimples
@@ -40,6 +43,12 @@ class ViewModelTelas(private val db: RoomDb, private val workManager: WorkManage
 
     }//o fluxo quente esposto e mapeado para um valor sealed Resultados
     val nomeMes=reposisitorioDatas.getMes()//pega o nome do mes
+    val repositoriGeral = RepositorioPrincipal(db)//e a classe responsavel por gerenciar todos os repositorios
+    val fluxoDatasFolgas = repositoriGeral.repositorioDatas.select(reposisitorioDatas.mes,reposisitorioDatas.ano).map {
+        delay(1000)
+        if (it.size==0) ResultadosDatasFolgas.caregando()
+       else ResultadosDatasFolgas.ok(it)
+    }
 
     init {
 
@@ -49,7 +58,17 @@ class ViewModelTelas(private val db: RoomDb, private val workManager: WorkManage
 
     }
 
+    fun inserirDatasFolgas(datasFolgas: DatasFolgas){
+        scopo.launch {
+            repositoriGeral.repositorioDatas.insert(datasFolgas)
+        }
+    }
 
+    fun inserirHorariosDosAlarmes(horariosDosAlarmes: HorioDosAlarmes){
+        scopo.launch {
+            repositoriGeral.repositorioHorariosDosAlarmes.insert(horariosDosAlarmes)
+        }
+    }
 
 
 }
