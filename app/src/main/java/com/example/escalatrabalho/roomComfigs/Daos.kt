@@ -44,14 +44,20 @@ interface Daos {
     //tabela modelo de trabalho
     @Query("SELECT * FROM ModeloDeEScala")
     fun getModeloDeEScala(): Flow<List<ModeloDeEScala>>
-    @Query("SELECT * FROM ModeloDeEScala where modelo=:colune")
+    @Query("SELECT COUNT (*) FROM ModeloDeEScala")
+    suspend fun count(): Int
+    @Query("SELECT  * FROM ModeloDeEScala where modelo=:colune")
     fun selectFeriascheck(colune:String): Flow<List<ModeloDeEScala>>
     @Insert
     suspend fun insertModeloDeEScala(vararg modeloDeEScala: ModeloDeEScala)
+    @Insert
+    suspend fun insert(modeloDeEScala: List< ModeloDeEScala>)
     @Delete
     suspend fun delete(modeloDeEScala: ModeloDeEScala)
     @Update
     suspend fun update(modeloDeEScala: ModeloDeEScala)
+    @Update
+    suspend fun update(modeloDeEScala: List<ModeloDeEScala>)
 
     //horario dos alarmes
     @Query("select * from HorioDosAlarmes")

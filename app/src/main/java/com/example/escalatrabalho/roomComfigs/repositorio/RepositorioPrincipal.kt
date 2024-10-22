@@ -40,7 +40,9 @@ class RepositorioFeriados(val bd: RoomDb){
 class RepositorioModeloDeTrabalho(val bd: RoomDb){
     fun select():Flow<List<ModeloDeEScala>> =bd.dao().getModeloDeEScala()
     fun select(colune:String):Flow<List<ModeloDeEScala>> =bd.dao().selectFeriascheck(colune)
+    suspend fun count():Int =bd.dao().count()
     suspend fun insert(modeloDeEScala: ModeloDeEScala)=bd.dao().insertModeloDeEScala(modeloDeEScala)
+    suspend fun insert(modeloDeEScala: List<ModeloDeEScala>)=bd.dao().insert(modeloDeEScala)
     suspend fun update(modeloDeEScala: ModeloDeEScala)=bd.dao().update(modeloDeEScala)
     suspend fun delete(modeloDeEScala: ModeloDeEScala)=bd.dao().delete(modeloDeEScala)
 }

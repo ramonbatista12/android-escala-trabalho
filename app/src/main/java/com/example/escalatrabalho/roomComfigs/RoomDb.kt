@@ -20,9 +20,9 @@ class CalbacInicializacaoBd:RoomDatabase.Callback(){
     override fun onCreate(db: SupportSQLiteDatabase) {
         super.onCreate(db)
         db.execSQL("INSERT INTO Executad0 (ezecutado) VALUES ('f')")
-        db.execSQL("INSERT INTO ModeloDeEScala (modelo,check) VALUES ('12/36',0)")
-        db.execSQL("INSERT INTO ModeloDeEScala (modelo,check) VALUES ('6/1',0)")
-        db.execSQL("INSERT INTO ModeloDeEScala (modelo,check) VALUES ('seg-sext',0)")
+        db.execSQL("INSERT INTO ModeloDeEScala (id,modelo,boolean) VALUES (1,'12/36',0)")
+        db.execSQL("INSERT INTO ModeloDeEScala (id,modelo,boolean) VALUES (2,'6/1',0)")
+        db.execSQL("INSERT INTO ModeloDeEScala (id,modelo,boolean) VALUES (3,'seg-sext',0)")
         db.execSQL("INSERT INTO HorioDosAlarmes (hora,minuto) VALUES (6,0)")
 
     }

@@ -13,24 +13,30 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,18 +44,27 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.escalatrabalho.R
+import com.example.escalatrabalho.classesResultados.ResultadosSalvarDatasFolgas
+import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.viewModel.ViewModelTelas
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun telainicial(vm:ViewModelTelas){
       val scop = rememberCoroutineScope()
+      val hostSnabar =remember{ SnackbarHostState() }
 
-     Scaffold(modifier=Modifier.fillMaxSize(), bottomBar = {barraSuperior(vm =vm)}) {
+     Scaffold(modifier=Modifier.fillMaxSize(),
+              bottomBar = {barraSuperior(vm =vm)},
+              snackbarHost = { SnackbarHost(hostState = hostSnabar) },) {
 
      Box(modifier=Modifier.fillMaxSize()){
       when(vm.estadosVm.telas.value) {
@@ -64,7 +79,7 @@ fun telainicial(vm:ViewModelTelas){
               disparaDialogoFerias={scop.launch {  vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDatass.value}},vm=vm)
       }
          }
- dialogoDatasFolgas(disparar = vm.estadosVm.disparaDatass.value, acaoFechar = {vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value})
+ dialogoDatasFolgas(disparar = vm.estadosVm.disparaDatass.value, acaoFechar = {vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value},vm = vm)
  dialogoDatasFerrias(disparar =vm.estadosVm.disparaDialogoFerias.value, acaoFechar = {vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value})
 }
 
@@ -73,10 +88,32 @@ fun telainicial(vm:ViewModelTelas){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 //dialogo de datas de folgas responsavel por permirtir a selecao das folgas
-fun  dialogoDatasFolgas(disparar:Boolean,acaoFechar:()->Unit){if(disparar) Surface {
-    ModalBottomSheet(onDismissRequest = acaoFechar) {  var estate = rememberDatePickerState()
+fun  dialogoDatasFolgas(disparar:Boolean,acaoFechar:()->Unit,vm:ViewModelTelas){
+    if(disparar) Surface {
+    ModalBottomSheet(onDismissRequest = acaoFechar) {
+        var estate = rememberDatePickerState()
+
         Surface {   Box{
+
+             IconButton(onClick ={  val cal = Calendar.getInstance()
+                 cal.timeInMillis=estate.selectedDateMillis!!
+                 vm.inserirDatasFolgas(
+                     DatasFolgas(0,
+                         cal.get(Calendar.DAY_OF_MONTH)?:11,
+                         cal.get(Calendar.MONTH)?:1,
+                         cal.get(Calendar.YEAR)?:2024
+                     ))
+             }, modifier = Modifier.align(Alignment.TopEnd) ) {
+                 Icon(painterResource(R.drawable.baseline_save_24),"salvar")//aparesera quando for clicavel novamente
+            }
+
+
             DatePicker(state = estate, showModeToggle = true)
+
+
+
+
+
         }
 
         }}

@@ -40,7 +40,7 @@ class RepositorioDatas {
                 }
 
             }
-            var d = Datas("${data.get(Calendar.MONTH)}", "${data.get(Calendar.YEAR)}", "${i},", diaS)
+            var d = Datas("${data.get(Calendar.MONTH)}", "${data.get(Calendar.YEAR)}", "${i}", diaS)
             list.add(d)
 
 

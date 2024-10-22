@@ -1,15 +1,15 @@
 package com.example.escalatrabalho.views
 
-import android.annotation.SuppressLint
-import android.widget.ProgressBar
+import android.content.ClipData.Item
+import android.util.Log
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.FloatAnimationSpec
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,8 +22,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.magnifier
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Check
@@ -35,13 +35,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -53,15 +50,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.motionEventSpy
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.escalatrabalho.R
 import com.example.escalatrabalho.classesResultados.ResultadosDatasFolgas
-import com.example.escalatrabalho.repositoriodeDatas.Resultados
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
+import com.example.escalatrabalho.roomComfigs.ModeloDeEScala
 import com.example.escalatrabalho.viewModel.ViewModelTelas
+import com.example.escalatrabalho.viewModel.mdcheck
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -130,7 +126,7 @@ fun dataDasFolgas(vm:ViewModelTelas, diparaDialogoDatas:()->Unit){
         visibleState = vm.estadosVm.transicaoData,
         modifier = Modifier.align(Alignment.Center).offset(x=20.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.heightIn(300.dp).fillMaxWidth()) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
             Spacer(Modifier.padding(30.dp))
             LazyVerticalGrid (columns = GridCells.FixedSize(170.dp),
                               modifier = Modifier.width(500.dp)
@@ -140,20 +136,39 @@ fun dataDasFolgas(vm:ViewModelTelas, diparaDialogoDatas:()->Unit){
 
                     when (val r=fluxo.value){
                         is ResultadosDatasFolgas.ok-> {
-                            items(r.lista) { itemDatas(it) }
+                            if(r.lista.isEmpty()) item{ //se a lista estiver vasia define o item com o aviso de vasio
+                                Text(text = "lista vazia ",
+                                     style = androidx.compose.material3.MaterialTheme.typography.titleLarge)}
+                            else items(r.lista) { itemDatas(it) }
                         }
-                        is ResultadosDatasFolgas.erro->{}
+                        is ResultadosDatasFolgas.erro->{
+                            item{
+                                 Text(text = "Erro ao carregar as datas",
+                                     color = Color.Red,
+                                     style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
+                                     modifier = Modifier.align(Alignment.CenterHorizontally)
+
+                                 )
+
+                            }
+                        }
                         is ResultadosDatasFolgas.caregando->{
                             item{
-                            CircularProgressIndicator(modifier = Modifier.fillMaxWidth())
+                            CircularProgressIndicator(
+                                modifier = Modifier.fillMaxWidth()
+
+                            )
                             }
                         }
                     }
-
+                //adiciona um btn adicionar ao fianl da lista vi algo parecido no sistem DO TRABALHO
+             item {     IconButton (onClick = {scope.launch { diparaDialogoDatas()} })  {
+                    Icon(Icons.Default.AddCircle,"adicionar data",modifier = Modifier.size(50.dp))
+             }
+                }
                 }
 
-                    //adiciona um btn adicionar ao fianl da lista vi algo parecido no sistem DO TRABALHO
-                    IconButton(onClick = {scope.launch { diparaDialogoDatas()} })  { Icon(Icons.Default.AddCircle,"adicionar data") }
+
                 }
             }
 
@@ -217,17 +232,17 @@ fun ferias(stadoTransicao: MutableTransitionState<Boolean>, scope: CoroutineScop
 
 @Composable
 //responsavel por esibir o melo de escala ex 12/36,6/1,seg-sext
-fun modeloDeescala(stadoTransicao: MutableTransitionState<Boolean>){
+fun modeloDeescala(vm: ViewModelTelas){
     Box(modifier = Modifier.fillMaxWidth()){
         Text(//texto clicavel que aciona a animacao que mostra o modelo de escala
             text = "Modelo de escala",
             modifier = Modifier.align(Alignment.TopStart)
-                               .offset(x=20.dp).clickable { stadoTransicao.targetState = !stadoTransicao.currentState })
+                               .offset(x=20.dp).clickable { vm.estadosVm.transicaoModeloTrabalho.targetState = !vm.estadosVm.transicaoModeloTrabalho.currentState })
         IconButton(//icone que aciona a animacao que mostra o modelo de escala
-            onClick = { stadoTransicao.targetState = !stadoTransicao.currentState },
+            onClick = { vm.estadosVm.transicaoModeloTrabalho.targetState = !vm.estadosVm.transicaoModeloTrabalho.currentState },
             modifier = Modifier.align(Alignment.TopEnd)
         ) {
-            if (!stadoTransicao.currentState) Icon(
+            if (!vm.estadosVm.transicaoModeloTrabalho.currentState) Icon(
                 Icons.Default.KeyboardArrowDown,
                 contentDescription = "espamdir"
             )
@@ -236,27 +251,34 @@ fun modeloDeescala(stadoTransicao: MutableTransitionState<Boolean>){
 
 
         androidx.compose.animation.AnimatedVisibility(//animacao que mostra o modelo de escala
-            visibleState = stadoTransicao,
+            visibleState = vm.estadosVm.transicaoModeloTrabalho,
             modifier = Modifier.align( Alignment.Center)) {
-            var s1 by remember { mutableStateOf(false) }
-            var s2 by remember { mutableStateOf(false) }
-            var s3 by remember { mutableStateOf(false) }
+            var s1 =vm.estadosModeloTrabalho1236.collectAsState(mdcheck(1,false))
+            var s2 =vm.estadosModeloDeTrabalho61.collectAsState(mdcheck(2,false))
+            var s3 =vm.estadoModloTrabalhoSegsext.collectAsState(mdcheck(3,false))
             Column {
                 Spacer(Modifier.padding(30.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("12 / 36")
                     Spacer(Modifier.padding(40.dp))
-                    Switch(checked = s1, onCheckedChange = {})
+                    Switch(checked = s1.value.check, onCheckedChange = {
+                        Log.e("switch","${s1.value.check} em onchange")
+                        vm.inserirModeloDeTrabalho(ModeloDeEScala(s1.value.id,"12/36",it))
+                    })
                 }
                 Row (verticalAlignment = Alignment.CenterVertically){
                     Text(text = "6 / 1")
                     Spacer(Modifier.padding(50.dp))
-                    Switch(checked = s2, onCheckedChange = {})
+                    Switch(checked = s2.value.check , onCheckedChange = {
+                        vm.inserirModeloDeTrabalho(ModeloDeEScala(s2.value.id,"6/1",it))
+                    })
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(text = "seg - sext")
                     Spacer(Modifier.padding(30.dp))
-                    Switch(checked = s3, onCheckedChange = {})
+                    Switch(checked = s3.value.check, onCheckedChange = {
+                        vm.inserirModeloDeTrabalho(ModeloDeEScala(s3.value.id,"seg-sext",it))
+                    })
                 }
             }
 
