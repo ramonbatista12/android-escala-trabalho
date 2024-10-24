@@ -38,6 +38,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -50,11 +51,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.escalatrabalho.R
 import com.example.escalatrabalho.classesResultados.ResultadosDatasFolgas
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
+import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
 import com.example.escalatrabalho.roomComfigs.ModeloDeEScala
 import com.example.escalatrabalho.viewModel.ViewModelTelas
 import com.example.escalatrabalho.viewModel.mdcheck
@@ -64,7 +67,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 //comfiguracao responsavel por mostra otimer piker que agenda o horio dos alarmes
-fun horarioDosAlarmes(vm: ViewModelTelas){
+fun horarioDosAlarmes(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {}){
     Box(Modifier.fillMaxWidth()) {
     val scope = rememberCoroutineScope()//corotina interna
     Text(//texto clicavel que aciona a animacao que mostra o relogio
@@ -72,7 +75,7 @@ fun horarioDosAlarmes(vm: ViewModelTelas){
         modifier = Modifier.align(Alignment.TopStart)
                            .offset(x = 20.dp).clickable { scope.launch {vm.estadosVm.transicaoDatPiker.targetState = !vm.estadosVm.transicaoDatPiker.currentState  } }
     )
-    IconButton(//icone que aciona a animacao que mostra o relogio
+    TextButton (//icone que aciona a animacao que mostra o relogio
         onClick = { scope.launch {  vm.estadosVm.transicaoDatPiker.targetState = !vm.estadosVm.transicaoDatPiker.currentState}},
         modifier = Modifier.align(Alignment.TopEnd).animateContentSize()
     ) {
@@ -87,7 +90,7 @@ fun horarioDosAlarmes(vm: ViewModelTelas){
         modifier = Modifier.align(Alignment.Center)
     ) { Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(Modifier.padding(30.dp))
-        Surface { timePicker(vm =vm ) }
+        Surface { timePicker(vm =vm ,calbackSnackbar = calbackSnackbar) }
     } }
 
 }
@@ -139,7 +142,7 @@ fun dataDasFolgas(vm:ViewModelTelas, diparaDialogoDatas:()->Unit){
                             if(r.lista.isEmpty()) item{ //se a lista estiver vasia define o item com o aviso de vasio
                                 Text(text = "lista vazia ",
                                      style = androidx.compose.material3.MaterialTheme.typography.titleLarge)}
-                            else items(r.lista) { itemDatas(it) }
+                            else items(r.lista) { itemDatas(it,vm=vm) }
                         }
                         is ResultadosDatasFolgas.erro->{
                             item{
@@ -287,46 +290,38 @@ fun modeloDeescala(vm: ViewModelTelas){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun timePicker(vm: ViewModelTelas) {
+fun timePicker(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {}) {
     val state = rememberTimePickerState(0, 59)
     val scope = rememberCoroutineScope()
     Column {
         Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
 
-            IconButton(onClick = {
-                scope.launch {
-                    vm.estadosVm.salvandoHorariosResultados.value = ResultadosSalvarHora.salvando
-                    delay(2000)
-                    vm.estadosVm.salvandoHorariosResultados.value = ResultadosSalvarHora.Salvo
-                    delay(1000)
-                    vm.estadosVm.salvandoHorariosResultados.value = ResultadosSalvarHora.clicavel
-                }
-            }, modifier = Modifier.size(50.dp) .border(
-                width = 0.9.dp,
-                color = Color.Black,
-                shape = CircleShape
-            ).animateContentSize())
+            TextButton (onClick = {
+                vm.inserirHorariosDosAlarmes( HorioDosAlarmes(0,state.hour,state.minute),calbakSnackbar = calbackSnackbar)
+            }, modifier = Modifier .animateContentSize().width(190.dp))
             {
                 when ( vm.estadosVm.salvandoHorariosResultados.value ) {
                   ResultadosSalvarHora.clicavel -> {
-                        Icon(
-                            painterResource(R.drawable.baseline_save_24), null,
-                            modifier = Modifier.size(45.dp)
-
-                        )
+                        Text(text = "Alterar e Salvar Horio",maxLines = 1)
                     }
 
                   ResultadosSalvarHora.comcluido -> {
-                        CircularProgressIndicator(modifier = Modifier.size(45.dp))
+                      Text(text = "Salvo")
+                      Spacer(Modifier.padding(3.dp))
+                      Icon(Icons.Default.Check,null,modifier = Modifier)
                     }
 
 
 
                    ResultadosSalvarHora.Salvo -> {
-                        Icon(Icons.Default.Check,null,modifier = Modifier.size(45.dp))
+                       Text(text = "Salvo")
+                       Spacer(Modifier.padding(3.dp))
+                       Icon(Icons.Default.Check,null,modifier = Modifier)
                     }
                     ResultadosSalvarHora.salvando -> {
-                        CircularProgressIndicator()
+                        Text(text = "Salvando Horario",maxLines = 1)
+                        Spacer(Modifier.padding(3.dp))
+                        CircularProgressIndicator(modifier = Modifier.size(30.dp))
                     }
 
                 }
@@ -346,7 +341,7 @@ fun timePicker(vm: ViewModelTelas) {
 
 
 @Composable
-fun itemDatas(item:DatasFolgas){
+fun itemDatas(item:DatasFolgas,vm:ViewModelTelas){
     Card(modifier = Modifier.width(170.dp).height(40.dp)){
         Box(modifier = Modifier.width(170.dp)){
             Text(text = "${
@@ -359,7 +354,7 @@ fun itemDatas(item:DatasFolgas){
             }/${
                 item.ano
             }", modifier = Modifier.align(Alignment.CenterStart).offset(x=10.dp))
-            IconButton(onClick = {}, modifier = Modifier.align(Alignment.TopEnd)) { Icon(Icons.Default.Delete, contentDescription = "apagar data") }
+            IconButton(onClick = {vm.deletarDatasFolgas(item)}, modifier = Modifier.align(Alignment.TopEnd)) { Icon(Icons.Default.Delete, contentDescription = "apagar data") }
 
 
         }

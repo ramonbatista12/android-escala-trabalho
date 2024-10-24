@@ -60,15 +60,25 @@ fun calendario(m:Modifier,vm:ViewModelTelas){
 @Composable
 fun itemCalendario(data: Datas){
     Box(modifier = Modifier.width(50.dp).height(80.dp)){
-          Text(text = data.dia, color = Color.Black,modifier = Modifier.align(Alignment.TopCenter).offset(y=5.dp))
-        Column(modifier=Modifier.align(Alignment.BottomCenter).offset(y=-5.dp)) { Text(text = "Tab")  }
+          Text(text = data.dia,
+              color = Color.Black,
+              modifier = Modifier.align(Alignment.TopCenter)
+                                 .offset(y=5.dp))
+        Column(modifier=Modifier.align(Alignment.BottomCenter)
+                                .offset(y=-5.dp)) {
+            Text(text = "Tab")
+        }
     }
 
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun config(m:Modifier,disparaDialogoDatas: ()->Unit,disparaDialogoFerias:()->Unit,vm: ViewModelTelas){
+fun config(m:Modifier,
+           disparaDialogoDatas: ()->Unit,
+           disparaDialogoFerias:()->Unit,
+           calbackSnackbar:suspend (String) -> Unit ,
+           vm: ViewModelTelas){
     var scrollState = rememberScrollState(0)
 Column(modifier = m.fillMaxSize().verticalScroll(state=scrollState)) {
     Spacer(Modifier.padding(10.dp))

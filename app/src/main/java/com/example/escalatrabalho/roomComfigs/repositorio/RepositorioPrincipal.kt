@@ -50,8 +50,10 @@ class RepositorioModeloDeTrabalho(val bd: RoomDb){
 //classe RepositorioHorariosDosAlarmes responsavel por gerenciar a tabela HorioDosAlarmes
 class RepositorioHorariosDosAlarmes(val bd: RoomDb){
     fun select():Flow<List<HorioDosAlarmes>> =bd.dao().getHorariosDosAlarmes()
+    suspend fun getPrimeiro():HorioDosAlarmes =bd.dao().getHorariosPrimeiroDosAlarmes()
+    fun count():Int =bd.dao().countHorarios()
     suspend fun insert(horioDosAlarmes: HorioDosAlarmes)=bd.dao().insertHorariosDosAlarmes(horioDosAlarmes)
-    suspend fun update(horioDosAlarmes: HorioDosAlarmes)=bd.dao().update(horioDosAlarmes)
+    suspend fun update(horioDosAlarmes: HorioDosAlarmes)=bd.dao().updateAlarme(horioDosAlarmes)
     suspend fun delete(horioDosAlarmes: HorioDosAlarmes)=bd.dao().delete(horioDosAlarmes)
 }
 

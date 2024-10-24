@@ -62,12 +62,16 @@ interface Daos {
     //horario dos alarmes
     @Query("select * from HorioDosAlarmes")
     fun getHorariosDosAlarmes(): Flow<List<HorioDosAlarmes>>
+    @Query("select * from HorioDosAlarmes limit 1")
+    fun getHorariosPrimeiroDosAlarmes(): HorioDosAlarmes
+    @Query("select COUNT (*) from HorioDosAlarmes ")
+    fun countHorarios():Int
     @Insert
     suspend fun insertHorariosDosAlarmes(vararg horioDosAlarmes: HorioDosAlarmes)
     @Delete
     suspend fun delete(horioDosAlarmes: HorioDosAlarmes)
     @Update
-    suspend fun update(horioDosAlarmes: HorioDosAlarmes)
+    suspend fun updateAlarme(horioDosAlarmes: HorioDosAlarmes)
 
     //ferias
     @Query("select * from Ferias")

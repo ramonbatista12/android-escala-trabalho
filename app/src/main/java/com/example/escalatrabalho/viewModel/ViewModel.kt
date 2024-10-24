@@ -1,6 +1,8 @@
 package com.example.escalatrabalho.viewModel
 
 import android.annotation.SuppressLint
+import android.app.Application
+import android.content.Context
 import android.util.Log
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.runtime.mutableStateOf
@@ -9,6 +11,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.escalatrabalho.applicatio.AplicationCuston
+import com.example.escalatrabalho.calendarComtrato.Calendario
 import com.example.escalatrabalho.classesResultados.ResultadosDatasFolgas
 import com.example.escalatrabalho.repositoriodeDatas.RepositorioDatas
 import com.example.escalatrabalho.classesResultados.Resultados
@@ -23,22 +27,17 @@ import com.example.escalatrabalho.views.TelaNavegacaoSimples
 import com.example.escalatrabalho.worlk.AgendarAlarmes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
 class ViewModelTelas(private val db: RoomDb, private val workManager: WorkManager):ViewModel() {
-
+    var trabalhado = arrayOf("tab","folg")
     var scopo =viewModelScope
-    var estadosVm =EstadosAuxVm()
+    var estadosVm =EstadosAuxVm()//os estados estao emcapisulsulados por essa classe
     val reposisitorioDatas =RepositorioDatas()//e a clasee responsavel por criar as datas mostradas no calendario
-    val fluxo=reposisitorioDatas.getDatas().map {
-        delay(1000)
-        Resultados.Ok(it)
-
-
-    }//o fluxo quente esposto e mapeado para um valor sealed Resultados
     val nomeMes=reposisitorioDatas.getMes()//pega o nome do mes
     val repositoriGeral = RepositorioPrincipal(db)//e a classe responsavel por gerenciar todos os repositorios
     val fluxoDatasFolgas = repositoriGeral.repositorioDatas.select(reposisitorioDatas.mes,reposisitorioDatas.ano).map {
@@ -56,26 +55,57 @@ class ViewModelTelas(private val db: RoomDb, private val workManager: WorkManage
         if(it.isEmpty())mdcheck(3,false)
         else mdcheck(it.get(0).id,it.get(0).check)
     }//responsavel por emitir o fluxo com check value do modelo de trabalho seg-sext
+    val fluxo=reposisitorioDatas.getDatas().map { Resultados.Ok(it) }//o fluxo quente esposto e mapeado para um valor sealed Resultados
+
+
+
     init {
       scopo.launch(context =  Dispatchers.IO) {  // joga o agendamento para trhead de defaut usada para cauculos pesados
         val mk = PeriodicWorkRequestBuilder<AgendarAlarmes>(10,TimeUnit.MINUTES,5,TimeUnit.MINUTES)
             .addTag("agendamento de alarmes")
         workManager.enqueue(mk.build())
+
     }
 
     }
-    //vai enserir as datas atraves do metodo inserte criado pelo room
+
+    //sao responsaveis por inserir e deletar as datas de folgas
     fun inserirDatasFolgas(datasFolgas: DatasFolgas){
         scopo.launch(context = Dispatchers.IO) {
 
             repositoriGeral.repositorioDatas.insert(datasFolgas)
         }
-    }
-    //vai enserir as datas atraves do metodo inserte criado pelo room
-    fun inserirHorariosDosAlarmes(horariosDosAlarmes: HorioDosAlarmes){//vai inserir o horario atraves do metodo inserte criado pelo room
-        scopo.launch {
-            repositoriGeral.repositorioHorariosDosAlarmes.insert(horariosDosAlarmes)
+    }//vai enserir as datas atraves do metodo inserte criado pelo room
+    fun deletarDatasFolgas(datasFolgas: DatasFolgas){
+        scopo.launch(context = Dispatchers.IO) {
+            repositoriGeral.repositorioDatas.delete(datasFolgas)
         }
+
+    }//responsavel por deletar as datas de folgas
+
+    //vai enserir as datas atraves do metodo inserte criado pelo room
+    fun inserirHorariosDosAlarmes(horariosDosAlarmes: HorioDosAlarmes,calbakSnackbar:suspend (String)->Unit){//vai inserir o horario atraves do metodo inserte criado pelo room
+        estadosVm.salvandoHorariosResultados.value=ResultadosSalvarHora.salvando//estado de salvando horario
+        scopo.launch(Dispatchers.IO) {
+            val aux =repositoriGeral.repositorioHorariosDosAlarmes.count()
+            if(aux == 0){
+                Log.e("vm inseri horario","entrou no if valor aux $aux")
+                repositoriGeral.repositorioHorariosDosAlarmes.insert(horariosDosAlarmes)
+        }
+            else{
+                val obj =repositoriGeral.repositorioHorariosDosAlarmes.getPrimeiro()
+                Log.e("vm inseri horario","entrou no else valor aux $aux id ${obj.id}")
+                repositoriGeral.repositorioHorariosDosAlarmes.update(HorioDosAlarmes(obj.id,horariosDosAlarmes.hora,horariosDosAlarmes.minuto))
+            }
+
+
+        }.invokeOnCompletion { scopo.launch {
+            estadosVm.salvandoHorariosResultados.value=ResultadosSalvarHora.comcluido
+            calbakSnackbar("Salvo com sucesso")
+            delay(1000)
+            estadosVm.salvandoHorariosResultados.value=ResultadosSalvarHora.clicavel
+
+        } }
     }
 
     @SuppressLint("SuspiciousIndentation")
@@ -99,10 +129,12 @@ class ViewModelTelas(private val db: RoomDb, private val workManager: WorkManage
 
     }
 
+
+
 }
 data class mdcheck(val id:Int,val check:Boolean)
-
-class EstadosAuxVm(){
+data class visulizacaoDatas(val dia:Int,val trabalhado:String)
+class EstadosAuxVm(){//classe criada para manter os estados do viewmodel
     var disparaDialogoFerias =mutableStateOf(false)//estado dialog datas de ferias
     var disparaDatass=mutableStateOf(false)//estado dialog datas fiogas
     var transicaoDatPiker =MutableTransitionState(false)//estado transicao animacao Datapiker selecao hr
@@ -121,7 +153,7 @@ class Fabricar(){
         //funcao que recebe um objeto do tipo viewmodelProvider.Factory e retorna um objeto do tipo ViewModelTelas
         //que recebe um objeto do tipo RoomDb e um objeto do tipo WorkManager
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return ViewModelTelas(db = bd, workManager = workManager) as T
+            return ViewModelTelas(db = bd, workManager = workManager)   as T
         }
     }
 

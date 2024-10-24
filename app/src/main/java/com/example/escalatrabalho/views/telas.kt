@@ -28,6 +28,7 @@ import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -76,7 +77,11 @@ fun telainicial(vm:ViewModelTelas){
           }
           TelaNavegacaoSimples.comfig -> config(m=Modifier.align(Alignment.TopCenter).offset(y=60.dp),
               disparaDialogoDatas = {scop.launch {  vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value}},
-              disparaDialogoFerias={scop.launch {  vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDatass.value}},vm=vm)
+              disparaDialogoFerias={scop.launch {  vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDatass.value}},
+              calbackSnackbar = {it->
+                  hostSnabar.showSnackbar(message = it,duration = SnackbarDuration.Short)
+                                }
+              ,vm=vm)
       }
          }
  dialogoDatasFolgas(disparar = vm.estadosVm.disparaDatass.value, acaoFechar = {vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value},vm = vm)
