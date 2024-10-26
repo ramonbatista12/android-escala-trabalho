@@ -1,4 +1,11 @@
 package com.example.escalatrabalho.viewModel
+//classe view model e reponsavel por transmitir os dados a view separando as responsabilidades
+// os dados que o view model emite a view sao diferentes pois a view nao presisa saber todos os detalhes sobre os dados
+// e nem sobre a logica de negocia na versdade nem mesmo o view model
+//ele e usado como intermediario entre a view e o repositorio foenesendoe formatando dados para a view
+
+
+
 
 import android.annotation.SuppressLint
 import android.app.Application
@@ -17,6 +24,7 @@ import com.example.escalatrabalho.classesResultados.ResultadosDatasFolgas
 import com.example.escalatrabalho.repositoriodeDatas.RepositorioDatas
 import com.example.escalatrabalho.classesResultados.Resultados
 import com.example.escalatrabalho.classesResultados.ResultadosSalvarDatasFolgas
+import com.example.escalatrabalho.repositoriodeDatas.SemanaDia
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
 import com.example.escalatrabalho.roomComfigs.ModeloDeEScala
@@ -34,7 +42,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
 class ViewModelTelas(private val db: RoomDb, private val workManager: WorkManager):ViewModel() {
-    var trabalhado = arrayOf("tab","folg")
+    var trabalhado = arrayOf("tab","folg","cp")
     var scopo =viewModelScope
     var estadosVm =EstadosAuxVm()//os estados estao emcapisulsulados por essa classe
     val reposisitorioDatas =RepositorioDatas()//e a clasee responsavel por criar as datas mostradas no calendario
@@ -55,8 +63,60 @@ class ViewModelTelas(private val db: RoomDb, private val workManager: WorkManage
         if(it.isEmpty())mdcheck(3,false)
         else mdcheck(it.get(0).id,it.get(0).check)
     }//responsavel por emitir o fluxo com check value do modelo de trabalho seg-sext
-    val fluxo=reposisitorioDatas.getDatas().map { Resultados.Ok(it) }//o fluxo quente esposto e mapeado para um valor sealed Resultados
+    val fluxoDatas=reposisitorioDatas.getDatas()//o fluxo que emite as datas do mes
+    val fluxoViewCalendario =
+        combine(fluxoDatas,
+                fluxoDatasFolgas,
+                estadosModeloTrabalho1236,
+                estadosModeloDeTrabalho61,
+                estadoModloTrabalhoSegsext){
+         data,folga,check1236,check61,checkSegsext->
+         val _folga:List<Int> =folga.lista.map {
+             Log.i( "dpurando map folga","${it.data}")
+             it.data;
+         }
+        var l =data.map {
+            Log.e("mapeamento datas","dia : ${it.dia} dia semana :${it.diaSemana}")
+            when {
 
+                check1236.check && !check61.check && !checkSegsext.check -> {
+                    // Bloco de código para (true, false, false)
+                Log.i("depurnado map datas 1236"," dia : ${it.dia} dia semana :${it.diaSemana}")
+                    if(_folga.contains(it.dia.toInt())){
+                       visulizacaoDatas(it.dia.toInt(),trabalhado[1])
+                    }
+                    else {
+                        if(it.dia.toInt()%2==0)  visulizacaoDatas(it.dia.toInt(),trabalhado[2])
+                        else visulizacaoDatas(it.dia.toInt(),trabalhado[0])
+                    }
+                }
+                !check1236.check && check61.check && !checkSegsext.check -> {
+                    // Bloco de código para (false, true, false)
+                    // Bloco de código para (true, false, false)
+                    if(_folga.contains(it.dia.toInt())){
+                        visulizacaoDatas(it.dia.toInt(),trabalhado[1])
+                    }
+                    else {
+
+                      visulizacaoDatas(it.dia.toInt(),trabalhado[0])
+                    }
+                }
+                !check1236.check && !check61.check && checkSegsext.check -> {
+                    // Bloco de código para (false, false, true)
+                    Log.i("depurnado map datas 61"," dia : ${it.dia} dia semana :${it.diaSemana}")
+
+                        if(it.diaSemana==SemanaDia.sabado||it.diaSemana==SemanaDia.doming) visulizacaoDatas(it.dia.toInt(),trabalhado[1])
+                           else visulizacaoDatas(it.dia.toInt(),trabalhado[0])
+
+
+
+                }
+                else->visulizacaoDatas(it.dia.toInt(),trabalhado[0])
+            }
+
+        }
+        l
+    }//fluxo criado com combine me permite checar as outras variaveis para criar o fluxo que vai esiberir no calendario
 
 
     init {
@@ -132,8 +192,8 @@ class ViewModelTelas(private val db: RoomDb, private val workManager: WorkManage
 
 
 }
-data class mdcheck(val id:Int,val check:Boolean)
-data class visulizacaoDatas(val dia:Int,val trabalhado:String)
+data class mdcheck(val id:Int,val check:Boolean)//classe auxiliar que a view vai receber
+data class visulizacaoDatas(val dia:Int,val trabalhado:String)//a view vai sualizar esses dados no calendario
 class EstadosAuxVm(){//classe criada para manter os estados do viewmodel
     var disparaDialogoFerias =mutableStateOf(false)//estado dialog datas de ferias
     var disparaDatass=mutableStateOf(false)//estado dialog datas fiogas

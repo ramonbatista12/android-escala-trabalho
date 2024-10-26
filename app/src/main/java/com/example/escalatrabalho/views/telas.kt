@@ -1,7 +1,9 @@
 package com.example.escalatrabalho.views
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 
@@ -11,6 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.safeGesturesPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -45,6 +50,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -57,25 +63,32 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnusedBoxWithConstraintsScope")
 @Composable
 fun telainicial(vm:ViewModelTelas){
       val scop = rememberCoroutineScope()
       val hostSnabar =remember{ SnackbarHostState() }
-
-     Scaffold(modifier=Modifier.fillMaxSize(),
+     //seguindo as dicas do google que estudei adicionei os seguites modificadores de nivel superio eles tem tabem referentes de baixo nivel
+    // baixo nivel no jetpack compose nao dis respeito a manipulacao direta a memoria ou componentes fisicos de baixo nivel de abstracao
+    // mas sim a componentes basicos do jet peck compose como Layout Graficslayer pois o jet peck compose tabem tem um nivel de abistracao
+    // componentes basicos explo basictext layout grafcSlayer componentes de medio nivle como box etc
+    // e de alto nivel que nos nao presisamos criar tudo do zerro ou juntando partes basicas como o Text
+     Scaffold(modifier=Modifier.fillMaxSize()
+                               .safeContentPadding()
+                               .safeDrawingPadding()
+                               .safeGesturesPadding(),
               bottomBar = {barraSuperior(vm =vm)},
               snackbarHost = { SnackbarHost(hostState = hostSnabar) },) {
 
-     Box(modifier=Modifier.fillMaxSize()){
+     Box (modifier=Modifier.fillMaxSize()){
       when(vm.estadosVm.telas.value) {
-          TelaNavegacaoSimples.calendario-> Column(modifier = Modifier.offset(x=10.dp)) {
+          TelaNavegacaoSimples.calendario-> Column(horizontalAlignment = Alignment.CenterHorizontally,modifier = Modifier.offset(x=10.dp).align(Alignment.TopCenter).matchParentSize()) {
               Spacer(Modifier.padding(25.dp))
               Text("   Mes de :${vm.nomeMes}")
               Spacer(Modifier.padding(3.dp))
               calendario(m=Modifier,vm=vm)
           }
-          TelaNavegacaoSimples.comfig -> config(m=Modifier.align(Alignment.TopCenter).offset(y=60.dp),
+          TelaNavegacaoSimples.comfig -> config(m=Modifier.align(Alignment.TopCenter).matchParentSize()/*.offset(y=60.dp)*/,
               disparaDialogoDatas = {scop.launch {  vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value}},
               disparaDialogoFerias={scop.launch {  vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDatass.value}},
               calbackSnackbar = {it->
@@ -100,7 +113,11 @@ fun  dialogoDatasFolgas(disparar:Boolean,acaoFechar:()->Unit,vm:ViewModelTelas){
 
         Surface {   Box{
 
-             IconButton(onClick ={  val cal = Calendar.getInstance()
+             IconButton(onClick ={
+                 //eu uso a classe calendar para pegar a data selecionada e inserir no banco de dados
+                 // pois esiste a nessesitade de receber um nuimerro e comverter ele em uma date
+
+                 val cal = Calendar.getInstance()
                  cal.timeInMillis=estate.selectedDateMillis!!
                  vm.inserirDatasFolgas(
                      DatasFolgas(0,
@@ -145,7 +162,7 @@ fun  dialogoDatasFerrias(disparar:Boolean,acaoFechar:()->Unit){
 //barra de navegacao responsavel por navegar entre as telas
 fun barraSuperior(vm:ViewModelTelas){
    var escopo = rememberCoroutineScope()//corotina interna
-    NavigationBar(modifier = Modifier.fillMaxWidth().height(85.dp)) {
+    NavigationBar(modifier = Modifier.fillMaxWidth().height(50.dp).background(color = Color.Transparent)) {
          // view model.estadosVm.telas.value=TelaNavegacaoSimples.calendario recebe um objeto do tipo do enun ou calendario ou configuracao
         // que representa as posiveis navegacoe simples tive essa ideia pois a vi em um code lab
          NavigationBarItem(//responsavel por navegar  para tela de calendario

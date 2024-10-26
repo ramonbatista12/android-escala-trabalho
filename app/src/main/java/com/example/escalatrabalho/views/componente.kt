@@ -75,7 +75,7 @@ fun horarioDosAlarmes(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Un
         modifier = Modifier.align(Alignment.TopStart)
                            .offset(x = 20.dp).clickable { scope.launch {vm.estadosVm.transicaoDatPiker.targetState = !vm.estadosVm.transicaoDatPiker.currentState  } }
     )
-    TextButton (//icone que aciona a animacao que mostra o relogio
+    IconButton (//icone que aciona a animacao que mostra o relogio
         onClick = { scope.launch {  vm.estadosVm.transicaoDatPiker.targetState = !vm.estadosVm.transicaoDatPiker.currentState}},
         modifier = Modifier.align(Alignment.TopEnd).animateContentSize()
     ) {
@@ -131,9 +131,9 @@ fun dataDasFolgas(vm:ViewModelTelas, diparaDialogoDatas:()->Unit){
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
             Spacer(Modifier.padding(30.dp))
-            LazyVerticalGrid (columns = GridCells.FixedSize(170.dp),
+            LazyVerticalGrid (columns = GridCells.FixedSize(160.dp),
                               modifier = Modifier.width(500.dp)
-                                                  .height(300.dp),
+                                                  .height(200.dp),
                               horizontalArrangement = Arrangement.spacedBy(3.dp),
                               verticalArrangement = Arrangement.spacedBy(3.dp)) {
 
@@ -342,8 +342,8 @@ fun timePicker(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {}
 
 @Composable
 fun itemDatas(item:DatasFolgas,vm:ViewModelTelas){
-    Card(modifier = Modifier.width(170.dp).height(40.dp)){
-        Box(modifier = Modifier.width(170.dp)){
+    Card(modifier = Modifier.width(160.dp).height(40.dp)){
+        Box(modifier = Modifier.width(160.dp)){
             Text(text = "${
                 if(item.data<10) "0" + item.data.toString()
                else item.data

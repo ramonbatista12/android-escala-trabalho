@@ -1,5 +1,17 @@
 package com.example.escalatrabalho.roomComfigs.repositorio
-
+/*
+* esse arquivo e responsavel por gerenciar todos os repositorios ele contem uma clsse repositorio principal
+* pois ela e quem vai fasilitar o uso dos repositorio
+* escolhi motar os repositorios separados pois asim fica mais facil usar no viewmodel
+* o repositorio principal e quem gerencia todos os repositorios
+* aqui contem os sequintes repositorio
+* principal,
+* repositorioDatasFolgas
+* ,repositorioFeriados,
+* repositorioModeloDeTrabalho
+* ,repositorioHorariosDosAlarmes
+* ,repositorioFerias
+* */
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.roomComfigs.Executad0
 import com.example.escalatrabalho.roomComfigs.Feriados

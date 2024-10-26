@@ -1,6 +1,7 @@
 package com.example.escalatrabalho.views
 
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 
@@ -20,6 +21,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,23 +34,22 @@ import androidx.compose.ui.unit.dp
 import com.example.escalatrabalho.repositoriodeDatas.Datas
 import com.example.escalatrabalho.classesResultados.Resultados
 import com.example.escalatrabalho.viewModel.ViewModelTelas
+import com.example.escalatrabalho.viewModel.visulizacaoDatas
+import kotlinx.coroutines.flow.FlowCollector
 
 @Composable
-fun calendario(m:Modifier,vm:ViewModelTelas){
-    var estado=vm.fluxo.collectAsState(Resultados.caregando())//estado do fluxo que mite uma clsse sealed do Tipo Resultados representando a montagem das datas
+fun calendario(m:Modifier, vm:ViewModelTelas){
+    var estado=vm.fluxoViewCalendario.collectAsState(emptyList())//estado do fluxo que mite uma clsse sealed do Tipo Resultados representando a montagem das datas
+    val scop = rememberCoroutineScope()
+
+
     var colunasDesc = remember { mutableStateOf(listOf("dom","seg","ter","qua","quin","sex","sab")) } //usei esse list para criar o cabesalho dias da semana
     LazyVerticalGrid(columns = GridCells.Fixed(7),modifier=m.fillMaxHeight().width(380.dp)) {
         for (i in colunasDesc.value){
            item{Text(text ="  "+i)}
         }
-        when(val rs =estado.value) {
-        is Resultados.Ok->   items(items = rs.l) { itemCalendario(it) }
-         is Resultados.caregando->{
-             items(30){
-                 CircularProgressIndicator(modifier = Modifier.width(50.dp).height(80.dp))
-             }
-         }
-        is Resultados.erro->{}
+        items(items = estado.value){
+            itrmcalendario2(it)
         }
 
     }
@@ -71,6 +72,19 @@ fun itemCalendario(data: Datas){
     }
 
 }
+@Composable
+fun itrmcalendario2(data:visulizacaoDatas){
+    Box(modifier = Modifier.width(50.dp).height(80.dp)){
+        Text(text = data.dia.toString(),
+            color = Color.Black,
+            modifier = Modifier.align(Alignment.TopCenter)
+                .offset(y=5.dp))
+        Column(modifier=Modifier.align(Alignment.BottomCenter)
+            .offset(y=-5.dp)) {
+            Text(text = data.trabalhado)
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,9 +95,6 @@ fun config(m:Modifier,
            vm: ViewModelTelas){
     var scrollState = rememberScrollState(0)
 Column(modifier = m.fillMaxSize().verticalScroll(state=scrollState)) {
-    Spacer(Modifier.padding(10.dp))
-
-
     val scopo = rememberCoroutineScope()//escopo corotina
     horarioDosAlarmes(vm)//botão horario dos alarmes ao clicar aparesera o alarma
     Spacer(Modifier.padding(3.dp))//espaçamento entre os componentes
