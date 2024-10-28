@@ -52,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -82,9 +83,9 @@ fun telainicial(vm:ViewModelTelas){
 
      Box (modifier=Modifier.fillMaxSize()){
       when(vm.estadosVm.telas.value) {
-          TelaNavegacaoSimples.calendario-> Column(horizontalAlignment = Alignment.CenterHorizontally,modifier = Modifier.offset(x=10.dp).align(Alignment.TopCenter).matchParentSize()) {
+          TelaNavegacaoSimples.calendario-> Column(horizontalAlignment = Alignment.CenterHorizontally,modifier = Modifier.fillMaxSize().align(Alignment.TopCenter).matchParentSize()) {
               Spacer(Modifier.padding(25.dp))
-              Text("   Mes de :${vm.nomeMes}")
+              Text("   ${vm.nomeMes}")
               Spacer(Modifier.padding(3.dp))
               calendario(m=Modifier,vm=vm)
           }

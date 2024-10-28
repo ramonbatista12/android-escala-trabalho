@@ -11,14 +11,14 @@ import androidx.work.WorkManager
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.example.escalatrabalho.applicatio.AplicationCuston
-import com.example.escalatrabalho.roomComfigs.repositorio.RepositorioExecutado
+import com.example.escalatrabalho.repositorio.RepositorioExecutado
 
 val Tag = "AgendarAlarmes"
 
 class AgendarAlarmes(private val c: Context,val p: WorkerParameters):Worker(c,p) {
 
     override  fun doWork(): Result {
-        var repositio =RepositorioExecutado(AplicationCuston.db)
+        var repositio = RepositorioExecutado(AplicationCuston.db.db.dao())
         val i = Intent(AlarmClock.ACTION_SET_ALARM).apply {
             putExtra(AlarmClock.EXTRA_HOUR,22)
             putExtra(AlarmClock.EXTRA_MINUTES, 50)

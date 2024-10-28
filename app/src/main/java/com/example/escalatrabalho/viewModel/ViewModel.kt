@@ -21,15 +21,16 @@ import androidx.work.WorkManager
 import com.example.escalatrabalho.applicatio.AplicationCuston
 import com.example.escalatrabalho.calendarComtrato.Calendario
 import com.example.escalatrabalho.classesResultados.ResultadosDatasFolgas
-import com.example.escalatrabalho.repositoriodeDatas.RepositorioDatas
+import com.example.escalatrabalho.repositorio.repositoriodeDatas.RepositorioDatas
 import com.example.escalatrabalho.classesResultados.Resultados
 import com.example.escalatrabalho.classesResultados.ResultadosSalvarDatasFolgas
-import com.example.escalatrabalho.repositoriodeDatas.SemanaDia
+import com.example.escalatrabalho.repositorio.repositoriodeDatas.SemanaDia
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
 import com.example.escalatrabalho.roomComfigs.ModeloDeEScala
 import com.example.escalatrabalho.roomComfigs.RoomDb
-import com.example.escalatrabalho.roomComfigs.repositorio.RepositorioPrincipal
+import com.example.escalatrabalho.repositorio.RepositorioPrincipal
+import com.example.escalatrabalho.viewModel.modelosParaView.mdcheck
 import com.example.escalatrabalho.views.ResultadosSalvarHora
 import com.example.escalatrabalho.views.TelaNavegacaoSimples
 import com.example.escalatrabalho.worlk.AgendarAlarmes
@@ -37,87 +38,46 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
-class ViewModelTelas(private val db: RoomDb, private val workManager: WorkManager):ViewModel() {
+class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val workManager: WorkManager):ViewModel() {
     var trabalhado = arrayOf("tab","folg","cp")
-    var scopo =viewModelScope
+    var scopo =viewModelScope//escopo de corotina
     var estadosVm =EstadosAuxVm()//os estados estao emcapisulsulados por essa classe
-    val reposisitorioDatas =RepositorioDatas()//e a clasee responsavel por criar as datas mostradas no calendario
-    val nomeMes=reposisitorioDatas.getMes()//pega o nome do mes
-    val repositoriGeral = RepositorioPrincipal(db)//e a classe responsavel por gerenciar todos os repositorios
-    val fluxoDatasFolgas = repositoriGeral.repositorioDatas.select(reposisitorioDatas.mes,reposisitorioDatas.ano).map {
+    val fluxoDatasFolgas = repositorio.fluxoDatasFolgas.map {
         ResultadosDatasFolgas.ok(it)
     }//responsavel por emitir o fluxo das datas ds folgas
-    val estadosModeloTrabalho1236= repositoriGeral.repositorioModeloDeTrabalho.select("12/36").map {
-        if(it.isEmpty())mdcheck(id = 1  ,false)
-        else mdcheck(it.get(0).id,it.get(0).check)
-    }//responsavel por emitir o fluxo com check value do modelo de trabalho 12/36
-    val estadosModeloDeTrabalho61=repositoriGeral.repositorioModeloDeTrabalho.select("6/1").map {
-        if(it.isEmpty())mdcheck(2,false)
-        else mdcheck(it.get(0).id,it.get(0).check)
-    }//responsavel por emitir o fluxo com check value do modelo de trabalho 6/1
-    val estadoModloTrabalhoSegsext=repositoriGeral.repositorioModeloDeTrabalho.select("seg-sext").map {
-        if(it.isEmpty())mdcheck(3,false)
-        else mdcheck(it.get(0).id,it.get(0).check)
-    }//responsavel por emitir o fluxo com check value do modelo de trabalho seg-sext
-    val fluxoDatas=reposisitorioDatas.getDatas()//o fluxo que emite as datas do mes
-    val fluxoViewCalendario =
-        combine(fluxoDatas,
-                fluxoDatasFolgas,
-                estadosModeloTrabalho1236,
-                estadosModeloDeTrabalho61,
-                estadoModloTrabalhoSegsext){
-         data,folga,check1236,check61,checkSegsext->
-         val _folga:List<Int> =folga.lista.map {
-             Log.i( "dpurando map folga","${it.data}")
-             it.data;
-         }
-        var l =data.map {
-            Log.e("mapeamento datas","dia : ${it.dia} dia semana :${it.diaSemana}")
-            when {
-
-                check1236.check && !check61.check && !checkSegsext.check -> {
-                    // Bloco de código para (true, false, false)
-                Log.i("depurnado map datas 1236"," dia : ${it.dia} dia semana :${it.diaSemana}")
-                    if(_folga.contains(it.dia.toInt())){
-                       visulizacaoDatas(it.dia.toInt(),trabalhado[1])
-                    }
-                    else {
-                        if(it.dia.toInt()%2==0)  visulizacaoDatas(it.dia.toInt(),trabalhado[2])
-                        else visulizacaoDatas(it.dia.toInt(),trabalhado[0])
-                    }
-                }
-                !check1236.check && check61.check && !checkSegsext.check -> {
-                    // Bloco de código para (false, true, false)
-                    // Bloco de código para (true, false, false)
-                    if(_folga.contains(it.dia.toInt())){
-                        visulizacaoDatas(it.dia.toInt(),trabalhado[1])
-                    }
-                    else {
-
-                      visulizacaoDatas(it.dia.toInt(),trabalhado[0])
-                    }
-                }
-                !check1236.check && !check61.check && checkSegsext.check -> {
-                    // Bloco de código para (false, false, true)
-                    Log.i("depurnado map datas 61"," dia : ${it.dia} dia semana :${it.diaSemana}")
-
-                        if(it.diaSemana==SemanaDia.sabado||it.diaSemana==SemanaDia.doming) visulizacaoDatas(it.dia.toInt(),trabalhado[1])
-                           else visulizacaoDatas(it.dia.toInt(),trabalhado[0])
-
-
-
-                }
-                else->visulizacaoDatas(it.dia.toInt(),trabalhado[0])
-            }
-
-        }
-        l
-    }//fluxo criado com combine me permite checar as outras variaveis para criar o fluxo que vai esiberir no calendario
-
+    val estadosModeloTrabalho1236= repositorio.fluxoModeloDeTrabalho1236.map {
+        mdcheck(it.id,it.check)
+    }.stateIn(
+        scope = scopo,
+        started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+        initialValue = mdcheck(1,false)
+    )//responsavel por emitir o fluxo com check value do modelo de trabalho 12/36
+    val estadosModeloDeTrabalho61=repositorio.fluxoModeloDeTrabalho61.map {
+        mdcheck(it.id,it.check)
+    }.stateIn(
+        scope = scopo,
+        started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+        initialValue = mdcheck(2,false)
+    )//responsavel por emitir o fluxo com check value do modelo de trabalho 6/1
+    val estadoModloTrabalhoSegsext=repositorio.fluxoModeloDeTrabalhoSegsext.map {
+        mdcheck(it.id,it.check)
+    }.stateIn(
+        scope = scopo,
+        started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+        initialValue = mdcheck(3,false)
+    )//responsavel por emitir o fluxo com check value do modelo de trabalho seg-sext
+    val fluxoDatas=repositorio.criarDatas.getDatas()//o fluxo que emite as datas do mes
+    val fluxoViewCalendario =repositorio.fluxoDatasTrabalhado.stateIn(
+        scope = scopo,
+        started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )//fluxo criado com combine me permite checar as outras variaveis para criar o fluxo que vai esiberir no calendario
+   val nomeMes=repositorio.nomeDomes// nome do mes
 
     init {
       scopo.launch(context =  Dispatchers.IO) {  // joga o agendamento para trhead de defaut usada para cauculos pesados
@@ -132,34 +92,21 @@ class ViewModelTelas(private val db: RoomDb, private val workManager: WorkManage
     //sao responsaveis por inserir e deletar as datas de folgas
     fun inserirDatasFolgas(datasFolgas: DatasFolgas){
         scopo.launch(context = Dispatchers.IO) {
-
-            repositoriGeral.repositorioDatas.insert(datasFolgas)
-        }
-    }//vai enserir as datas atraves do metodo inserte criado pelo room
+            repositorio.inserirDatasdefolgas(datasFolgas)
+           }
+    }
     fun deletarDatasFolgas(datasFolgas: DatasFolgas){
         scopo.launch(context = Dispatchers.IO) {
-            repositoriGeral.repositorioDatas.delete(datasFolgas)
+            repositorio.apargarDataDasFolgas(datasFolgas)
         }
-
-    }//responsavel por deletar as datas de folgas
+      }//responsavel por deletar as datas de folgas
 
     //vai enserir as datas atraves do metodo inserte criado pelo room
     fun inserirHorariosDosAlarmes(horariosDosAlarmes: HorioDosAlarmes,calbakSnackbar:suspend (String)->Unit){//vai inserir o horario atraves do metodo inserte criado pelo room
         estadosVm.salvandoHorariosResultados.value=ResultadosSalvarHora.salvando//estado de salvando horario
         scopo.launch(Dispatchers.IO) {
-            val aux =repositoriGeral.repositorioHorariosDosAlarmes.count()
-            if(aux == 0){
-                Log.e("vm inseri horario","entrou no if valor aux $aux")
-                repositoriGeral.repositorioHorariosDosAlarmes.insert(horariosDosAlarmes)
-        }
-            else{
-                val obj =repositoriGeral.repositorioHorariosDosAlarmes.getPrimeiro()
-                Log.e("vm inseri horario","entrou no else valor aux $aux id ${obj.id}")
-                repositoriGeral.repositorioHorariosDosAlarmes.update(HorioDosAlarmes(obj.id,horariosDosAlarmes.hora,horariosDosAlarmes.minuto))
-            }
-
-
-        }.invokeOnCompletion { scopo.launch {
+           repositorio.inserirHorariosDosAlarmes(horariosDosAlarmes)
+         }.invokeOnCompletion { scopo.launch {
             estadosVm.salvandoHorariosResultados.value=ResultadosSalvarHora.comcluido
             calbakSnackbar("Salvo com sucesso")
             delay(1000)
@@ -172,32 +119,22 @@ class ViewModelTelas(private val db: RoomDb, private val workManager: WorkManage
     //vai inserir o modelo de trabalho se estiver vasia se nao vai atualizar
     fun inserirModeloDeTrabalho(modeloDeTrabalho:ModeloDeEScala) {
           scopo.launch(context = Dispatchers.IO) {
-          var count = repositoriGeral.repositorioModeloDeTrabalho.count()//melhor maneira que achei para saber se alista ta vasia
-              Log.e("vm inseri modelo trabalho","valor de count $count")
-             if(count==0){ //quando vasia eu crio e insiro os valores do check
-                 var l =listOf(ModeloDeEScala(1,"12/36",false),ModeloDeEScala(2,"6/1",false),ModeloDeEScala(3,"seg-sext",false))
-                 repositoriGeral.repositorioModeloDeTrabalho.insert(l)
-             }
-              else{//se a lista tiver algun registro eu atualizo o valor do check
-                  Log.e("vm irei mudar o valor","entrou no else")
-                repositoriGeral.repositorioModeloDeTrabalho.update(modeloDeTrabalho)
-
-              }
-
+              repositorio.inserirModeloDeTrabalho(modeloDeTrabalho)
 
           }
 
     }
-
-
-
 }
-data class mdcheck(val id:Int,val check:Boolean)//classe auxiliar que a view vai receber
-data class visulizacaoDatas(val dia:Int,val trabalhado:String)//a view vai sualizar esses dados no calendario
+
+
+
+
+
+
 class EstadosAuxVm(){//classe criada para manter os estados do viewmodel
     var disparaDialogoFerias =mutableStateOf(false)//estado dialog datas de ferias
     var disparaDatass=mutableStateOf(false)//estado dialog datas fiogas
-    var transicaoDatPiker =MutableTransitionState(false)//estado transicao animacao Datapiker selecao hr
+    var transicaoDatPiker =MutableTransitionState(true)//estado transicao animacao Datapiker selecao hr
     var telas=mutableStateOf(TelaNavegacaoSimples.calendario)//estado das telas da navegacao simples
     var transicaoData=MutableTransitionState(false)//estado da transicao anomacao que mostra as datas das folgas
     var transicaoModeloTrabalho= MutableTransitionState(false)//estado transicao Modelo de trabalho
@@ -213,7 +150,7 @@ class Fabricar(){
         //funcao que recebe um objeto do tipo viewmodelProvider.Factory e retorna um objeto do tipo ViewModelTelas
         //que recebe um objeto do tipo RoomDb e um objeto do tipo WorkManager
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return ViewModelTelas(db = bd, workManager = workManager)   as T
+            return ViewModelTelas(repositorio = RepositorioPrincipal( bd), workManager = workManager)   as T
         }
     }
 

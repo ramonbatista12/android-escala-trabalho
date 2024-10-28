@@ -1,9 +1,11 @@
 package com.example.escalatrabalho.views
 
 import android.content.ClipData.Item
+import android.content.res.Resources
 import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,11 +32,13 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -60,7 +64,7 @@ import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
 import com.example.escalatrabalho.roomComfigs.ModeloDeEScala
 import com.example.escalatrabalho.viewModel.ViewModelTelas
-import com.example.escalatrabalho.viewModel.mdcheck
+import com.example.escalatrabalho.viewModel.modelosParaView.mdcheck
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -290,6 +294,7 @@ fun modeloDeescala(vm: ViewModelTelas){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+//minha implementacao de timer piker
 fun timePicker(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {}) {
     val state = rememberTimePickerState(0, 59)
     val scope = rememberCoroutineScope()

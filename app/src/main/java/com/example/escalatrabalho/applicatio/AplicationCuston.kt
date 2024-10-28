@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 class AplicationCuston: Application()  {
     companion object db{
         lateinit var db: RoomDb
+
     }
     override fun onCreate() {
         super.onCreate()

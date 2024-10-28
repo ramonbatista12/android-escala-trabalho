@@ -1,4 +1,4 @@
-package com.example.escalatrabalho.repositoriodeDatas
+package com.example.escalatrabalho.repositorio.repositoriodeDatas
 
 //eu uso a classe calendar para pegar a data selecionada e inserir no banco de dados
 // pois esiste a nessesitade de receber um nuimerro e comverter ele em uma date
@@ -18,7 +18,7 @@ import java.util.Date
 
 class RepositorioDatas {
     private var data = Calendar.getInstance()
-    private val tabelaMeses = listOf("Janeiro","Feverreiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro")
+    private val tabelaMeses = listOf("JANEIRO","FEVERREIRO","MARCO","ABRIL","MAIO","JUNHO","JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO")
     var mes =0
     var ano =0
 
