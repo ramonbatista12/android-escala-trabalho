@@ -13,8 +13,11 @@ package com.example.escalatrabalho.repositorio
 * ,repositorioFerias
 * */
 import android.util.Log
+
 import com.example.escalatrabalho.repositorio.repositoriodeDatas.RepositorioDatas
 import com.example.escalatrabalho.repositorio.repositoriodeDatas.SemanaDia
+import com.example.escalatrabalho.retrofit.CalendarioApi
+import com.example.escalatrabalho.retrofit.CalendarioApiService
 import com.example.escalatrabalho.roomComfigs.Daos
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.roomComfigs.Executad0
@@ -24,120 +27,162 @@ import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
 import com.example.escalatrabalho.roomComfigs.ModeloDeEScala
 import com.example.escalatrabalho.roomComfigs.RoomDb
 import com.example.escalatrabalho.viewModel.modelosParaView.visulizacaoDatas
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 
 //classe repositorioPrincipal responsavel por gerenciar todos os repositorios
-class RepositorioPrincipal(val bd: RoomDb) {
-   private val tabelaFormatacaoDatas = arrayOf("tab","folg","cp")
-   private val repositorioDatas = RepositorioDatasFolgas(bd.dao())
-   private val repositorioFeriados = RepositorioFeriados(bd.dao())
-   private val repositorioModeloDeTrabalho = RepositorioModeloDeTrabalho(bd.dao())
-   private val repositorioHorariosDosAlarmes = RepositorioHorariosDosAlarmes(bd.dao())
-   private val repositorioFerias = RepositorioFerias(bd.dao())
-   private val repositorioExecutado = RepositorioExecutado(bd.dao())
-   val criarDatas = RepositorioDatas()
-   val fluxoDatasFolgas = repositorioDatas.select(criarDatas.mes,criarDatas.ano)
-   val fluxoDasDatas = criarDatas.getDatas()
-   val fluxoModeloDeTrabalho1236 = repositorioModeloDeTrabalho.select("12/36")
-       .map {
-       if(it.isEmpty()) ModeloDeEScala(1,"12/36",false)
-        else it.get(0)
-            }
-   val fluxoModeloDeTrabalho61 = repositorioModeloDeTrabalho.select("6/1")
-       .map {
-       if(it.isEmpty()) ModeloDeEScala(2,"6/1",false)
-       else it.get(0)
-             }
-   val fluxoModeloDeTrabalhoSegsext = repositorioModeloDeTrabalho.select("seg-sext")
-       .map {
-           if(it.isEmpty()) ModeloDeEScala(3,"seg-sext",false)
-           else it.get(0)
-       }
-   val fluxoHorariosDosAlarmes = repositorioHorariosDosAlarmes.select()
-   val nomeDomes = criarDatas.getMes()
+class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
+    val escopo = CoroutineScope(Dispatchers.IO)
+    private val tabelaFormatacaoDatas = arrayOf("tab", "folg", "cp")
+    private val repositorioDatas = RepositorioDatasFolgas(bd.dao())
+    private val repositorioFeriados = RepositorioFeriados(bd.dao())
+    private val repositorioModeloDeTrabalho = RepositorioModeloDeTrabalho(bd.dao())
+    private val repositorioHorariosDosAlarmes = RepositorioHorariosDosAlarmes(bd.dao())
+    private val repositorioFerias = RepositorioFerias(bd.dao())
+    private val repositorioExecutado = RepositorioExecutado(bd.dao())
+    val criarDatas = RepositorioDatas()
+    val fluxoDatasFolgas = repositorioDatas.select(criarDatas.mes, criarDatas.ano)
+    val fluxoDasDatas = criarDatas.getDatas()
+    val fluxoModeloDeTrabalho1236 = repositorioModeloDeTrabalho.select("12/36")
+        .map {
+            if (it.isEmpty()) ModeloDeEScala(1, "12/36", false)
+            else it[0]
+        }
+    val fluxoModeloDeTrabalho61 = repositorioModeloDeTrabalho.select("6/1")
+        .map {
+            if (it.isEmpty()) ModeloDeEScala(2, "6/1", false)
+            else it.get(0)
+        }
+    val fluxoModeloDeTrabalhoSegsext = repositorioModeloDeTrabalho.select("seg-sext")
+        .map {
+            if (it.isEmpty()) ModeloDeEScala(3, "seg-sext", false)
+            else it.get(0)
+        }
+    val fluxoHorariosDosAlarmes = repositorioHorariosDosAlarmes.select()
+    val nomeDomes = criarDatas.getMes()
 
-   val fluxoDatasTrabalhado= combine(
-       fluxoDasDatas,
-       fluxoDatasFolgas,
-       fluxoModeloDeTrabalho1236,
-       fluxoModeloDeTrabalho61,
-       fluxoModeloDeTrabalhoSegsext ){data,folga,check1236,check61,checkSegsext->
-         val _folga:List<Int> =folga.map {
+    val fluxoDatasTrabalhado = combine(
+        fluxoDasDatas,
+        fluxoDatasFolgas,
+        fluxoModeloDeTrabalho1236,
+        fluxoModeloDeTrabalho61,
+        fluxoModeloDeTrabalhoSegsext
+    ) { data, folga, check1236, check61, checkSegsext ->
+        val _folga: List<Int> = folga.map {
 
-           it.data;
-          }
-          var l =data.map {
+            it.data;
+        }
+        var l = data.map {
 
-                  when {
-                      // Bloco de código para (true, false, false)
-                      check1236.check && !check61.check && !checkSegsext.check -> {
-                      if(_folga.contains(it.dia.toInt())){
-                      visulizacaoDatas(it.dia.toInt(),tabelaFormatacaoDatas[1])
-                           }
-                      else {
-                       if(it.dia.toInt()%2==0)  visulizacaoDatas(it.dia.toInt(),tabelaFormatacaoDatas[2])
-                       else visulizacaoDatas(it.dia.toInt(),tabelaFormatacaoDatas[0])
-                           }
-               }
-                //bloco para false,true,false
-               !check1236.check && check61.check && !checkSegsext.check -> {
-
-                   if(_folga.contains(it.dia.toInt())){
-                       visulizacaoDatas(it.dia.toInt(),tabelaFormatacaoDatas[1])
-                   }
-                   else {
-
-                       visulizacaoDatas(it.dia.toInt(),tabelaFormatacaoDatas[0])
-                   }
-               }
-               // Bloco de código para (false, false, true)
-               !check1236.check && !check61.check && checkSegsext.check -> {
-                if(it.diaSemana== SemanaDia.sabado||it.diaSemana== SemanaDia.doming)
-                                          visulizacaoDatas(it.dia.toInt(),tabelaFormatacaoDatas[1])
-                else visulizacaoDatas(it.dia.toInt(),tabelaFormatacaoDatas[0])
+            when {
+                // Bloco de código para (true, false, false)
+                check1236.check && !check61.check && !checkSegsext.check -> {
+                    if (_folga.contains(it.dia.toInt())) {
+                        visulizacaoDatas(it.dia.toInt(), tabelaFormatacaoDatas[1])
+                    } else {
+                        if (it.dia.toInt() % 2 == 0) visulizacaoDatas(
+                            it.dia.toInt(),
+                            tabelaFormatacaoDatas[2]
+                        )
+                        else visulizacaoDatas(it.dia.toInt(), tabelaFormatacaoDatas[0])
                     }
-               //bloco defaut
-               else-> visulizacaoDatas(it.dia.toInt(),tabelaFormatacaoDatas[0])
-           }
+                }
+                //bloco para false,true,false
+                !check1236.check && check61.check && !checkSegsext.check -> {
 
-       }
-       l
-   }
-    //inserir e apagar datas de folgas
-    suspend fun inserirDatasdefolgas(datasFolgas: DatasFolgas){
-        repositorioDatas.insert(datasFolgas)
-    }
-    suspend fun apargarDataDasFolgas(datasFolgas: DatasFolgas){
-        repositorioDatas.delete(datasFolgas)
-    }
+                    if (_folga.contains(it.dia.toInt())) {
+                        visulizacaoDatas(it.dia.toInt(), tabelaFormatacaoDatas[1])
+                    } else {
 
-    //inserir horario dos alarmes
-    suspend fun inserirHorariosDosAlarmes(horariosDosAlarmes: HorioDosAlarmes){
-        val aux =repositorioHorariosDosAlarmes.count()
-        if(aux == 0){
-            repositorioHorariosDosAlarmes.insert(horariosDosAlarmes)
+                        visulizacaoDatas(it.dia.toInt(), tabelaFormatacaoDatas[0])
+                    }
+                }
+                // Bloco de código para (false, false, true)
+                !check1236.check && !check61.check && checkSegsext.check -> {
+                    if (it.diaSemana == SemanaDia.sabado || it.diaSemana == SemanaDia.doming)
+                        visulizacaoDatas(it.dia.toInt(), tabelaFormatacaoDatas[1])
+                    else visulizacaoDatas(it.dia.toInt(), tabelaFormatacaoDatas[0])
+                }
+                //bloco defaut
+                else -> visulizacaoDatas(it.dia.toInt(), tabelaFormatacaoDatas[0])
+            }
+
         }
-        else{
-            val obj =repositorioHorariosDosAlarmes.getPrimeiro()
-            repositorioHorariosDosAlarmes.update(HorioDosAlarmes(obj.id,horariosDosAlarmes.hora,horariosDosAlarmes.minuto))
-        }
-
+        l
     }
 
-    //inserir modelo de trabalho se vasio se nao atualizar
-    suspend fun inserirModeloDeTrabalho(modeloDeTrabalho: ModeloDeEScala){
-        var count = repositorioModeloDeTrabalho.count()//melhor maneira que achei para saber se alista ta vasia
-        if(count==0){ //quando vasia eu crio e insiro os valores do check
-            var l =listOf(ModeloDeEScala(1,"12/36",false),ModeloDeEScala(2,"6/1",false),ModeloDeEScala(3,"seg-sext",false))
-            repositorioModeloDeTrabalho.insert(l)
-        }
-        else{//se a lista tiver algun registro eu atualizo o valor do check
-            repositorioModeloDeTrabalho.update(modeloDeTrabalho)
+    init {
+        escopo.launch {
+            if (repositorioFeriados.contaFeriados() == 0) {
+              try{  val l = datasFeriados.getDatas(2025)
+                l.map {
+                    val split = it.date.split("-")
+                    val ano = split[0].toInt()
+                    val mes = split[1].toInt()
+                    val dia = split[2].toInt()
+                    repositorioFeriados.insert(Feriados(0, dia = dia, mes=mes, ano=ano, it.name))
+                }
+              }catch (e:Exception){
+                  Log.e("erro no repositorio","retrofite falhou ${e.message}")
+              }
+            }
         }
     }
+        //inserir e apagar datas de folgas
+        suspend fun inserirDatasdefolgas(datasFolgas: DatasFolgas) {
+            repositorioDatas.insert(datasFolgas)
+        }
+
+        suspend fun apargarDataDasFolgas(datasFolgas: DatasFolgas) {
+            repositorioDatas.delete(datasFolgas)
+        }
+
+        //inserir horario dos alarmes
+        suspend fun inserirHorariosDosAlarmes(horariosDosAlarmes: HorioDosAlarmes) {
+            val aux = repositorioHorariosDosAlarmes.count()
+            if (aux == 0) {
+                repositorioHorariosDosAlarmes.insert(horariosDosAlarmes)
+            } else {
+                val obj = repositorioHorariosDosAlarmes.getPrimeiro()
+                repositorioHorariosDosAlarmes.update(
+                    HorioDosAlarmes(
+                        obj.id,
+                        horariosDosAlarmes.hora,
+                        horariosDosAlarmes.minuto
+                    )
+                )
+            }
+
+        }
+
+        //inserir modelo de trabalho se vasio se nao atualizar
+        suspend fun inserirModeloDeTrabalho(modeloDeTrabalho: ModeloDeEScala) {
+            var count =
+                repositorioModeloDeTrabalho.count()//melhor maneira que achei para saber se alista ta vasia
+            if (count == 0) { //quando vasia eu crio e insiro os valores do check
+                var l = listOf(
+                    ModeloDeEScala(1, "12/36", false),
+                    ModeloDeEScala(2, "6/1", false),
+                    ModeloDeEScala(3, "seg-sext", false)
+                )
+                repositorioModeloDeTrabalho.insert(l)
+            } else {//se a lista tiver algun registro eu atualizo o valor do check
+                repositorioModeloDeTrabalho.update(modeloDeTrabalho)
+            }
+        }
+
+        suspend fun getDatasFeriados() {
+            val l = datasFeriados.getDatas(2025)
+            l.forEach {
+                Log.e("teste ddatas feriados", "${it.date} ${it.name}")
+            }
+        }
 }
 
 
@@ -155,6 +200,7 @@ class RepositorioFeriados(private val dao: Daos){
      suspend fun insert(feriados: Feriados)=dao.insertFeriados(feriados)
      suspend fun update(feriados: Feriados)=dao.update(feriados)
      suspend fun delete(feriados: Feriados)=dao.delete(feriados)
+     suspend fun contaFeriados()=dao.comtaferiados()
 }
 
 //classe RepositorioModeloDeTrabalho responsavel por gerenciar a tabela ModeloDeEScala

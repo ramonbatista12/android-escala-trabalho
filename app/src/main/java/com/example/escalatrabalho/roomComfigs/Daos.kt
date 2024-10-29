@@ -22,6 +22,8 @@ interface Daos {
     //referem a tabela feriados
     @Query("SELECT * FROM Feriados where mes=:mes")
     fun getFeriados(mes:Int): Flow<List<Feriados>>
+    @Query("SELECT Count(*) FROM Feriados")
+    fun comtaferiados(): Int
     @Insert
     suspend fun insertFeriados(vararg feriados: Feriados)
     @Delete

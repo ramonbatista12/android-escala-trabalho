@@ -53,7 +53,7 @@ fun calendario(m:Modifier, vm:ViewModelTelas){
     var colunasDesc = remember { mutableStateOf(listOf("dom","seg","ter","qua","quin","sex","sab")) } //usei esse list para criar o cabesalho dias da semana
     LazyVerticalGrid(columns = GridCells.Fixed(7),
         horizontalArrangement = Arrangement.spacedBy(1.3.dp),
-        verticalArrangement = Arrangement.spacedBy(1.3.dp),
+        verticalArrangement = Arrangement.spacedBy(1.3 .dp),
         modifier= m.fillMaxHeight()
                    .fillMaxWidth()
 

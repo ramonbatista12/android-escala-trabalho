@@ -8,8 +8,6 @@ package com.example.escalatrabalho.viewModel
 
 
 import android.annotation.SuppressLint
-import android.app.Application
-import android.content.Context
 import android.util.Log
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.runtime.mutableStateOf
@@ -18,30 +16,25 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.example.escalatrabalho.applicatio.AplicationCuston
-import com.example.escalatrabalho.calendarComtrato.Calendario
 import com.example.escalatrabalho.classesResultados.ResultadosDatasFolgas
-import com.example.escalatrabalho.repositorio.repositoriodeDatas.RepositorioDatas
-import com.example.escalatrabalho.classesResultados.Resultados
 import com.example.escalatrabalho.classesResultados.ResultadosSalvarDatasFolgas
-import com.example.escalatrabalho.repositorio.repositoriodeDatas.SemanaDia
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
 import com.example.escalatrabalho.roomComfigs.ModeloDeEScala
 import com.example.escalatrabalho.roomComfigs.RoomDb
 import com.example.escalatrabalho.repositorio.RepositorioPrincipal
+import com.example.escalatrabalho.retrofit.CalendarioApi
+import com.example.escalatrabalho.retrofit.CalendarioApiService
 import com.example.escalatrabalho.viewModel.modelosParaView.mdcheck
 import com.example.escalatrabalho.views.ResultadosSalvarHora
 import com.example.escalatrabalho.views.TelaNavegacaoSimples
 import com.example.escalatrabalho.worlk.AgendarAlarmes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.CoroutineContext
 
 class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val workManager: WorkManager):ViewModel() {
     var trabalhado = arrayOf("tab","folg","cp")
@@ -85,7 +78,13 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
             .addTag("agendamento de alarmes")
         workManager.enqueue(mk.build())
 
-    }
+          scopo.launch( Dispatchers.IO) {
+            try{  delay(3000)
+              repositorio.getDatasFeriados()}catch (e:Exception){
+                  Log.e("erro no repositorio","retrofite falhou ${e.message}")
+              }
+          }
+         }
 
     }
 
@@ -123,6 +122,8 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
 
           }
 
+
+
     }
 }
 
@@ -146,11 +147,11 @@ class EstadosAuxVm(){//classe criada para manter os estados do viewmodel
 
 class Fabricar(){
     // por ser um projeto peque opitei opo nao usar uma libe de gerenciamento de dependencias
-    fun fabricar(bd:RoomDb,workManager: WorkManager)=object : ViewModelProvider.Factory{
+    fun fabricar(bd:RoomDb, calenderios:CalendarioApi, workManager: WorkManager)=object : ViewModelProvider.Factory{
         //funcao que recebe um objeto do tipo viewmodelProvider.Factory e retorna um objeto do tipo ViewModelTelas
         //que recebe um objeto do tipo RoomDb e um objeto do tipo WorkManager
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return ViewModelTelas(repositorio = RepositorioPrincipal( bd), workManager = workManager)   as T
+            return ViewModelTelas(repositorio = RepositorioPrincipal( bd,datasFeriados = calenderios), workManager = workManager)   as T
         }
     }
 
@@ -158,3 +159,13 @@ class Fabricar(){
 
 
 }
+/*
+* class RepositorioPrincipal(val bd: RoomDb, val datasFeriados: CalendarioApiService.CalendarioApi) {
+    // O código do seu repositório
+    suspend fun getDatasFeriados() {
+        val response = datasFeriados.getDatas(2024)
+        // Lide com a resposta
+    }
+}
+
+* */
