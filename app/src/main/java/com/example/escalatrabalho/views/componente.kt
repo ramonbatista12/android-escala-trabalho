@@ -3,6 +3,7 @@ package com.example.escalatrabalho.views
 import android.content.ClipData.Item
 import android.content.res.Resources
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.background
@@ -11,6 +12,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,10 +29,12 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.magnifier
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.ButtonDefaults
@@ -54,6 +59,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
@@ -77,7 +83,8 @@ fun horarioDosAlarmes(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Un
     Text(//texto clicavel que aciona a animacao que mostra o relogio
         text = "Horario dos alarmes",
         modifier = Modifier.align(Alignment.TopStart)
-                           .offset(x = 20.dp).clickable { scope.launch {vm.estadosVm.transicaoDatPiker.targetState = !vm.estadosVm.transicaoDatPiker.currentState  } }
+                           .offset(x = 20.dp)
+                           .clickable { scope.launch {vm.estadosVm.transicaoDatPiker.targetState = !vm.estadosVm.transicaoDatPiker.currentState  } }
     )
     IconButton (//icone que aciona a animacao que mostra o relogio
         onClick = { scope.launch {  vm.estadosVm.transicaoDatPiker.targetState = !vm.estadosVm.transicaoDatPiker.currentState}},
@@ -131,13 +138,22 @@ fun dataDasFolgas(vm:ViewModelTelas, diparaDialogoDatas:()->Unit){
     }
     androidx.compose.animation.AnimatedVisibility(//amimacao que mostra as datas de folgas
         visibleState = vm.estadosVm.transicaoData,
-        modifier = Modifier.align(Alignment.Center).offset(x=20.dp)
+        modifier = Modifier.align(Alignment.BottomCenter)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+        Column(
+               modifier = Modifier.fillMaxWidth()
+
+        ) {
             Spacer(Modifier.padding(30.dp))
             LazyVerticalGrid (columns = GridCells.FixedSize(160.dp),
-                              modifier = Modifier.width(500.dp)
-                                                  .height(200.dp),
+                              modifier = Modifier.fillMaxWidth()
+                                                  .height(200.dp)
+                                                  .clip(RoundedCornerShape(20.dp))
+                                                  .border(width = 0.4.dp,
+                                                          color = Color.Black,
+                                                          shape = RoundedCornerShape(20.dp))
+                                                  .padding(10.dp)
+                                                 ,
                               horizontalArrangement = Arrangement.spacedBy(3.dp),
                               verticalArrangement = Arrangement.spacedBy(3.dp)) {
 
@@ -183,6 +199,7 @@ fun dataDasFolgas(vm:ViewModelTelas, diparaDialogoDatas:()->Unit){
         }
     }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 //responsavel por mostrar as datas de ferias
 //dispara dialogo ferias responsavel por abrir o dialogo de datas de ferias
@@ -212,31 +229,61 @@ fun ferias(stadoTransicao: MutableTransitionState<Boolean>, scope: CoroutineScop
         var switchs0 by remember { mutableStateOf(false) }
 
         Box(Modifier.fillMaxWidth()){
-            Column(modifier = Modifier.align(Alignment.Center)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = if(!switchs0) "Adicionar ferias" else "Ferias  marcadass" )
-                    Spacer(modifier= Modifier.padding(51.dp))
-                    Switch(checked = switchs0,
-                        onCheckedChange = {
-                            scope.launch {
-                                if(!switchs0) diparaDialogoFerias()
-                                switchs0=!switchs0
-                            }
-                        })
-                }
-                if(switchs0) Row(verticalAlignment = Alignment.CenterVertically){
-                    Text("priodo:")
-                    Text("11/12/2024 a")
-                    Text(text = "31/12/2024")
+
+
+
+                    FlowRow(verticalArrangement = Arrangement.Center,
+                            horizontalArrangement = Arrangement.spacedBy(20.dp),
+                            modifier = Modifier.fillMaxWidth()
+                                                .align(Alignment.TopCenter)
+                                                .clip(RoundedCornerShape(20.dp))
+                                                .border(width = 0.4.dp,
+                                                        color = Color.Black,
+                                                        shape = RoundedCornerShape(20.dp))
+                                                .padding(horizontal = 30.dp,
+                                                        vertical = 10.dp)
+                                                .width(280.dp)) {
+                      Column (modifier = Modifier.align(Alignment.CenterVertically)){
+                          Column  {
+                            Text(text = if(!switchs0) " Ferias" else "Ferias " )
+
+                            Switch(checked = switchs0,
+                                onCheckedChange = {
+                                    scope.launch {
+                                        if(!switchs0) diparaDialogoFerias()
+                                        switchs0=!switchs0
+                                    }
+                                })
+                        }}
+                        Spacer(Modifier.padding(20.dp))
+                        if(switchs0) {
+                            val visibilit=MutableTransitionState(switchs0)
+                        AnimatedVisibility(visibleState = visibilit) {
+                            Column {
+                            Column {
+                            Text(text = "Inicio")
+                            itemDatasFerias()
+                                  }
+                            Spacer(Modifier.padding(9.dp))
+                        Column {
+                            Text(text = "Fim")
+                            itemDatasFerias()
+                           }
+                                Spacer(Modifier.padding(10.dp))
+                        }
+                        }
+                        }
+
+                    }
                 }
 
 
             }
         }
     } }
-}
-}
 
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 //responsavel por esibir o melo de escala ex 12/36,6/1,seg-sext
 fun modeloDeescala(vm: ViewModelTelas){
@@ -244,7 +291,8 @@ fun modeloDeescala(vm: ViewModelTelas){
         Text(//texto clicavel que aciona a animacao que mostra o modelo de escala
             text = "Modelo de escala",
             modifier = Modifier.align(Alignment.TopStart)
-                               .offset(x=20.dp).clickable { vm.estadosVm.transicaoModeloTrabalho.targetState = !vm.estadosVm.transicaoModeloTrabalho.currentState })
+                               .offset(x=20.dp)
+                               .clickable { vm.estadosVm.transicaoModeloTrabalho.targetState = !vm.estadosVm.transicaoModeloTrabalho.currentState })
         IconButton(//icone que aciona a animacao que mostra o modelo de escala
             onClick = { vm.estadosVm.transicaoModeloTrabalho.targetState = !vm.estadosVm.transicaoModeloTrabalho.currentState },
             modifier = Modifier.align(Alignment.TopEnd)
@@ -259,34 +307,40 @@ fun modeloDeescala(vm: ViewModelTelas){
 
         androidx.compose.animation.AnimatedVisibility(//animacao que mostra o modelo de escala
             visibleState = vm.estadosVm.transicaoModeloTrabalho,
-            modifier = Modifier.align( Alignment.Center)) {
+            modifier = Modifier.align(Alignment.CenterStart).offset(x=3.dp)) {
             var s1 =vm.estadosModeloTrabalho1236.collectAsState(mdcheck(1,false))
             var s2 =vm.estadosModeloDeTrabalho61.collectAsState(mdcheck(2,false))
             var s3 =vm.estadoModloTrabalhoSegsext.collectAsState(mdcheck(3,false))
-            Column {
+           Column {
                 Spacer(Modifier.padding(30.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
+               FlowRow (horizontalArrangement = Arrangement.spacedBy(20.dp),
+                        modifier=Modifier.clip(RoundedCornerShape(20.dp))
+                                          .border(width = 0.4.dp,
+                                                  color = Color.Black,
+                                                  shape = RoundedCornerShape(20.dp))
+                                          .padding(horizontal = 30.dp,
+                                                   vertical = 10.dp)
+                                          .fillMaxWidth()
+                                         /* .width(280.dp)*/) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally)  {
                     Text("12 / 36")
-                    Spacer(Modifier.padding(40.dp))
                     Switch(checked = s1.value.check, onCheckedChange = {
                         Log.e("switch","${s1.value.check} em onchange")
                         vm.inserirModeloDeTrabalho(ModeloDeEScala(s1.value.id,"12/36",it))
-                    })
+                    },modifier = Modifier.animateContentSize())
                 }
-                Row (verticalAlignment = Alignment.CenterVertically){
+                Column (horizontalAlignment = Alignment.CenterHorizontally){
                     Text(text = "6 / 1")
-                    Spacer(Modifier.padding(50.dp))
                     Switch(checked = s2.value.check , onCheckedChange = {
                         vm.inserirModeloDeTrabalho(ModeloDeEScala(s2.value.id,"6/1",it))
-                    })
+                    },modifier = Modifier.animateContentSize())
                 }
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Column (horizontalAlignment = Alignment.CenterHorizontally){
                     Text(text = "seg - sext")
-                    Spacer(Modifier.padding(30.dp))
                     Switch(checked = s3.value.check, onCheckedChange = {
                         vm.inserirModeloDeTrabalho(ModeloDeEScala(s3.value.id,"seg-sext",it))
-                    })
-                }
+                    },modifier = Modifier.animateContentSize())
+                }}
             }
 
         }   }
@@ -298,7 +352,10 @@ fun modeloDeescala(vm: ViewModelTelas){
 fun timePicker(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {}) {
     val state = rememberTimePickerState(0, 59)
     val scope = rememberCoroutineScope()
-    Column {
+    Column(modifier = Modifier.clip(RoundedCornerShape(20.dp))
+                               .border(width = 0.4.dp,
+                                       color = Color.Black,
+                                       shape = RoundedCornerShape(20.dp))) {
         Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
 
             TextButton (onClick = {
@@ -360,6 +417,20 @@ fun itemDatas(item:DatasFolgas,vm:ViewModelTelas){
                 item.ano
             }", modifier = Modifier.align(Alignment.CenterStart).offset(x=10.dp))
             IconButton(onClick = {vm.deletarDatasFolgas(item)}, modifier = Modifier.align(Alignment.TopEnd)) { Icon(Icons.Default.Delete, contentDescription = "apagar data") }
+
+
+        }
+    }
+
+}
+@Composable
+fun itemDatasFerias(){
+
+
+    Card(modifier = Modifier.width(160.dp).height(40.dp)){
+        Box(modifier = Modifier.width(160.dp)){
+            Text(text = "01/01/2023", modifier = Modifier.align(Alignment.CenterStart).offset(x=10.dp))
+            IconButton(onClick = {/*vm.deletarDatasFolgas(item)*/}, modifier = Modifier.align(Alignment.TopEnd)) { Icon(Icons.Default.Edit, contentDescription = "apagar data") }
 
 
         }

@@ -2,6 +2,7 @@ package com.example.escalatrabalho.views
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.safeGesturesPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
@@ -50,6 +52,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.toLowerCase
@@ -93,7 +96,7 @@ fun telainicial(vm:ViewModelTelas){
               disparaDialogoDatas = {scop.launch {  vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value}},
               disparaDialogoFerias={scop.launch {  vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDatass.value}},
               calbackSnackbar = {it->
-                  hostSnabar.showSnackbar(message = it,duration = SnackbarDuration.Short)
+                 scop.launch { hostSnabar.showSnackbar(message = it,duration = SnackbarDuration.Short)}
                                 }
               ,vm=vm)
       }
@@ -163,7 +166,12 @@ fun  dialogoDatasFerrias(disparar:Boolean,acaoFechar:()->Unit){
 //barra de navegacao responsavel por navegar entre as telas
 fun barraSuperior(vm:ViewModelTelas){
    var escopo = rememberCoroutineScope()//corotina interna
-    NavigationBar(modifier = Modifier.fillMaxWidth().height(50.dp).background(color = Color.Transparent)) {
+    NavigationBar(modifier = Modifier.fillMaxWidth()
+                                     .height(50.dp)
+                                     .background(color = Color.Transparent)
+                                     .clip(RoundedCornerShape(30.dp))
+                                     .border(0.1.dp,color = Color.Transparent, shape = RoundedCornerShape(30.dp))
+        ) {
          // view model.estadosVm.telas.value=TelaNavegacaoSimples.calendario recebe um objeto do tipo do enun ou calendario ou configuracao
         // que representa as posiveis navegacoe simples tive essa ideia pois a vi em um code lab
          NavigationBarItem(//responsavel por navegar  para tela de calendario

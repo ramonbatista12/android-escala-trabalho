@@ -66,6 +66,7 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
         }
     val fluxoHorariosDosAlarmes = repositorioHorariosDosAlarmes.select()
     val nomeDomes = criarDatas.getMes()
+    val fluxoFeriados =repositorioFeriados.get(criarDatas.mes)
 
     val fluxoDatasTrabalhado = combine(
         fluxoDasDatas,
@@ -73,11 +74,10 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
         fluxoModeloDeTrabalho1236,
         fluxoModeloDeTrabalho61,
         fluxoModeloDeTrabalhoSegsext
-    ) { data, folga, check1236, check61, checkSegsext ->
-        val _folga: List<Int> = folga.map {
+    ) {
+      data, folga, check1236, check61, checkSegsext ->
 
-            it.data;
-        }
+        val _folga: List<Int> = folga.map { it.data; }
         var l = data.map {
 
             when {

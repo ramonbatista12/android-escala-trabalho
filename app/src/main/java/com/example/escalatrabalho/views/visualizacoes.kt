@@ -43,10 +43,12 @@ import com.example.escalatrabalho.classesResultados.Resultados
 import com.example.escalatrabalho.viewModel.ViewModelTelas
 import com.example.escalatrabalho.viewModel.modelosParaView.visulizacaoDatas
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.map
 
 @Composable
 fun calendario(m:Modifier, vm:ViewModelTelas){
     var estado=vm.fluxoViewCalendario.collectAsState()//estado do fluxo que mite uma clsse sealed do Tipo Resultados representando a montagem das datas
+    var feriados =vm.fluxoFeriados.map { it.map { it.dia }.toList() }.collectAsState(emptyList())//estado do fluxo que mite uma clsse sealed do Tipo Resultados representando a montagem das datas
     val scop = rememberCoroutineScope()
 
 
@@ -65,7 +67,8 @@ fun calendario(m:Modifier, vm:ViewModelTelas){
 
         }
         items(items = estado.value){
-            itrmcalendario2(it)
+            if(feriados.value.contains(it.dia)) itrmcalendario2(it.copy(trabalhado = "fer\n ${it.trabalhado}"))
+           else itrmcalendario2(it)
         }
 
     }
@@ -96,9 +99,10 @@ fun itemCalendario(data: Datas){
 fun itrmcalendario2(data:visulizacaoDatas){
     Box(modifier = Modifier
         .width(50.dp)
-        .height(80.dp).border(1.3.dp,color = Color.Black)){
+        .height(80.dp)){
         Text(text = data.dia.toString(),
-            color = Color.Black,
+            color = if(data.trabalhado.contains("fer")) Color.Red else Color.Black,
+            textAlign = TextAlign.Center,
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .offset(y = 5.dp))

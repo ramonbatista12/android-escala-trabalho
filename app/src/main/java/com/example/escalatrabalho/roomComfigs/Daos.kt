@@ -12,6 +12,7 @@ interface Daos {
     //referem a tabela folgas
     @Query("SELECT * FROM DatasFolgas where ano=:ano and mes=:mes" )
     fun getDatasFolgas(ano:Int, mes:Int): Flow<List<DatasFolgas>>
+
     @Insert
     suspend fun insertFolgas(vararg datasFolgas: DatasFolgas)
     @Delete
@@ -86,15 +87,7 @@ interface Daos {
     suspend fun update(ferias: Ferias)
 
 
-
-
-
-
-
-
-
-
-
-
-
 }
+
+
+

@@ -71,7 +71,10 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
         initialValue = emptyList()
     )//fluxo criado com combine me permite checar as outras variaveis para criar o fluxo que vai esiberir no calendario
    val nomeMes=repositorio.nomeDomes// nome do mes
-
+   val fluxoFeriados=repositorio.fluxoFeriados
+       .stateIn(scope = scopo
+               ,started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000)
+               ,initialValue = emptyList())
     init {
       scopo.launch(context =  Dispatchers.IO) {  // joga o agendamento para trhead de defaut usada para cauculos pesados
         val mk = PeriodicWorkRequestBuilder<AgendarAlarmes>(10,TimeUnit.MINUTES,5,TimeUnit.MINUTES)
@@ -107,7 +110,7 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
            repositorio.inserirHorariosDosAlarmes(horariosDosAlarmes)
          }.invokeOnCompletion { scopo.launch {
             estadosVm.salvandoHorariosResultados.value=ResultadosSalvarHora.comcluido
-            calbakSnackbar("Salvo com sucesso")
+           scopo.launch {   calbakSnackbar("Salvo com sucesso")}
             delay(1000)
             estadosVm.salvandoHorariosResultados.value=ResultadosSalvarHora.clicavel
 
