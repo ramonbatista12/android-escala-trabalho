@@ -1,5 +1,6 @@
 package com.example.escalatrabalho.views
 
+import android.annotation.SuppressLint
 import android.content.ClipData.Item
 import android.content.res.Resources
 import android.util.Log
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.FlowRow
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -49,6 +51,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerLayoutType
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -64,6 +67,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.escalatrabalho.R
 import com.example.escalatrabalho.classesResultados.ResultadosDatasFolgas
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
@@ -75,10 +80,23 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 //comfiguracao responsavel por mostra otimer piker que agenda o horio dos alarmes
-fun horarioDosAlarmes(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {}){
-    Box(Modifier.fillMaxWidth()) {
+fun horarioDosAlarmes(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {},windowSizeClass: WindowSizeClass){
+    //modtivo do uso de if ele vai selecionar  a fracao de acordo com o tamanho disponivel da janela
+    // eu ainda estou estudando maneiras de faxer melhor  mas por emquanto foi o melhor que comsequi fazer
+    //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
+    // a documetacao diss que ate esse momento o uso de windowsize class e o mais indicado quandose referre a classes que cauculam o tamanho de janelas
+   val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
+             else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.4f
+             else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.3F
+             else 1.0f
+   val altura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
+            else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.8f
+            else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.8F
+            else 1.0f
+     Box(Modifier.fillMaxWidth(largura ).fillMaxHeight(altura)) {
     val scope = rememberCoroutineScope()//corotina interna
     Text(//texto clicavel que aciona a animacao que mostra o relogio
         text = "Horario dos alarmes",
@@ -108,11 +126,23 @@ fun horarioDosAlarmes(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Un
 }
 @Composable
 //responsavel por mostrar as datas de folgas
-fun dataDasFolgas(vm:ViewModelTelas, diparaDialogoDatas:()->Unit){
+fun dataDasFolgas(vm:ViewModelTelas, diparaDialogoDatas:()->Unit,windowSizeClass: WindowSizeClass){
     var fluxo = vm.fluxoDatasFolgas.collectAsState(ResultadosDatasFolgas.caregando())
+    //modtivo do uso de if ele vai selecionar  a fracao de acordo com o tamanho disponivel da janela
+    // eu ainda estou estudando maneiras de faxer melhor  mas por emquanto foi o melhor que comsequi fazer
+    //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
+    // a documetacao diss que ate esse momento o uso de windowsize class e o mais indicado quandose referre a classes que cauculam o tamanho de janelas
+    val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
+              else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.5f
+              else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.3F
+              else 1.0f
+    val altura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
+             else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.4f
+             else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.5F
+             else 1.0f
     var escopo= rememberCoroutineScope()
     val progresoo = remember { mutableStateOf(0f) }
-    Box(modifier = Modifier.fillMaxWidth()) {
+    Box(modifier = Modifier.fillMaxWidth(largura)) {
     val scope = rememberCoroutineScope()//corotina interna
     Text(//texto clicavel que aciona a animacao que mostra as datas de folgas
         text = "DataDasFolgas",
@@ -145,7 +175,7 @@ fun dataDasFolgas(vm:ViewModelTelas, diparaDialogoDatas:()->Unit){
 
         ) {
             Spacer(Modifier.padding(30.dp))
-            LazyVerticalGrid (columns = GridCells.FixedSize(160.dp),
+            LazyVerticalGrid (columns = GridCells.FixedSize(140.dp),
                               modifier = Modifier.fillMaxWidth()
                                                   .height(200.dp)
                                                   .clip(RoundedCornerShape(20.dp))
@@ -204,8 +234,20 @@ fun dataDasFolgas(vm:ViewModelTelas, diparaDialogoDatas:()->Unit){
 //responsavel por mostrar as datas de ferias
 //dispara dialogo ferias responsavel por abrir o dialogo de datas de ferias
 // ela vem do nivel superior pois o dialogo e esibido no  scaffold pai
-fun ferias(stadoTransicao: MutableTransitionState<Boolean>, scope: CoroutineScope, diparaDialogoFerias:()->Unit){
-    Box(modifier= Modifier.fillMaxWidth()){
+fun ferias(stadoTransicao: MutableTransitionState<Boolean>, scope: CoroutineScope, diparaDialogoFerias:()->Unit,windowSizeClass: WindowSizeClass){
+    //modtivo do uso de if ele vai selecionar  a fracao de acordo com o tamanho disponivel da janela
+    // eu ainda estou estudando maneiras de faxer melhor  mas por emquanto foi o melhor que comsequi fazer
+    //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
+    // a documetacao diss que ate esse momento o uso de windowsize class e o mais indicado quandose referre a classes que cauculam o tamanho de janelas
+    val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
+    else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.5f
+    else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.3F
+    else 1.0f
+    val altura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
+    else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.4f
+    else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.5F
+    else 1.0f
+    Box(modifier= Modifier.fillMaxWidth(largura)){
     val scope= rememberCoroutineScope()
     Text(//texto clicavel que aciona a animacao que mostra as datas de ferias
         text = "Ferias", modifier = Modifier.align(Alignment.TopStart)
@@ -286,8 +328,20 @@ fun ferias(stadoTransicao: MutableTransitionState<Boolean>, scope: CoroutineScop
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 //responsavel por esibir o melo de escala ex 12/36,6/1,seg-sext
-fun modeloDeescala(vm: ViewModelTelas){
-    Box(modifier = Modifier.fillMaxWidth()){
+fun modeloDeescala(vm: ViewModelTelas,windowSizeClass: WindowSizeClass){
+    //modtivo do uso de if ele vai selecionar  a fracao de acordo com o tamanho disponivel da janela
+    // eu ainda estou estudando maneiras de faxer melhor  mas por emquanto foi o melhor que comsequi fazer
+    //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
+    // a documetacao diss que ate esse momento o uso de windowsize class e o mais indicado quandose referre a classes que cauculam o tamanho de janelas
+    val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
+              else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.5f
+              else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.3F
+              else 1.0f
+    val altura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
+             else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.4f
+             else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.5F
+             else 1.0f
+    Box(modifier = Modifier.fillMaxWidth(largura)){
         Text(//texto clicavel que aciona a animacao que mostra o modelo de escala
             text = "Modelo de escala",
             modifier = Modifier.align(Alignment.TopStart)
@@ -392,7 +446,8 @@ fun timePicker(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {}
             }
 
             Spacer(Modifier.padding(10.dp))
-            TimePicker(state = state, modifier = Modifier.fillMaxWidth().height(400.dp))
+            TimePicker(state = state, modifier = Modifier.fillMaxWidth().height(400.dp), layoutType = TimePickerLayoutType.Vertical)
+
     }
 
     }
@@ -404,8 +459,8 @@ fun timePicker(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {}
 
 @Composable
 fun itemDatas(item:DatasFolgas,vm:ViewModelTelas){
-    Card(modifier = Modifier.width(160.dp).height(40.dp)){
-        Box(modifier = Modifier.width(160.dp)){
+    Card(modifier = Modifier.width(140.dp).height(40.dp)){
+        Box(modifier = Modifier.width(140.dp)){
             Text(text = "${
                 if(item.data<10) "0" + item.data.toString()
                else item.data
@@ -427,8 +482,8 @@ fun itemDatas(item:DatasFolgas,vm:ViewModelTelas){
 fun itemDatasFerias(){
 
 
-    Card(modifier = Modifier.width(160.dp).height(40.dp)){
-        Box(modifier = Modifier.width(160.dp)){
+    Card(modifier = Modifier.width(140.dp).height(40.dp)){
+        Box(modifier = Modifier.width(140.dp)){
             Text(text = "01/01/2023", modifier = Modifier.align(Alignment.CenterStart).offset(x=10.dp))
             IconButton(onClick = {/*vm.deletarDatasFolgas(item)*/}, modifier = Modifier.align(Alignment.TopEnd)) { Icon(Icons.Default.Edit, contentDescription = "apagar data") }
 

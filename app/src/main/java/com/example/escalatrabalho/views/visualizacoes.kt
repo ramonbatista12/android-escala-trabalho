@@ -38,6 +38,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowHeightSizeClass
+import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.escalatrabalho.repositorio.repositoriodeDatas.Datas
 import com.example.escalatrabalho.classesResultados.Resultados
 import com.example.escalatrabalho.viewModel.ViewModelTelas
@@ -46,18 +49,33 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.map
 
 @Composable
-fun calendario(m:Modifier, vm:ViewModelTelas){
+fun calendario(m:Modifier, vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
     var estado=vm.fluxoViewCalendario.collectAsState()//estado do fluxo que mite uma clsse sealed do Tipo Resultados representando a montagem das datas
     var feriados =vm.fluxoFeriados.map { it.map { it.dia }.toList() }.collectAsState(emptyList())//estado do fluxo que mite uma clsse sealed do Tipo Resultados representando a montagem das datas
     val scop = rememberCoroutineScope()
+    //modtivo do uso de if ele vai selecionar  a fracao de acordo com o tamanho disponivel da janela
+    // eu ainda estou estudando maneiras de faxer melhor  mas por emquanto foi o melhor que comsequi fazer
+    //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
+    // a documetacao diss que ate esse momento o uso de windowsize class e o mais indicado quandose referre a classes que cauculam o tamanho de janelas
+    val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
+              else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 1.0f
+              else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.3F
+              else 1.0f
+    val altura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
+             else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.5f
+             else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.8F
+             else 1.0f
 
-
-    var colunasDesc = remember { mutableStateOf(listOf("dom","seg","ter","qua","quin","sex","sab")) } //usei esse list para criar o cabesalho dias da semana
+    var colunasDesc = remember {
+        if(windowSizeClass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT)
+            mutableStateOf(listOf("dm","sg","tr","qa","qi","sx","sb"))
+           else mutableStateOf(listOf("dom","seg","ter","qua","quin","sex","sab"))
+    } //usei esse list para criar o cabesalho dias da semana
     LazyVerticalGrid(columns = GridCells.Fixed(7),
         horizontalArrangement = Arrangement.spacedBy(1.3.dp),
         verticalArrangement = Arrangement.spacedBy(1.3 .dp),
-        modifier= m.fillMaxHeight()
-                   .fillMaxWidth()
+        modifier= m.fillMaxHeight(altura)
+                   .fillMaxWidth(largura)
 
     ) {
         items(items = colunasDesc.value, span ={ GridItemSpan(1) } )
@@ -120,19 +138,20 @@ fun config(m:Modifier,
            disparaDialogoDatas: ()->Unit,
            disparaDialogoFerias:()->Unit,
            calbackSnackbar:suspend (String) -> Unit ,
-           vm: ViewModelTelas){
+           vm: ViewModelTelas,windowSizeClass: WindowSizeClass){
     var scrollState = rememberScrollState(0)
+
 Column(modifier = m
     .fillMaxSize()
     .verticalScroll(state = scrollState)) {
     val scopo = rememberCoroutineScope()//escopo corotina
-    horarioDosAlarmes(vm)//botão horario dos alarmes ao clicar aparesera o alarma
+    horarioDosAlarmes(vm, windowSizeClass = windowSizeClass)//botão horario dos alarmes ao clicar aparesera o alarma
     Spacer(Modifier.padding(3.dp))//espaçamento entre os componentes
-    dataDasFolgas(vm,disparaDialogoDatas)//botão data das folgas ao clicar aparesera a data das folgas
+    dataDasFolgas(vm,disparaDialogoDatas,windowSizeClass)//botão data das folgas ao clicar aparesera a data das folgas
     Spacer(Modifier.padding(3.dp))//espaçamento entre os componentes
-    ferias(vm.estadosVm.transicaoFerias,scopo,disparaDialogoFerias)//botão ferias ao clicar aparesera as ferias
+    ferias(vm.estadosVm.transicaoFerias,scopo,disparaDialogoFerias,windowSizeClass)//botão ferias ao clicar aparesera as ferias
     Spacer(Modifier.padding(8.dp))//espaçamento entre os componentes
-    modeloDeescala(vm)//botão modelo de escala ao clicar aparesera o modelo de escala
+    modeloDeescala(vm,windowSizeClass)//botão modelo de escala ao clicar aparesera o modelo de escala
 }
 }
 

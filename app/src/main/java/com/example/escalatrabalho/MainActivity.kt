@@ -5,10 +5,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowWidthSizeClass
 import androidx.work.WorkManager
 import com.example.escalatrabalho.applicatio.AplicationCuston
 import com.example.escalatrabalho.ui.theme.EscalaTrabalhoTheme
@@ -23,11 +26,17 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             EscalaTrabalhoTheme {
+                val classeDetela = currentWindowAdaptiveInfo().windowSizeClass
 
-
-               telainicial(vm = viewModel(
-                   factory = Fabricar().fabricar(AplicationCuston.db.db,AplicationCuston.endpoint,
-                    WorkManager.getInstance(applicationContext))))
+                    telainicial(
+                        vm = viewModel(
+                            factory = Fabricar().fabricar(
+                                AplicationCuston.db.db, AplicationCuston.endpoint,
+                                WorkManager.getInstance(applicationContext)
+                            )
+                        ),classeDetela
+                    )
+                }
             }
         }
     }
@@ -37,7 +46,7 @@ class MainActivity : ComponentActivity() {
      ,navigationBar:SystemBarStyle = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT,android.graphics.Color.TRANSPARENT)) {}
 
 
-}
+
 
 
     @Composable
