@@ -94,7 +94,47 @@ fun calendario(m:Modifier, vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
 
 
 }
+@Composable
+fun calendarioSmallSmall(m:Modifier, vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
+    var estado=vm.fluxoViewCalendario.collectAsState()//estado do fluxo que mite uma clsse sealed do Tipo Resultados representando a montagem das datas
+    var feriados =vm.fluxoFeriados.map { it.map { it.dia }.toList() }.collectAsState(emptyList())//estado do fluxo que mite uma clsse sealed do Tipo Resultados representando a montagem das datas
+    val scop = rememberCoroutineScope()
+    //modtivo do uso de if ele vai selecionar  a fracao de acordo com o tamanho disponivel da janela
+    // eu ainda estou estudando maneiras de faxer melhor  mas por emquanto foi o melhor que comsequi fazer
+    //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
+    // a documetacao diss que ate esse momento o uso de windowsize class e o mais indicado quandose referre a classes que cauculam o tamanho de janelas
+    val largura =   1.0f
+    val altura = 1.0f
 
+    var colunasDesc = remember {
+        if(windowSizeClass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT)
+            mutableStateOf(listOf("dm","sg","tr","qa","qi","sx","sb"))
+        else mutableStateOf(listOf("dom","seg","ter","qua","quin","sex","sab"))
+    } //usei esse list para criar o cabesalho dias da semana
+    LazyVerticalGrid(columns = GridCells.Fixed(7),
+        horizontalArrangement = Arrangement.spacedBy(1.3.dp),
+        verticalArrangement = Arrangement.spacedBy(1.3 .dp),
+        modifier= m.fillMaxHeight(altura)
+            .fillMaxWidth(largura)
+
+    ) {
+        items(items = colunasDesc.value, span ={ GridItemSpan(1) } )
+        {
+
+            Text(it, textAlign = TextAlign.Center,modifier=Modifier.width(80.dp))
+
+        }
+        items(items = estado.value){
+            if(feriados.value.contains(it.dia)) itrmcalendario2(it.copy(trabalhado = "fer\n ${it.trabalhado}"))
+            else itrmcalendario2(it)
+        }
+
+    }
+
+
+
+
+}
 @Composable
 fun itemCalendario(data: Datas){
     Box(modifier = Modifier
@@ -152,6 +192,7 @@ Column(modifier = m
     ferias(vm.estadosVm.transicaoFerias,scopo,disparaDialogoFerias,windowSizeClass)//botão ferias ao clicar aparesera as ferias
     Spacer(Modifier.padding(8.dp))//espaçamento entre os componentes
     modeloDeescala(vm,windowSizeClass)//botão modelo de escala ao clicar aparesera o modelo de escala
+    Spacer(Modifier.padding(40.dp))
 }
 }
 

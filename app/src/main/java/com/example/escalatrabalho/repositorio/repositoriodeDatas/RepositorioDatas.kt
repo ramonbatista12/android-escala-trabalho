@@ -30,7 +30,7 @@ class RepositorioDatas {
     fun getDatas():Flow <List<Datas>> = flow {
         var list = mutableListOf<Datas>()
 
-        var ultimoDia = data.getActualMaximum(Calendar.DAY_OF_MONTH)
+        var ultimoDia = data.getActualMaximum(Calendar.DAY_OF_MONTH)+1
 
         for (i in 1..ultimoDia) {
             data.roll(Calendar.DAY_OF_MONTH, 1)

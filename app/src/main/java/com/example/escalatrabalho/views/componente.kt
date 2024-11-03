@@ -93,7 +93,7 @@ fun horarioDosAlarmes(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Un
              else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.3F
              else 1.0f
    val altura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
-            else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.8f
+            else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.98f
             else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.8F
             else 1.0f
      Box(Modifier.fillMaxWidth(largura ).fillMaxHeight(altura)) {

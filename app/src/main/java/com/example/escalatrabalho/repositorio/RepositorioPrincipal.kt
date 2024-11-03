@@ -66,7 +66,7 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
         }
     val fluxoHorariosDosAlarmes = repositorioHorariosDosAlarmes.select()
     val nomeDomes = criarDatas.getMes()
-    val fluxoFeriados =repositorioFeriados.get(criarDatas.mes)
+    val fluxoFeriados =repositorioFeriados.get(criarDatas.mes+1)
 
     val fluxoDatasTrabalhado = combine(
         fluxoDasDatas,

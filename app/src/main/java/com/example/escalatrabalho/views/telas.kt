@@ -1,6 +1,7 @@
 package com.example.escalatrabalho.views
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.Orientation
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,14 +36,18 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DateRangePicker
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemColors
+import androidx.compose.material3.PermanentDrawerSheet
+import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -51,6 +57,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberDateRangePickerState
+import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -74,6 +81,9 @@ import com.example.escalatrabalho.R
 import com.example.escalatrabalho.classesResultados.ResultadosSalvarDatasFolgas
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.viewModel.ViewModelTelas
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -94,101 +104,246 @@ fun telainicial(vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
                                .safeDrawingPadding()
                                .safeGesturesPadding(),
               bottomBar = {
-                if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)  barraSuperior(vm =vm)
-                          },
-              snackbarHost = { SnackbarHost(hostState = hostSnabar) },) {
+                                    if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)
+                                                barraSuperior(vm =vm)
+                            },
+              snackbarHost = { SnackbarHost(hostState = hostSnabar) },)
 
-     Box (modifier=Modifier.fillMaxSize()){
-         //modtivo do uso de if ele vai selecionar o layout de acordo com o tamanho disponivel da janela
-         // eu ainda estou estudando maneiras de faxer melhor  mas por emquanto foi o melhor que comsequi fazer
-         //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
-         // a documetacao diss que ate esse momento o uso de windowsize class e o mais indicado quandose referre a classes que cauculam o tamanho de janelas
-         // apesar de ter melhorado a repsonsividade ainda tem casos em que o layout nao se ajusta bem
-         if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)
-                       // maioria dos smartphones
-                                             when(vm.estadosVm.telas.value) {
-                                             TelaNavegacaoSimples.calendario->
-                                                 Column(horizontalAlignment = Alignment.CenterHorizontally,
-                                                        modifier = Modifier.fillMaxSize()
-                                                         .align(Alignment.TopCenter)
-                                                         .matchParentSize()) {
-                                                 Spacer(Modifier.padding(25.dp))
-                                                 Text("   ${vm.nomeMes}")
-                                                 Spacer(Modifier.padding(3.dp))
-                                                 calendario(m=Modifier,vm=vm,windowSizeClass)
-                                             }
-                                             TelaNavegacaoSimples.comfig -> config(m=Modifier.align(Alignment.TopCenter)
-                                                                                              .matchParentSize()
-                                                                                              .padding(horizontal = 2.dp)/*.offset(y=60.dp)*/,
-                                                 disparaDialogoDatas = {scop.launch {  vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value}},
-                                                 disparaDialogoFerias={scop.launch {  vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDatass.value}},
-                                                 calbackSnackbar = {it->
-                                                    scop.launch { hostSnabar.showSnackbar(message = it,duration = SnackbarDuration.Short)}
-                                                                   }
-                                                 ,vm=vm,windowSizeClass)
 
-                                             }
-          else if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED)
-                                  //maioria dos pcs e tablets no modo paisagem
-                                           FlowRow {
-                                              calendario(m=Modifier,vm=vm,windowSizeClass)
-                                                        Spacer(modifier=Modifier.padding(8.dp))
-                                                        horarioDosAlarmes(vm,calbackSnackbar = {it->},windowSizeClass)
-                                                        Spacer(modifier=Modifier.padding(8.dp))
-                                                         Column {
-                                                              ferias(stadoTransicao = vm.estadosVm.transicaoFerias,
-                                                                    scope = scop,
-                                                                    diparaDialogoFerias = {
-                                                                        vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value
-                                                                                           },
-                                                                    windowSizeClass )
-                                                              modeloDeescala(vm = vm,
-                                                                             windowSizeClass = windowSizeClass)
-                                                              dataDasFolgas(vm = vm,
-                                                                           diparaDialogoDatas = {
-                                                                               scop.launch {  vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value}
-                                                                                                } ,
-                                                                           windowSizeClass)
-                                                         }
-
-                                             }
-         else if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM)
-                                //maioria dos tablets no modo retrato
-                                             Column {
-                                                 calendario(m=Modifier,vm=vm,windowSizeClass)
-                                                 FlowRow(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                                     horarioDosAlarmes(vm,calbackSnackbar = {it->},windowSizeClass)
-                                                     Spacer(modifier=Modifier.padding(8.dp))
-                                                     Column  {
-                                                         ferias(stadoTransicao = vm.estadosVm.transicaoFerias,
-                                                             scope = scop,
-                                                             diparaDialogoFerias = {
-                                                                 vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value
-                                                             },
-                                                             windowSizeClass )
-                                                         Spacer(modifier=Modifier.padding(3.dp))
-                                                         modeloDeescala(vm = vm,
-                                                             windowSizeClass = windowSizeClass)
-                                                         Spacer(modifier=Modifier.padding(3.dp))
-                                                         dataDasFolgas(vm = vm,
-                                                             diparaDialogoDatas = {
-                                                                 scop.launch {  vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value}
-                                                             } ,
-                                                             windowSizeClass)
-                                                             }
-                                                         }
-                                             }
+         {          //modtivo do uso de if ele vai selecionar o layout de acordo com o tamanho disponivel da janela
+                                   // eu ainda estou estudando maneiras de faxer melhor  mas por emquanto foi o melhor que comsequi fazer
+                                   //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
+                                   // a documetacao diss que ate esse momento o uso de windowsize class e o mais indicado quandose referre a classes que cauculam o tamanho de janelas
+                                   // apesar de ter melhorado a repsonsividade ainda tem casos em que o layout nao se ajusta bem
+                                   if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)
+                                                 // maioria dos smartphones
+                                                 larguraCompacta(vm = vm, scop = scop, hostSnabar = hostSnabar, windowSizeClass = windowSizeClass, m = Modifier)
+                             else if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED)
+                                                //maioria dos pc no modo paizagem
+                                                larguraExpandida(vm = vm, scop = scop, windowSizeClass = windowSizeClass)
+                             else if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM){
+                                  if (windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.COMPACT) {
+                                               //maioria dos celulares no modo paizagem
+                                                larguraMediaAlturaCompacta(vm = vm, scop = scop, windowSizeClass = windowSizeClass)
+                                                Log.e("texte ","largura media altura compacta")
+                                  }
+                                  else{      //maioria dos tablets no modo retrato
+                                               larguraMedia(vm = vm, scop = scop, windowSizeClass = windowSizeClass)
+                                       }
+                             }
          }
+
+
  dialogoDatasFolgas(disparar = vm.estadosVm.disparaDatass.value, acaoFechar = {vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value},vm = vm)
  dialogoDatasFerrias(disparar =vm.estadosVm.disparaDialogoFerias.value, acaoFechar = {vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value})
 }
 
-}
+@Composable
+ fun larguraCompacta(vm:ViewModelTelas,scop:CoroutineScope,hostSnabar:SnackbarHostState,windowSizeClass: WindowSizeClass,m:Modifier) {
+     LaunchedEffect(Unit) {
+         Log.e("texte ","largura compacta")
+     }
+    Box(modifier = Modifier.fillMaxSize())
+    {
+                     when (vm.estadosVm.telas.value) {
+                                      TelaNavegacaoSimples.calendario ->
+                                                       Column(
+                                                           horizontalAlignment = Alignment.CenterHorizontally,
+                                                           modifier = Modifier.fillMaxSize()
+                                                               .align(Alignment.TopCenter)
+                                                               .matchParentSize()
+                                                       ) {
+                                                           Spacer(Modifier.padding(25.dp))
+                                                           Text("   ${vm.nomeMes}")
+                                                           Spacer(Modifier.padding(3.dp))
+                                                           calendario(m = Modifier, vm = vm, windowSizeClass)
+                                                       }
 
+                                     TelaNavegacaoSimples.comfig ->
+                                                       config(m = Modifier.align(Alignment.TopCenter)
+                                                           .matchParentSize()
+                                                           .padding(horizontal = 2.dp)/*.offset(y=60.dp)*/,
+                                                           disparaDialogoDatas = {
+                                                               scop.launch {
+                                                                   vm.estadosVm.disparaDatass.value = !vm.estadosVm.disparaDatass.value
+                                                               }
+                                                           },
+                                                           disparaDialogoFerias = {
+                                                               scop.launch {
+                                                                   vm.estadosVm.disparaDialogoFerias.value =
+                                                                       !vm.estadosVm.disparaDatass.value
+                                                               }
+                                                           },
+                                                           calbackSnackbar = { it ->
+                                                               scop.launch {
+                                                                   hostSnabar.showSnackbar(
+                                                                       message = it,
+                                                                       duration = SnackbarDuration.Short
+                                                                   )
+                                                               }
+                                                           }, vm = vm, windowSizeClass)
+
+                     }
+    }
+}
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun larguraExpandida(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass){
+        LaunchedEffect(Unit) {
+            Log.e("texte ","largura expandida")
+        }
+    Box (modifier=Modifier.fillMaxSize()){
+                     FlowRow {
+                                    calendario(m=Modifier,vm=vm,windowSizeClass)
+                                    Spacer(modifier=Modifier.padding(8.dp))
+                                    horarioDosAlarmes(vm,calbackSnackbar = {it->},windowSizeClass)
+                                    Spacer(modifier=Modifier.padding(8.dp))
+                                    Column {
+                                                 ferias(stadoTransicao = vm.estadosVm.transicaoFerias,
+                                                     scope = scop,
+                                                     diparaDialogoFerias = {
+                                                         vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value
+                                                     },
+                                                     windowSizeClass )
+                                                 modeloDeescala(vm = vm,
+                                                     windowSizeClass = windowSizeClass)
+                                                 dataDasFolgas(vm = vm,
+                                                     diparaDialogoDatas = {
+                                                         scop.launch {  vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value}
+                                                     } ,
+                                                     windowSizeClass)
+                                           }
+
+                     }
+    }
+}
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+ fun larguraMedia(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass){
+    Box (modifier=Modifier.fillMaxSize()){
+                     Column {
+                                  LaunchedEffect(Unit) {
+                                      Log.e("texte ","lagura media")
+                                  }
+                                  calendario(m=Modifier,vm=vm,windowSizeClass)
+                                  FlowRow(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                                   horarioDosAlarmes(vm,calbackSnackbar = {it->},windowSizeClass)
+                                                   Spacer(modifier=Modifier.padding(8.dp))
+                                                   Column  {
+                                                                ferias(stadoTransicao = vm.estadosVm.transicaoFerias,
+                                                                    scope = scop,
+                                                                    diparaDialogoFerias = {
+                                                                        vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value
+                                                                    },
+                                                                    windowSizeClass )
+                                                                Spacer(modifier=Modifier.padding(3.dp))
+                                                                modeloDeescala(vm = vm,
+                                                                    windowSizeClass = windowSizeClass)
+                                                                Spacer(modifier=Modifier.padding(3.dp))
+                                                                dataDasFolgas(vm = vm,
+                                                                    diparaDialogoDatas = {
+                                                                        scop.launch {  vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value}
+                                                                    } ,
+                                                                    windowSizeClass)
+                                                            }
+                                  }
+                     }
+    }
+}
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+ fun larguraMediaAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass){
+    Box (modifier=Modifier.fillMaxSize()){
+
+                   val drawerState = rememberDrawerState(DrawerValue.Open)
+                   PermanentNavigationDrawer (
+                       drawerContent = {
+                                          // view model.estadosVm.telas.value=TelaNavegacaoSimples.calendario recebe um objeto do tipo do enun ou calendario ou configuracao
+                                          // que representa as posiveis navegacoe simples tive essa ideia pois a vi em um code lab
+                                          Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
+                                                                IconButton(onClick = {
+                                                                                       scop.launch {
+                                                                                           vm.estadosVm.telas.value = TelaNavegacaoSimples.calendario
+                                                                                       }
+                                                                                       }) {
+                                                                                        Icon(
+                                                                                            Icons.Default.DateRange,
+                                                                                            contentDescription = "calendario",
+                                                                                            modifier = Modifier.height(30.dp)
+                                                                                        )
+                                                                                           }
+
+
+                                                                IconButton(onClick = {
+                                                                    scop.launch {
+                                                                        vm.estadosVm.telas.value = TelaNavegacaoSimples.comfig
+                                                                    }
+                                                                                      }){
+                                                                                           //responsavel por navegar para tela de configuracao
+                                                                                          Icon(
+                                                                                              Icons.Default.Settings,
+                                                                                              contentDescription = "configuracao",
+                                                                                              modifier = Modifier.height(30.dp)
+                                                                                          )
+                                                                                         }
+                                          }
+                       }
+                   ) {
+                                  FlowRow {
+
+                                      when (val tela = vm.estadosVm.telas.value) {
+                                          TelaNavegacaoSimples.calendario ->
+                                              calendarioSmallSmall(
+                                              Modifier,
+                                              vm,
+                                              windowSizeClass
+                                                                  )
+
+                                          TelaNavegacaoSimples.comfig -> {
+                                                                   horarioDosAlarmes(vm, calbackSnackbar = { it -> }, windowSizeClass)
+                                                                   Spacer(modifier = Modifier.padding(8.dp))
+                                                                   Column(
+                                                                       modifier = Modifier.scrollable(
+                                                                           state = rememberScrollState(0),
+                                                                           orientation = Orientation.Vertical
+                                                                       )                             )
+                                                                  {
+                                                                                ferias(
+                                                                                    stadoTransicao = vm.estadosVm.transicaoFerias,
+                                                                                    scope = scop,
+                                                                                    diparaDialogoFerias = {
+                                                                                        vm.estadosVm.disparaDialogoFerias.value =
+                                                                                            !vm.estadosVm.disparaDialogoFerias.value
+                                                                                                          },
+                                                                                    windowSizeClass
+                                                                                      )
+                                                                                modeloDeescala(
+                                                                                    vm = vm,
+                                                                                    windowSizeClass = windowSizeClass
+                                                                                               )
+                                                                                dataDasFolgas(
+                                                                                    vm = vm,
+                                                                                    diparaDialogoDatas = {
+                                                                                        scop.launch {
+                                                                                                vm.estadosVm.disparaDatass.value =
+                                                                                                !vm.estadosVm.disparaDatass.value
+                                                                                                     }
+                                                                                                           },
+                                                                                    windowSizeClass
+                                                                                              )
+                                                                   }
+                                                                                }
+                                      }
+
+                                  }
+                       }
+
+    }
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 //dialogo de datas de folgas responsavel por permirtir a selecao das folgas
-fun  dialogoDatasFolgas(disparar:Boolean,acaoFechar:()->Unit,vm:ViewModelTelas){
+fun dialogoDatasFolgas(disparar:Boolean,acaoFechar:()->Unit,vm:ViewModelTelas){
     if(disparar) Surface {
     ModalBottomSheet(onDismissRequest = acaoFechar) {
         var estate = rememberDatePickerState()
@@ -228,7 +383,7 @@ fun  dialogoDatasFolgas(disparar:Boolean,acaoFechar:()->Unit,vm:ViewModelTelas){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 //dialogo de datas de ferias responsavel por permirtir a selecao das ferias
-fun  dialogoDatasFerrias(disparar:Boolean,acaoFechar:()->Unit){
+fun dialogoDatasFerrias(disparar:Boolean,acaoFechar:()->Unit){
     if(disparar) Surface {
         ModalBottomSheet(onDismissRequest = acaoFechar) {  var estate = rememberDateRangePickerState()
             Surface {   Box{
