@@ -28,6 +28,7 @@ import com.example.escalatrabalho.retrofit.CalendarioApiService
 import com.example.escalatrabalho.viewModel.modelosParaView.mdcheck
 import com.example.escalatrabalho.views.ResultadosSalvarHora
 import com.example.escalatrabalho.views.TelaNavegacaoSimples
+import com.example.escalatrabalho.views.TelaNavegacaoSinplesAlturaCompacta
 import com.example.escalatrabalho.worlk.AgendarAlarmes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -140,6 +141,7 @@ class EstadosAuxVm(){//classe criada para manter os estados do viewmodel
     var disparaDatass=mutableStateOf(false)//estado dialog datas fiogas
     var transicaoDatPiker =MutableTransitionState(true)//estado transicao animacao Datapiker selecao hr
     var telas=mutableStateOf(TelaNavegacaoSimples.calendario)//estado das telas da navegacao simples
+    var telasAlturaCompacta=mutableStateOf(TelaNavegacaoSinplesAlturaCompacta.calendario)//estado das telas da navegacao simples
     var transicaoData=MutableTransitionState(false)//estado da transicao anomacao que mostra as datas das folgas
     var transicaoModeloTrabalho= MutableTransitionState(false)//estado transicao Modelo de trabalho
     var transicaoFerias=MutableTransitionState(false) //estado transicao anomacao mostra a parte modelo de trabalho

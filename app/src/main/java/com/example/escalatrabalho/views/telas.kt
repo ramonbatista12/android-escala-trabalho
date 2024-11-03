@@ -186,42 +186,140 @@ fun telainicial(vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
                      }
     }
 }
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun larguraExpandida(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass){
+    PermanentNavigationDrawer(drawerContent = {
+                                       if(windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.COMPACT)
+                                           Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
+                                               IconButton(onClick = {
+                                                   scop.launch {
+                                                       vm.estadosVm.telasAlturaCompacta.value = TelaNavegacaoSinplesAlturaCompacta.relogio
+                                                   }
+                                               }){
+                                                   //responsavel por navegar para tela de configuracao
+                                                   Icon(
+                                                       painterResource(R.drawable.baseline_access_time_24),
+                                                       contentDescription = "relogio",
+                                                       modifier = Modifier.height(30.dp)
+                                                   )
+                                               }
+                                               IconButton(onClick = {
+                                                   scop.launch {
+                                                       vm.estadosVm.telasAlturaCompacta.value = TelaNavegacaoSinplesAlturaCompacta.selecoes
+                                                   }
+                                               }){
+                                                   //responsavel por navegar para tela de configuracao
+                                                   Icon(
+                                                       painterResource(R.drawable.baseline_checklist_24),
+                                                       contentDescription = "selecoes",
+                                                       modifier = Modifier.height(30.dp)
+                                                   )
+                                               }
+                                               IconButton(onClick = {
+                                                   scop.launch {
+                                                       vm.estadosVm.telasAlturaCompacta.value = TelaNavegacaoSinplesAlturaCompacta.datasFolgas
+                                                   }
+                                               }){
+                                                   //responsavel por navegar para tela de configuracao
+                                                   Icon(
+                                                       painterResource(R.drawable.baseline_airline_seat_individual_suite_24),
+                                                       contentDescription = "selecoes",
+                                                       modifier = Modifier.height(30.dp)
+                                                   )
+                                               }
+                                           }
+                                              },
+                               modifier = Modifier.fillMaxSize()){
+    BoxWithConstraints  (modifier=Modifier.fillMaxSize()){
+
         LaunchedEffect(Unit) {
-            Log.e("texte ","largura expandida")
-        }
-    Box (modifier=Modifier.fillMaxSize()){
-                     FlowRow {
+            Log.e("texte ","largura expandida ,${windowSizeClass.windowHeightSizeClass}")}
+            FlowRow {
                                     calendario(m=Modifier,vm=vm,windowSizeClass)
                                     Spacer(modifier=Modifier.padding(8.dp))
-                                    horarioDosAlarmes(vm,calbackSnackbar = {it->},windowSizeClass)
+                                   if (windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.COMPACT){
+                                       painelExpandidoAlturaCompacta(vm,scop,windowSizeClass)
+                                   }
+                                   else{ horarioDosAlarmes(vm,calbackSnackbar = {it->},windowSizeClass)
                                     Spacer(modifier=Modifier.padding(8.dp))
                                     Column {
                                                  ferias(stadoTransicao = vm.estadosVm.transicaoFerias,
                                                      scope = scop,
                                                      diparaDialogoFerias = {
                                                          vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value
-                                                     },
+                                                                            },
                                                      windowSizeClass )
                                                  modeloDeescala(vm = vm,
                                                      windowSizeClass = windowSizeClass)
                                                  dataDasFolgas(vm = vm,
                                                      diparaDialogoDatas = {
                                                          scop.launch {  vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value}
-                                                     } ,
+                                                                           } ,
                                                      windowSizeClass)
                                            }
+                                   }
 
                      }
     }
 }
+}
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass){
+    FlowRow {
+
+        when (val tela = vm.estadosVm.telasAlturaCompacta.value) {
+            TelaNavegacaoSinplesAlturaCompacta.calendario ->{}
+
+
+            TelaNavegacaoSinplesAlturaCompacta.relogio ->
+                timePickerAlturaCompacta(vm =vm ,calbackSnackbar = {it->},windowSizeClass)
+
+            TelaNavegacaoSinplesAlturaCompacta.selecoes->{
+                Spacer(Modifier.padding(3.dp))
+                feriasAlturaCompacta(
+                    stadoTransicao = vm.estadosVm.transicaoFerias,
+                    scope = scop,
+                    diparaDialogoFerias = {
+                        vm.estadosVm.disparaDialogoFerias.value =
+                            !vm.estadosVm.disparaDialogoFerias.value
+                    },
+                    windowSizeClass
+                )
+                Spacer(Modifier.padding(3.dp))
+                modeloDeescalaAlturaCompacta(
+                    vm = vm,
+                    windowSizeClass = windowSizeClass
+                )
+                Spacer(Modifier.padding(3.dp))
+
+            }
+            TelaNavegacaoSinplesAlturaCompacta.datasFolgas->
+                dataDasFolgasAlturaCompacta(
+                    vm = vm,
+                    diparaDialogoDatas = {
+                        scop.launch {
+                            vm.estadosVm.disparaDatass.value =
+                                !vm.estadosVm.disparaDatass.value
+                        }
+                    },
+                    windowSizeClass
+                )
+        }
+
+    }
+}
+
+
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
  fun larguraMedia(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass){
-    Box (modifier=Modifier.fillMaxSize()){
-                     Column {
+    BoxWithConstraints(modifier=Modifier.fillMaxSize().scrollable(state = rememberScrollState(0), orientation = Orientation.Vertical)){
+
+        Column {
                                   LaunchedEffect(Unit) {
                                       Log.e("texte ","lagura media")
                                   }
@@ -263,7 +361,7 @@ fun larguraExpandida(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: Wind
                                           Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
                                                                 IconButton(onClick = {
                                                                                        scop.launch {
-                                                                                           vm.estadosVm.telas.value = TelaNavegacaoSimples.calendario
+                                                                                           vm.estadosVm.telasAlturaCompacta.value = TelaNavegacaoSinplesAlturaCompacta.calendario
                                                                                        }
                                                                                        }) {
                                                                                         Icon(
@@ -276,63 +374,86 @@ fun larguraExpandida(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: Wind
 
                                                                 IconButton(onClick = {
                                                                     scop.launch {
-                                                                        vm.estadosVm.telas.value = TelaNavegacaoSimples.comfig
+                                                                        vm.estadosVm.telasAlturaCompacta.value = TelaNavegacaoSinplesAlturaCompacta.relogio
                                                                     }
                                                                                       }){
                                                                                            //responsavel por navegar para tela de configuracao
                                                                                           Icon(
-                                                                                              Icons.Default.Settings,
-                                                                                              contentDescription = "configuracao",
+                                                                                              painterResource(R.drawable.baseline_access_time_24),
+                                                                                              contentDescription = "relogio",
                                                                                               modifier = Modifier.height(30.dp)
                                                                                           )
                                                                                          }
+                                                                IconButton(onClick = {
+                                                                               scop.launch {
+                                                                                   vm.estadosVm.telasAlturaCompacta.value = TelaNavegacaoSinplesAlturaCompacta.selecoes
+                                                                               }
+                                                                }){
+                                                                    //responsavel por navegar para tela de configuracao
+                                                                                Icon(
+                                                                                    painterResource(R.drawable.baseline_checklist_24),
+                                                                                    contentDescription = "selecoes",
+                                                                                    modifier = Modifier.height(30.dp)
+                                                                                )
+                                                                }
+                                                               IconButton(onClick = {
+                                                                                    scop.launch {
+                                                                                        vm.estadosVm.telasAlturaCompacta.value = TelaNavegacaoSinplesAlturaCompacta.datasFolgas
+                                                                                                 }
+                                                                                    }){
+                                                                                    //responsavel por navegar para tela de configuracao
+                                                                                    Icon(
+                                                                                        painterResource(R.drawable.baseline_airline_seat_individual_suite_24),
+                                                                                        contentDescription = "selecoes",
+                                                                                        modifier = Modifier.height(30.dp)
+                                                                                    )
+                                                                                    }
                                           }
                        }
                    ) {
                                   FlowRow {
 
-                                      when (val tela = vm.estadosVm.telas.value) {
-                                          TelaNavegacaoSimples.calendario ->
+                                      when (val tela = vm.estadosVm.telasAlturaCompacta.value) {
+                                          TelaNavegacaoSinplesAlturaCompacta.calendario ->
                                               calendarioSmallSmall(
                                               Modifier,
                                               vm,
                                               windowSizeClass
                                                                   )
 
-                                          TelaNavegacaoSimples.comfig -> {
-                                                                   horarioDosAlarmes(vm, calbackSnackbar = { it -> }, windowSizeClass)
-                                                                   Spacer(modifier = Modifier.padding(8.dp))
-                                                                   Column(
-                                                                       modifier = Modifier.scrollable(
-                                                                           state = rememberScrollState(0),
-                                                                           orientation = Orientation.Vertical
-                                                                       )                             )
-                                                                  {
-                                                                                ferias(
-                                                                                    stadoTransicao = vm.estadosVm.transicaoFerias,
-                                                                                    scope = scop,
-                                                                                    diparaDialogoFerias = {
-                                                                                        vm.estadosVm.disparaDialogoFerias.value =
-                                                                                            !vm.estadosVm.disparaDialogoFerias.value
-                                                                                                          },
-                                                                                    windowSizeClass
-                                                                                      )
-                                                                                modeloDeescala(
-                                                                                    vm = vm,
-                                                                                    windowSizeClass = windowSizeClass
-                                                                                               )
-                                                                                dataDasFolgas(
-                                                                                    vm = vm,
-                                                                                    diparaDialogoDatas = {
-                                                                                        scop.launch {
-                                                                                                vm.estadosVm.disparaDatass.value =
-                                                                                                !vm.estadosVm.disparaDatass.value
-                                                                                                     }
-                                                                                                           },
-                                                                                    windowSizeClass
-                                                                                              )
-                                                                   }
+                                          TelaNavegacaoSinplesAlturaCompacta.relogio ->
+                                                timePickerAlturaCompacta(vm =vm ,calbackSnackbar = {it->},windowSizeClass)
+
+                                          TelaNavegacaoSinplesAlturaCompacta.selecoes->{
+                                                Spacer(Modifier.padding(3.dp))
+                                                 feriasAlturaCompacta(
+                                                        stadoTransicao = vm.estadosVm.transicaoFerias,
+                                                        scope = scop,
+                                                        diparaDialogoFerias = {
+                                                            vm.estadosVm.disparaDialogoFerias.value =
+                                                                !vm.estadosVm.disparaDialogoFerias.value
+                                                        },
+                                                        windowSizeClass
+                                                        )
+                                              Spacer(Modifier.padding(3.dp))
+                                                 modeloDeescalaAlturaCompacta(
+                                                               vm = vm,
+                                                               windowSizeClass = windowSizeClass
+                                                                )
+                                              Spacer(Modifier.padding(3.dp))
+
+                                          }
+                                          TelaNavegacaoSinplesAlturaCompacta.datasFolgas->
+                                                  dataDasFolgasAlturaCompacta(
+                                                                            vm = vm,
+                                                                            diparaDialogoDatas = {
+                                                                                scop.launch {
+                                                                                    vm.estadosVm.disparaDatass.value =
+                                                                                        !vm.estadosVm.disparaDatass.value
                                                                                 }
+                                                                            },
+                                                                            windowSizeClass
+                                                                            )
                                       }
 
                                   }
