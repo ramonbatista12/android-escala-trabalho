@@ -235,12 +235,12 @@ fun larguraExpandida(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: Wind
     BoxWithConstraints  (modifier=Modifier.fillMaxSize()){
 
         LaunchedEffect(Unit) {
-            Log.e("texte ","largura expandida ,${windowSizeClass.windowHeightSizeClass}")}
+            vm.estadosVm.telasAlturaCompacta.value=TelaNavegacaoSinplesAlturaCompacta.relogio}
             FlowRow {
                                     calendario(m=Modifier,vm=vm,windowSizeClass)
                                     Spacer(modifier=Modifier.padding(8.dp))
                                    if (windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.COMPACT){
-                                       painelExpandidoAlturaCompacta(vm,scop,windowSizeClass)
+                                       Box(modifier = Modifier.fillMaxWidth(0.6f)){ painelExpandidoAlturaCompacta(vm,scop,windowSizeClass)}
                                    }
                                    else{ horarioDosAlarmes(vm,calbackSnackbar = {it->},windowSizeClass)
                                     Spacer(modifier=Modifier.padding(8.dp))

@@ -816,7 +816,66 @@ fun timePickerAlturaCompacta(vm: ViewModelTelas,calbackSnackbar: suspend (String
     }
 
 }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+//minha implementacao de timer piker
+fun timePickerAlturaCompactLarguraEspandida(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {},windowSizeClass: WindowSizeClass) {
+    val state = rememberTimePickerState(0, 59)
+    val scope = rememberCoroutineScope()
+    val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
+    else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 1.0f
+    else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.5F
+    else 1.0f
+    val altura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 0.7f
+    else if (windowSizeClass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) 0.6f
+    else 1.0f
+    val layout = if( windowSizeClass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) TimePickerLayoutType.Horizontal
+    else TimePickerLayoutType.Vertical
+    Column(modifier = Modifier.clip(RoundedCornerShape(20.dp))
+        .border(width = 0.4.dp,
+            color = Color.Black,
+            shape = RoundedCornerShape(20.dp))) {
+        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
 
+            TextButton (onClick = {
+                vm.inserirHorariosDosAlarmes( HorioDosAlarmes(0,state.hour,state.minute),calbakSnackbar = calbackSnackbar)
+            }, modifier = Modifier .animateContentSize().width(190.dp))
+            {
+                when ( vm.estadosVm.salvandoHorariosResultados.value ) {
+                    ResultadosSalvarHora.clicavel -> {
+                        Text(text = "Alterar e Salvar Horio",maxLines = 1)
+                    }
+
+                    ResultadosSalvarHora.comcluido -> {
+                        Text(text = "Salvo")
+                        Spacer(Modifier.padding(3.dp))
+                        Icon(Icons.Default.Check,null,modifier = Modifier)
+                    }
+
+
+
+                    ResultadosSalvarHora.Salvo -> {
+                        Text(text = "Salvo")
+                        Spacer(Modifier.padding(3.dp))
+                        Icon(Icons.Default.Check,null,modifier = Modifier)
+                    }
+                    ResultadosSalvarHora.salvando -> {
+                        Text(text = "Salvando Horario",maxLines = 1)
+                        Spacer(Modifier.padding(3.dp))
+                        CircularProgressIndicator(modifier = Modifier.size(30.dp))
+                    }
+
+                }
+            }
+            Spacer(Modifier.padding(10.dp))
+        }
+
+        Spacer(Modifier.padding(10.dp))
+        TimePicker(state = state, modifier = Modifier.fillMaxWidth(largura), layoutType = layout)
+
+    }
+
+}
 
 
 
