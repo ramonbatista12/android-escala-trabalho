@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
-    <uses-permission android:name="android.permission.WRITE_CALENDAR"/>
-    <uses-permission android:name="android.permission.READ_CALENDAR"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:name=".applicatio.AplicationCuston"
         android:allowBackup="true"
@@ -18,17 +23,40 @@
         android:theme="@style/Theme.EscalaTrabalho"
         tools:targetApi="31">
         <activity
+            android:name=".ActivityAlarrme"
+            android:exported="false"
+            android:label="@string/title_activity_alarrme"
+            android:excludeFromRecents="true"
+            android:taskAffinity="com.example.escalatrabalho.ActivityAlarrme"
+            android:theme="@style/Theme.EscalaTrabalho" />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:windowSoftInputMode="adjustResize"
             android:label="@string/app_name"
-            android:theme="@style/Theme.EscalaTrabalho">
+            android:theme="@style/Theme.EscalaTrabalho"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".alarmemanager.BroadcastRacever"
+            android:exported="false" />
+        <receiver
+            android:name=".serviceAlarme.BroadcastsService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="PARAR" />
+                <action android:name="SONECA" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".serviceAlarme.ServicoAlarme"
+            android:foregroundServiceType="mediaPlayback" />
     </application>
 
 </manifest>

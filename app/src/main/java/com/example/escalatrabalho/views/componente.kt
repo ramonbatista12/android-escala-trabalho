@@ -624,7 +624,29 @@ fun modeloDeescala(vm: ViewModelTelas,windowSizeClass: WindowSizeClass){
                     Switch(checked = s3.value.check, onCheckedChange = {
                         vm.inserirModeloDeTrabalho(ModeloDeEScala(s3.value.id,"seg-sext",it))
                     },modifier = Modifier.animateContentSize())
-                }}
+                }
+               if(s1.value.check){
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "dia-impar")
+                     Switch(checked = true, onCheckedChange = {})
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text = "dia-par")
+                    Switch(checked = true, onCheckedChange = {})
+                }
+               }else if(s3.value.check){
+                   Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                       Text(text = "Sabados")
+                       Switch(checked = true, onCheckedChange = {})
+
+                   }
+                   Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                       Text(text = "Domingos")
+                       Switch(checked = true, onCheckedChange = {})
+                   }
+               }
+
+               }
             }
 
         }   }

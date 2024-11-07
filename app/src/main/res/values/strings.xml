@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Escala trabalho</string>
+    <string name="title_activity_alarrme">ActivityAlarrme</string>
 </resources>

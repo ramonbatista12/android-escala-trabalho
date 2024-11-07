@@ -185,7 +185,7 @@ Column(modifier = m
     .fillMaxSize()
     .verticalScroll(state = scrollState)) {
     val scopo = rememberCoroutineScope()//escopo corotina
-    horarioDosAlarmes(vm, windowSizeClass = windowSizeClass)//botão horario dos alarmes ao clicar aparesera o alarma
+    horarioDosAlarmes(vm,calbackSnackbar, windowSizeClass = windowSizeClass)//botão horario dos alarmes ao clicar aparesera o alarma
     Spacer(Modifier.padding(3.dp))//espaçamento entre os componentes
     dataDasFolgas(vm,disparaDialogoDatas,windowSizeClass)//botão data das folgas ao clicar aparesera a data das folgas
     Spacer(Modifier.padding(3.dp))//espaçamento entre os componentes

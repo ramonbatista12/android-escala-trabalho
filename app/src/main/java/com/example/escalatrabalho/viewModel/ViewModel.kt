@@ -10,6 +10,7 @@ package com.example.escalatrabalho.viewModel
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -38,132 +39,157 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val workManager: WorkManager):ViewModel() {
-    var trabalhado = arrayOf("tab","folg","cp")
-    var scopo =viewModelScope//escopo de corotina
-    var estadosVm =EstadosAuxVm()//os estados estao emcapisulsulados por essa classe
+    var trabalhado = arrayOf("tab", "folg", "cp")
+    var scopo = viewModelScope         //escopo de corotina
+    var estadosVm = EstadosAuxVm()    //os estados estao emcapisulsulados por essa classe
+
+
+    //responsavel por emitir o fluxo das datas ds folgas
     val fluxoDatasFolgas = repositorio.fluxoDatasFolgas.map {
         ResultadosDatasFolgas.ok(it)
-    }//responsavel por emitir o fluxo das datas ds folgas
-    val estadosModeloTrabalho1236= repositorio.fluxoModeloDeTrabalho1236.map {
-        mdcheck(it.id,it.check)
+    }
+    val estadosModeloTrabalho1236 = repositorio.fluxoModeloDeTrabalho1236.map {
+        mdcheck(it.id, it.check)
     }.stateIn(
         scope = scopo,
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
-        initialValue = mdcheck(1,false)
-    )//responsavel por emitir o fluxo com check value do modelo de trabalho 12/36
-    val estadosModeloDeTrabalho61=repositorio.fluxoModeloDeTrabalho61.map {
-        mdcheck(it.id,it.check)
+        initialValue = mdcheck(1, false)
+    )
+
+    //responsavel por emitir o fluxo com check value do modelo de trabalho 12/36
+    val estadosModeloDeTrabalho61 = repositorio.fluxoModeloDeTrabalho61.map {
+        mdcheck(it.id, it.check)
     }.stateIn(
         scope = scopo,
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
-        initialValue = mdcheck(2,false)
+        initialValue = mdcheck(2, false)
     )//responsavel por emitir o fluxo com check value do modelo de trabalho 6/1
-    val estadoModloTrabalhoSegsext=repositorio.fluxoModeloDeTrabalhoSegsext.map {
-        mdcheck(it.id,it.check)
+    val estadoModloTrabalhoSegsext = repositorio.fluxoModeloDeTrabalhoSegsext.map {
+        mdcheck(it.id, it.check)
     }.stateIn(
         scope = scopo,
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
-        initialValue = mdcheck(3,false)
+        initialValue = mdcheck(3, false)
     )//responsavel por emitir o fluxo com check value do modelo de trabalho seg-sext
-    val fluxoDatas=repositorio.criarDatas.getDatas()//o fluxo que emite as datas do mes
-    val fluxoViewCalendario =repositorio.fluxoDatasTrabalhado.stateIn(
+    val fluxoDatas = repositorio.fluxoDasDatas//o fluxo que emite as datas do mes
+    val fluxoViewCalendario = repositorio.fluxoDatasTrabalhado.stateIn(
         scope = scopo,
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
-    )//fluxo criado com combine me permite checar as outras variaveis para criar o fluxo que vai esiberir no calendario
-   val nomeMes=repositorio.nomeDomes// nome do mes
-   val fluxoFeriados=repositorio.fluxoFeriados
-       .stateIn(scope = scopo
-               ,started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000)
-               ,initialValue = emptyList())
-    init {
-      scopo.launch(context =  Dispatchers.IO) {  // joga o agendamento para trhead de defaut usada para cauculos pesados
-        val mk = PeriodicWorkRequestBuilder<AgendarAlarmes>(10,TimeUnit.MINUTES,5,TimeUnit.MINUTES)
-            .addTag("agendamento de alarmes")
-        workManager.enqueue(mk.build())
+    )
 
-          scopo.launch( Dispatchers.IO) {
-            try{  delay(3000)
-              repositorio.getDatasFeriados()}catch (e:Exception){
-                  Log.e("erro no repositorio","retrofite falhou ${e.message}")
-              }
-          }
-         }
+    //fluxo criado com combine me permite checar as outras variaveis para criar o fluxo que vai esiberir no calendario
+    val nomeMes = repositorio.nomeDomes// nome do mes
+    val fluxoFeriados = repositorio.fluxoFeriados
+        .stateIn(
+            scope = scopo,
+            started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+    val hostState = SnackbarHostState()//responsavel por mostrar snackbar)
+
+    init {
+        scopo.launch(context = Dispatchers.IO) {  // joga o agendamento para trhead de defaut usada para cauculos pesados
+            val mk = PeriodicWorkRequestBuilder<AgendarAlarmes>(
+                10,
+                TimeUnit.MINUTES,
+                5,
+                TimeUnit.MINUTES
+            )
+                .addTag("agendamento de alarmes")
+            workManager.enqueue(mk.build())
+
+
+        }
 
     }
+
 
     //sao responsaveis por inserir e deletar as datas de folgas
-    fun inserirDatasFolgas(datasFolgas: DatasFolgas){
+    fun inserirDatasFolgas(datasFolgas: DatasFolgas) {
         scopo.launch(context = Dispatchers.IO) {
             repositorio.inserirDatasdefolgas(datasFolgas)
-           }
-    }
-    fun deletarDatasFolgas(datasFolgas: DatasFolgas){
-        scopo.launch(context = Dispatchers.IO) {
-            repositorio.apargarDataDasFolgas(datasFolgas)
+                                               }     }
+
+        //responsavel por deletar as datas de folgas                                                }
+    fun deletarDatasFolgas(datasFolgas: DatasFolgas) {
+            scopo.launch(context = Dispatchers.IO) {
+                repositorio.apargarDataDasFolgas(datasFolgas)
+                                                    }
+                                                       }
+
+   //vai inserir o horario atraves do metodo inserte criado pelo room
+    fun inserirHorariosDosAlarmes(
+            horariosDosAlarmes: HorioDosAlarmes,
+            calbakSnackbar: suspend (String) -> Unit
+        ) {
+            estadosVm.salvandoHorariosResultados.value =
+                ResultadosSalvarHora.salvando//estado de salvando horario
+            scopo.launch(Dispatchers.IO) {
+                repositorio.inserirHorariosDosAlarmes(horariosDosAlarmes)
+            }
+                .invokeOnCompletion {
+                    scopo.launch {
+                        estadosVm.salvandoHorariosResultados.value = ResultadosSalvarHora.comcluido
+                        calbakSnackbar("Salvo com sucesso")
+                        delay(1000)
+                        estadosVm.salvandoHorariosResultados.value = ResultadosSalvarHora.clicavel
+
+                    }
+                }
         }
-      }//responsavel por deletar as datas de folgas
 
-    //vai enserir as datas atraves do metodo inserte criado pelo room
-    fun inserirHorariosDosAlarmes(horariosDosAlarmes: HorioDosAlarmes,calbakSnackbar:suspend (String)->Unit){//vai inserir o horario atraves do metodo inserte criado pelo room
-        estadosVm.salvandoHorariosResultados.value=ResultadosSalvarHora.salvando//estado de salvando horario
-        scopo.launch(Dispatchers.IO) {
-           repositorio.inserirHorariosDosAlarmes(horariosDosAlarmes)
-         }.invokeOnCompletion { scopo.launch {
-            estadosVm.salvandoHorariosResultados.value=ResultadosSalvarHora.comcluido
-           scopo.launch {   calbakSnackbar("Salvo com sucesso")}
-            delay(1000)
-            estadosVm.salvandoHorariosResultados.value=ResultadosSalvarHora.clicavel
+        @SuppressLint("SuspiciousIndentation")
+        //vai inserir o modelo de trabalho se estiver vasia se nao vai atualizar
+        fun inserirModeloDeTrabalho(modeloDeTrabalho: ModeloDeEScala) {
+            scopo.launch(context = Dispatchers.IO) {
+                repositorio.inserirModeloDeTrabalho(modeloDeTrabalho)
 
-        } }
-    }
-
-    @SuppressLint("SuspiciousIndentation")
-    //vai inserir o modelo de trabalho se estiver vasia se nao vai atualizar
-    fun inserirModeloDeTrabalho(modeloDeTrabalho:ModeloDeEScala) {
-          scopo.launch(context = Dispatchers.IO) {
-              repositorio.inserirModeloDeTrabalho(modeloDeTrabalho)
-
-          }
+            }
+        }
 
 
 
-    }
-}
 
 
-
+}//fim vm
 
 
 
 class EstadosAuxVm(){//classe criada para manter os estados do viewmodel
-    var disparaDialogoFerias =mutableStateOf(false)//estado dialog datas de ferias
-    var disparaDatass=mutableStateOf(false)//estado dialog datas fiogas
-    var transicaoDatPiker =MutableTransitionState(true)//estado transicao animacao Datapiker selecao hr
-    var telas=mutableStateOf(TelaNavegacaoSimples.calendario)//estado das telas da navegacao simples
-    var telasAlturaCompacta=mutableStateOf(TelaNavegacaoSinplesAlturaCompacta.calendario)//estado das telas da navegacao simples
-    var transicaoData=MutableTransitionState(false)//estado da transicao anomacao que mostra as datas das folgas
-    var transicaoModeloTrabalho= MutableTransitionState(false)//estado transicao Modelo de trabalho
-    var transicaoFerias=MutableTransitionState(false) //estado transicao anomacao mostra a parte modelo de trabalho
-    var salvandoHorario= mutableStateOf(false)//estado de salvando horario
-    var salvandoHorariosResultados= mutableStateOf(ResultadosSalvarHora.clicavel)//estado de salvando horarios
-    var resultadosSalvarDatas=mutableStateOf(ResultadosSalvarDatasFolgas.clicavel)//estado de salvando datas de folgasSalvarDatasFolgas)//estado de salvando datas de folgas
+    var disparaDialogoFerias =mutableStateOf(false)                                     //estado dialog datas de ferias
+    var disparaDatass=mutableStateOf(false)                                             //estado dialog datas fiogas
+    var transicaoDatPiker =MutableTransitionState(true)                             //estado transicao animacao Datapiker selecao hr
+    var telas=mutableStateOf(TelaNavegacaoSimples.calendario)                                //estado das telas da navegacao simples
+    var telasAlturaCompacta=mutableStateOf(TelaNavegacaoSinplesAlturaCompacta.calendario)    //estado das telas da navegacao simples
+    var transicaoData=MutableTransitionState(false)                                //estado da transicao anomacao que mostra as datas das folgas
+    var transicaoModeloTrabalho= MutableTransitionState(false)                     //estado transicao Modelo de trabalho
+    var transicaoFerias=MutableTransitionState(false)                              //estado transicao anomacao mostra a parte modelo de trabalho
+    var salvandoHorario= mutableStateOf(false)                                        //estado de salvando horario
+    var salvandoHorariosResultados= mutableStateOf(ResultadosSalvarHora.clicavel)           //estado de salvando horarios
+    var resultadosSalvarDatas=mutableStateOf(ResultadosSalvarDatasFolgas.clicavel)          //estado de salvando datas de folgasSalvarDatasFolgas)//estado de salvando datas de folgas
 }
 
-class Fabricar(){
+class Fabricar() {
     // por ser um projeto peque opitei opo nao usar uma libe de gerenciamento de dependencias
-    fun fabricar(bd:RoomDb, calenderios:CalendarioApi, workManager: WorkManager)=object : ViewModelProvider.Factory{
+    fun fabricar(
+        bd: RoomDb,
+        calenderios: CalendarioApi,
+        workManager: WorkManager
+    ) = object : ViewModelProvider.Factory {
         //funcao que recebe um objeto do tipo viewmodelProvider.Factory e retorna um objeto do tipo ViewModelTelas
         //que recebe um objeto do tipo RoomDb e um objeto do tipo WorkManager
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return ViewModelTelas(repositorio = RepositorioPrincipal( bd,datasFeriados = calenderios), workManager = workManager)   as T
+            return ViewModelTelas(repositorio = RepositorioPrincipal(
+                                  bd = bd,
+                                  datasFeriados = calenderios),
+                                  workManager = workManager) as T
         }
     }
 
 
-
-
 }
+
 /*
 * class RepositorioPrincipal(val bd: RoomDb, val datasFeriados: CalendarioApiService.CalendarioApi) {
     // O código do seu repositório

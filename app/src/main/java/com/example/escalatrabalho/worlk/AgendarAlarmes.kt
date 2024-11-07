@@ -1,5 +1,7 @@
 package com.example.escalatrabalho.worlk
 
+import android.annotation.SuppressLint
+import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -12,25 +14,20 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.example.escalatrabalho.applicatio.AplicationCuston
 import com.example.escalatrabalho.repositorio.RepositorioExecutado
+import com.example.escalatrabalho.alarmemanager.BroadcastRacever
 
 val Tag = "AgendarAlarmes"
 
 class AgendarAlarmes(private val c: Context,val p: WorkerParameters):Worker(c,p) {
 
+    @SuppressLint("ScheduleExactAlarm")
     override  fun doWork(): Result {
         var repositio = RepositorioExecutado(AplicationCuston.db.db.dao())
-        val i = Intent(AlarmClock.ACTION_SET_ALARM).apply {
-            putExtra(AlarmClock.EXTRA_HOUR,22)
-            putExtra(AlarmClock.EXTRA_MINUTES, 50)
-            putExtra(AlarmClock.EXTRA_MESSAGE, "Alarme de trabalho")
-            putExtra(AlarmClock.EXTRA_VIBRATE,true)
-            putExtra(AlarmClock.EXTRA_SKIP_UI, true)
-        }
-
-        Log.i(Tag,"Alarme agendado")
-        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_USER_ACTION )
-      applicationContext.startActivity(i)
-
+         val alarme =c.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+         val intent=Intent(c,BroadcastRacever::class.java)
+         val pendingIntent=PendingIntent.getBroadcast(c,0,intent,PendingIntent.FLAG_IMMUTABLE)
+         val horarios= System.currentTimeMillis()+60*1000
+        alarme.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,horarios,pendingIntent)
         return Result.success()
     }
 

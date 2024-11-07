@@ -49,8 +49,10 @@ interface Daos {
     fun getModeloDeEScala(): Flow<List<ModeloDeEScala>>
     @Query("SELECT COUNT (*) FROM ModeloDeEScala")
     suspend fun count(): Int
-    @Query("SELECT  * FROM ModeloDeEScala where modelo=:colune")
-    fun selectFeriascheck(colune:String): Flow<List<ModeloDeEScala>>
+    @Query("SELECT  * FROM ModeloDeEScala where boolean=1")
+    fun selectModeloDeEscalaAtivo():Flow<ModeloDeEScala?>
+    @Query("SELECT * FROM ModeloDeEScala where modelo=:colune")
+    fun selectFeriascheck(colune:String): Flow<ModeloDeEScala?>
     @Insert
     suspend fun insertModeloDeEScala(vararg modeloDeEScala: ModeloDeEScala)
     @Insert

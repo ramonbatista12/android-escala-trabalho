@@ -33,6 +33,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DateRangePicker
@@ -93,7 +94,7 @@ import java.util.Calendar
 @Composable
 fun telainicial(vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
       val scop = rememberCoroutineScope()
-      val hostSnabar =remember{ SnackbarHostState() }
+
      //seguindo as dicas do google que estudei adicionei os seguites modificadores de nivel superio eles tem tabem referentes de baixo nivel
     // baixo nivel no jetpack compose nao dis respeito a manipulacao direta a memoria ou componentes fisicos de baixo nivel de abstracao
     // mas sim a componentes basicos do jet peck compose como Layout Graficslayer pois o jet peck compose tabem tem um nivel de abistracao
@@ -107,7 +108,7 @@ fun telainicial(vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
                                     if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)
                                                 barraSuperior(vm =vm)
                             },
-              snackbarHost = { SnackbarHost(hostState = hostSnabar) },)
+              snackbarHost = { SnackbarHost(hostState = vm.hostState) },)
 
 
          {          //modtivo do uso de if ele vai selecionar o layout de acordo com o tamanho disponivel da janela
@@ -117,7 +118,7 @@ fun telainicial(vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
                                    // apesar de ter melhorado a repsonsividade ainda tem casos em que o layout nao se ajusta bem
                                    if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)
                                                  // maioria dos smartphones
-                                                 larguraCompacta(vm = vm, scop = scop, hostSnabar = hostSnabar, windowSizeClass = windowSizeClass, m = Modifier)
+                                                 larguraCompacta(vm = vm, scop = scop, windowSizeClass = windowSizeClass, m = Modifier)
                              else if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED)
                                                 //maioria dos pc no modo paizagem
                                                 larguraExpandida(vm = vm, scop = scop, windowSizeClass = windowSizeClass)
@@ -139,7 +140,7 @@ fun telainicial(vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
 }
 
 @Composable
- fun larguraCompacta(vm:ViewModelTelas,scop:CoroutineScope,hostSnabar:SnackbarHostState,windowSizeClass: WindowSizeClass,m:Modifier) {
+ fun larguraCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass,m:Modifier) {
      LaunchedEffect(Unit) {
          Log.e("texte ","largura compacta")
      }
@@ -176,7 +177,7 @@ fun telainicial(vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
                                                            },
                                                            calbackSnackbar = { it ->
                                                                scop.launch {
-                                                                   hostSnabar.showSnackbar(
+                                                                  vm.hostState.showSnackbar(
                                                                        message = it,
                                                                        duration = SnackbarDuration.Short
                                                                    )
@@ -242,7 +243,7 @@ fun larguraExpandida(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: Wind
                                    if (windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.COMPACT){
                                        Box(modifier = Modifier.fillMaxWidth(0.6f)){ painelExpandidoAlturaCompacta(vm,scop,windowSizeClass)}
                                    }
-                                   else{ horarioDosAlarmes(vm,calbackSnackbar = {it->},windowSizeClass)
+                                   else{ horarioDosAlarmes(vm,calbackSnackbar = {it->vm.hostState.showSnackbar(it)},windowSizeClass)
                                     Spacer(modifier=Modifier.padding(8.dp))
                                     Column {
                                                  ferias(stadoTransicao = vm.estadosVm.transicaoFerias,
@@ -275,7 +276,7 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
 
 
             TelaNavegacaoSinplesAlturaCompacta.relogio ->
-                timePickerAlturaCompacta(vm =vm ,calbackSnackbar = {it->},windowSizeClass)
+                timePickerAlturaCompacta(vm =vm ,calbackSnackbar = {vm.hostState.showSnackbar(it)},windowSizeClass)
 
             TelaNavegacaoSinplesAlturaCompacta.selecoes->{
                 Spacer(Modifier.padding(3.dp))
@@ -422,7 +423,7 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
                                                                   )
 
                                           TelaNavegacaoSinplesAlturaCompacta.relogio ->
-                                                timePickerAlturaCompacta(vm =vm ,calbackSnackbar = {it->},windowSizeClass)
+                                                timePickerAlturaCompacta(vm =vm ,calbackSnackbar = {it->vm.hostState.showSnackbar(it)},windowSizeClass)
 
                                           TelaNavegacaoSinplesAlturaCompacta.selecoes->{
                                                 Spacer(Modifier.padding(3.dp))
@@ -546,7 +547,16 @@ fun barraSuperior(vm:ViewModelTelas){
 
     }
 }
-
+@Composable
+fun dialogo61(){
+    AlertDialog(onDismissRequest = { /*TODO*/ },
+        confirmButton = { /*TODO*/ },
+        title = { /*TODO*/ },
+        text = { /*TODO*/ })
+}
+@Composable
+fun dialogo1236(){}
+fun dialogoSegunaAsextas(){}
 @Composable
 @Preview
 fun telaInicial(){

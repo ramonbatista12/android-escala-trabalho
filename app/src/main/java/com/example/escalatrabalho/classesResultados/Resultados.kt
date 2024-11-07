@@ -20,3 +20,14 @@ enum class ResultadosSalvarDatasFolgas{
     clicavel
 
 }
+sealed interface Permicoes{
+    data object  comsedidas: Permicoes
+    data class naocomsedidas(val l: List<String>) : Permicoes
+
+}
+
+sealed interface Requisicaoweb{
+    data object  ok: Requisicaoweb
+    data class  erro(val erro:String): Requisicaoweb
+
+}

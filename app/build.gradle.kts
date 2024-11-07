@@ -73,7 +73,7 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
-    // Kotlin + coroutines
+    // Kotlin + coroutinesw
     implementation("androidx.work:work-runtime:2.9.1")
     implementation("androidx.work:work-runtime-ktx:2.9.1")
     implementation(libs.androidx.ui)

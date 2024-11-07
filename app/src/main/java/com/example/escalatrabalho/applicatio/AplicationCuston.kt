@@ -1,6 +1,7 @@
 package com.example.escalatrabalho.applicatio
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
 import androidx.room.Room
 import com.example.escalatrabalho.retrofit.CalendarioApi
@@ -16,18 +17,24 @@ import kotlinx.coroutines.launch
 class AplicationCuston: Application()  {
 
     companion object db {
-        lateinit var db: RoomDb
+         lateinit var context: Context
+         val db: RoomDb by lazy {
+              Room.databaseBuilder(context,RoomDb::class.java,"datas")
+             .build()
+         }
         val retrofit = CalendarioApiService.getInstanc()
-        val endpoint:CalendarioApi=retrofit.create(CalendarioApi::class.java)
+        val endpoint:CalendarioApi  by lazy {
+            retrofit.create(CalendarioApi::class.java)
+        }
 
     }
 
 
     override fun onCreate() {
         super.onCreate()
-        db.db = Room.databaseBuilder(this,RoomDb::class.java,"datas")
-            .build()
+
         val applicationScope = CoroutineScope(SupervisorJob())
+        db.context = applicationContext
         applicationScope.launch(Dispatchers.IO) {
            db.db.dao().getExecutado()
 
