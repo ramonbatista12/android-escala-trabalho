@@ -649,8 +649,9 @@ fun modeloDeescala(vm: ViewModelTelas,windowSizeClass: WindowSizeClass){
                         })
                 }
                 }else if(modeloSegSex.value.check){
+                    Spacer(Modifier.padding(10.dp))
                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                       Text(text = "sabados")
+                       Text(text = "  sabados")
                        Switch(checked = if(diasOpcionais.value!!.opicional==OpicionalModeloSegSex.Sbados.opcao) true else false, onCheckedChange = {
                            if(it) vm.inserirOpcionalModelo("seg-sext",OpicionalModeloSegSex.Sbados.opcao)
                            else vm.inserirOpcionalModelo("seg-sext",OpicionalModeloSegSex.Vasios.opcao)
@@ -661,6 +662,13 @@ fun modeloDeescala(vm: ViewModelTelas,windowSizeClass: WindowSizeClass){
                        Text(text = "Domingos")
                        Switch(checked =if (diasOpcionais.value!!.opicional==OpicionalModeloSegSex.Domingos.opcao) true else false, onCheckedChange = {
                            if(it) vm.inserirOpcionalModelo("seg-sext",OpicionalModeloSegSex.Domingos.opcao)
+                           else vm.inserirOpcionalModelo("seg-sext",OpicionalModeloSegSex.Vasios.opcao)
+                       })
+                   }
+                   Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                       Text(text = "Feriados")
+                       Switch(checked =if (diasOpcionais.value!!.opicional==OpicionalModeloSegSex.Feriados.opcao) true else false, onCheckedChange = {
+                           if(it) vm.inserirOpcionalModelo("seg-sext",OpicionalModeloSegSex.Feriados.opcao)
                            else vm.inserirOpcionalModelo("seg-sext",OpicionalModeloSegSex.Vasios.opcao)
                        })
                    }

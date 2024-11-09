@@ -106,11 +106,12 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
                                               fluxoDasDatas,
                                               fluxoDatasFolgas,
                                               fluxoModeloDeEscalaAtivo,
+                                              fluxoOpcionais
                                                ){
 
-                   data, folga, modeloAtivo  ->
+                   data, folga, modeloAtivo ,opcional ->
 
-                    val _folga: List<Int> = folga.map { it.data; }
+                    val _folga: List<Int> = folga.map { it.data; }h o
                     var l = data.map {
                                   when(modeloAtivo!!.modelo) {    //checa a string do modelo ativo
                                         "12/36" -> {
@@ -119,6 +120,8 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
                                                                    tabelaFormatacaoDatas[1])
                                                                                    }
                                              else {
+                                                 if(opcional!!.opicional == OpicionalModelo1236.Par.opcao)
+                                                 {
                                                  if (it.dia.toInt() % 2 == 0)
                                                      visulizacaoDatas(it.dia.toInt(),
                                                                       tabelaFormatacaoDatas[2]
@@ -126,7 +129,16 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
                                                  else
                                                      visulizacaoDatas(it.dia.toInt(),
                                                                       tabelaFormatacaoDatas[0])
-                                                  }
+                                                  } else if(opcional.opicional == OpicionalModelo1236.Impar.opcao){
+                                                     if (it.dia.toInt() % 2 != 0)
+                                                         visulizacaoDatas(it.dia.toInt(),
+                                                             tabelaFormatacaoDatas[2]
+                                                         )
+                                                     else
+                                                         visulizacaoDatas(it.dia.toInt(),
+                                                             tabelaFormatacaoDatas[0])
+                                                  } else visulizacaoDatas(it.dia.toInt(),tabelaFormatacaoDatas[0])
+                                             }
                                                      }
 
                                         "6/1"-> {
@@ -142,12 +154,15 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
                                                 }
 
                                         "seg-sext" -> {
+
                                                if (it.diaSemana == SemanaDia.sabado || it.diaSemana == SemanaDia.doming)
-                                                       visulizacaoDatas(it.dia.toInt(),
+                                                   visulizacaoDatas(it.dia.toInt(),
                                                                         tabelaFormatacaoDatas[1])
                                                else visulizacaoDatas(it.dia.toInt(),
                                                                      tabelaFormatacaoDatas[0])
-                                                        }
+
+
+                                        }
 
                                         else -> visulizacaoDatas(it.dia.toInt(),
                                                                  tabelaFormatacaoDatas[0])
@@ -219,7 +234,7 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
                     ModeloDeEScala(1, "12/36", false),
                     ModeloDeEScala(2, "6/1", false),
                     ModeloDeEScala(3, "seg-sext", false))
-                    repositorioModeloDeTrabalho.updatelista(l)
+                    repositorioModeloDeTrabalho.insert(l)
                             }
 
 
