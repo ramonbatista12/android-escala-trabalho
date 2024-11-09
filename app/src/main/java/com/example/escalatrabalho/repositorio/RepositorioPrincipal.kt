@@ -111,7 +111,7 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
 
                    data, folga, modeloAtivo ,opcional ->
 
-                    val _folga: List<Int> = folga.map { it.data; }h o
+                    val _folga: List<Int> = folga.map { it.data; }
                     var l = data.map {
                                   when(modeloAtivo!!.modelo) {    //checa a string do modelo ativo
                                         "12/36" -> {
