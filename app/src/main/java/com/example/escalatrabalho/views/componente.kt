@@ -1,13 +1,10 @@
 package com.example.escalatrabalho.views
 
 import android.annotation.SuppressLint
-import android.content.ClipData.Item
-import android.content.res.Resources
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,7 +18,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,8 +25,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.magnifier
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
@@ -39,19 +33,16 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.TimePickerLayoutType
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -65,21 +56,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
-import com.example.escalatrabalho.R
 import com.example.escalatrabalho.classesResultados.ResultadosDatasFolgas
+import com.example.escalatrabalho.classesResultados.ResultadosSalvarHora
+import com.example.escalatrabalho.repositorio.OpicionaiSealedClassess.OpicionalModelo1236
+import com.example.escalatrabalho.repositorio.OpicionaiSealedClassess.OpicionalModeloSegSex
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
+import com.example.escalatrabalho.roomComfigs.DiasOpcionais
 import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
 import com.example.escalatrabalho.roomComfigs.ModeloDeEScala
 import com.example.escalatrabalho.viewModel.ViewModelTelas
 import com.example.escalatrabalho.viewModel.modelosParaView.mdcheck
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @SuppressLint("SuspiciousIndentation")
@@ -592,9 +583,11 @@ fun modeloDeescala(vm: ViewModelTelas,windowSizeClass: WindowSizeClass){
         androidx.compose.animation.AnimatedVisibility(//animacao que mostra o modelo de escala
             visibleState = vm.estadosVm.transicaoModeloTrabalho,
             modifier = Modifier.align(Alignment.CenterStart).offset(x=3.dp)) {
-            var s1 =vm.estadosModeloTrabalho1236.collectAsState(mdcheck(1,false))
-            var s2 =vm.estadosModeloDeTrabalho61.collectAsState(mdcheck(2,false))
-            var s3 =vm.estadoModloTrabalhoSegsext.collectAsState(mdcheck(3,false))
+            var modelo1236 =vm.estadosModeloTrabalho1236.collectAsState(mdcheck(1,false))
+            var modelo61 =vm.estadosModeloDeTrabalho61.collectAsState(mdcheck(2,false))
+            var modeloSegSex =vm.estadoModloTrabalhoSegsext.collectAsState(mdcheck(3,false))
+            var diasOpcionais = vm.fluxoDiasOpcionais.collectAsState(DiasOpcionais(id=0,"",
+                                                                     OpicionalModelo1236.Vasio.opcao))
            Column {
                 Spacer(Modifier.padding(30.dp))
                FlowRow (horizontalArrangement = Arrangement.spacedBy(20.dp),
@@ -608,41 +601,68 @@ fun modeloDeescala(vm: ViewModelTelas,windowSizeClass: WindowSizeClass){
                                          /* .width(280.dp)*/) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally)  {
                     Text("12 / 36")
-                    Switch(checked = s1.value.check, onCheckedChange = {
-                        Log.e("switch","${s1.value.check} em onchange")
-                        vm.inserirModeloDeTrabalho(ModeloDeEScala(s1.value.id,"12/36",it))
+                    Switch(checked = if(modelo1236.value.check&&
+                                        modelo61.value.check==false&&
+                                        modeloSegSex.value.check==false)true else false, onCheckedChange = {
+                        Log.e("switch","${modelo1236.value.check} em onchange")
+                        vm.inserirModeloDeTrabalho(ModeloDeEScala(modelo1236.value.id,"12/36",it))
                     },modifier = Modifier.animateContentSize())
                 }
                 Column (horizontalAlignment = Alignment.CenterHorizontally){
                     Text(text = "6 / 1")
-                    Switch(checked = s2.value.check , onCheckedChange = {
-                        vm.inserirModeloDeTrabalho(ModeloDeEScala(s2.value.id,"6/1",it))
-                    },modifier = Modifier.animateContentSize())
+                    Switch(checked = if(modelo61.value.check&&
+                                       modelo1236.value.check==false&&
+                                       modeloSegSex.value.check==false) true else false ,
+                        onCheckedChange = {
+                        vm.inserirModeloDeTrabalho(ModeloDeEScala(modelo61.value.id,"6/1",it))
+                                           },
+                        modifier = Modifier.animateContentSize())
                 }
                 Column (horizontalAlignment = Alignment.CenterHorizontally){
                     Text(text = "seg - sext")
-                    Switch(checked = s3.value.check, onCheckedChange = {
-                        vm.inserirModeloDeTrabalho(ModeloDeEScala(s3.value.id,"seg-sext",it))
-                    },modifier = Modifier.animateContentSize())
+                    Switch(checked = if(modeloSegSex.value.check&&
+                                        modelo1236.value.check==false&&
+                                        modelo61.value.check==false) true else false,
+                          onCheckedChange = {
+                        vm.inserirModeloDeTrabalho(ModeloDeEScala(modeloSegSex.value.id,"seg-sext",it))
+                                            },
+                        modifier = Modifier.animateContentSize())
                 }
-               if(s1.value.check){
+               if(modelo1236.value.check){
+
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = "dia-impar")
-                     Switch(checked = true, onCheckedChange = {})
+
+                     Switch(checked =
+                     if (diasOpcionais.value!!.opicional == OpicionalModelo1236.Impar.opcao)
+                            true else false, onCheckedChange = {
+                            if(it) vm.inserirOpcionalModelo("12/36",OpicionalModelo1236.Impar.opcao)
+                            else vm.inserirOpcionalModelo("12/36",OpicionalModelo1236.Vasio.opcao)
+                     })
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = "dia-par")
-                    Switch(checked = true, onCheckedChange = {})
+                    Switch(checked = if(diasOpcionais.value!!.opicional==OpicionalModelo1236.Par.opcao)true else false
+                        , onCheckedChange = {
+                        if(it) vm.inserirOpcionalModelo("12/36",OpicionalModelo1236.Par.opcao)
+                        else  vm.inserirOpcionalModelo("12/36",OpicionalModelo1236.Vasio.opcao)
+                        })
                 }
-               }else if(s3.value.check){
+                }else if(modeloSegSex.value.check){
                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                       Text(text = "Sabados")
-                       Switch(checked = true, onCheckedChange = {})
+                       Text(text = "sabados")
+                       Switch(checked = if(diasOpcionais.value!!.opicional==OpicionalModeloSegSex.Sbados.opcao) true else false, onCheckedChange = {
+                           if(it) vm.inserirOpcionalModelo("seg-sext",OpicionalModeloSegSex.Sbados.opcao)
+                           else vm.inserirOpcionalModelo("seg-sext",OpicionalModeloSegSex.Vasios.opcao)
+                       })
 
                    }
                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                        Text(text = "Domingos")
-                       Switch(checked = true, onCheckedChange = {})
+                       Switch(checked =if (diasOpcionais.value!!.opicional==OpicionalModeloSegSex.Domingos.opcao) true else false, onCheckedChange = {
+                           if(it) vm.inserirOpcionalModelo("seg-sext",OpicionalModeloSegSex.Domingos.opcao)
+                           else vm.inserirOpcionalModelo("seg-sext",OpicionalModeloSegSex.Vasios.opcao)
+                       })
                    }
                }
 

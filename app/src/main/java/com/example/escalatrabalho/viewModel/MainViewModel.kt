@@ -1,5 +1,6 @@
 package com.example.escalatrabalho.viewModel
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -18,24 +19,39 @@ import kotlinx.coroutines.withContext
 
 class MainViewModel(val repositorio :RepositorioPrincipal) : ViewModel() {
     val scop=viewModelScope
-    private val estadoPermicao = MutableStateFlow(false)
-    val _estadoPermicao: SharedFlow<Boolean> = estadoPermicao.stateIn(
+    private val estadoPermicaoNotificacao = MutableStateFlow(false)
+    val _estadoPermicaoNotificacao: SharedFlow<Boolean> = estadoPermicaoNotificacao.stateIn(
         scope = scop,
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
         initialValue = false
     )
-    val dialog = mutableStateOf(if (estadoPermicao.value) false else true)
+    private val permissaoEspecial = MutableStateFlow(false)
+    val _permissaoEspecial: SharedFlow<Boolean> = permissaoEspecial.stateIn(
+        scope = scop,
+        started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+        initialValue = false
+    )
+    val dialogPermissao = mutableStateOf(if (permissaoEspecial.value) false else true)
+    val dialogPermissaoEspecial = mutableStateOf(if (permissaoEspecial.value) false else true)
+    val dialog = mutableStateOf(if (estadoPermicaoNotificacao.value) false else true)
     val datasColetadas =MutableStateFlow(true)
     val _datasColetadas:SharedFlow<Boolean> =datasColetadas.stateIn(
         scope = scop,
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
         initialValue = true
     )
-    fun mudarEstado(it: Boolean) {
-        estadoPermicao.value = it
-        dialog.value = if (estadoPermicao.value) false else true
+    fun mudarEstadoNotificacao(it: Boolean) {
+        Log.i("teste", "mudarEstadoNotificacao: $it")
+        estadoPermicaoNotificacao.value = it
+        dialog.value = if (estadoPermicaoNotificacao.value) false else true
 
 
+    }
+
+    fun mudarEstadoPermicaoEspecial(it: Boolean) {
+        Log.i("teste", "mudarEstadoPermicaoEspecial: $it")
+        permissaoEspecial.value = it
+        dialogPermissaoEspecial.value  = if (permissaoEspecial.value) false else true
     }
 
     fun checarFeriados(){

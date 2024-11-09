@@ -8,7 +8,6 @@ package com.example.escalatrabalho.viewModel
 
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.mutableStateOf
@@ -19,17 +18,19 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.escalatrabalho.classesResultados.ResultadosDatasFolgas
 import com.example.escalatrabalho.classesResultados.ResultadosSalvarDatasFolgas
+import com.example.escalatrabalho.classesResultados.ResultadosSalvarHora
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
 import com.example.escalatrabalho.roomComfigs.ModeloDeEScala
 import com.example.escalatrabalho.roomComfigs.RoomDb
 import com.example.escalatrabalho.repositorio.RepositorioPrincipal
 import com.example.escalatrabalho.retrofit.CalendarioApi
-import com.example.escalatrabalho.retrofit.CalendarioApiService
 import com.example.escalatrabalho.viewModel.modelosParaView.mdcheck
-import com.example.escalatrabalho.views.ResultadosSalvarHora
-import com.example.escalatrabalho.views.TelaNavegacaoSimples
-import com.example.escalatrabalho.views.TelaNavegacaoSinplesAlturaCompacta
+
+import com.example.escalatrabalho.enums.TelaNavegacaoSimples
+import com.example.escalatrabalho.enums.TelaNavegacaoSinplesAlturaCompacta
+import com.example.escalatrabalho.repositorio.OpicionaiSealedClassess.OpicionalModelo1236
+import com.example.escalatrabalho.roomComfigs.DiasOpcionais
 import com.example.escalatrabalho.worlk.AgendarAlarmes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -76,6 +77,11 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
         scope = scopo,
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
+    )
+    val fluxoDiasOpcionais = repositorio.fluxoOpcionais.stateIn(
+        scope = scopo,
+        started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+        initialValue = DiasOpcionais(id=0,"", OpicionalModelo1236.Vasio.opcao)
     )
 
     //fluxo criado com combine me permite checar as outras variaveis para criar o fluxo que vai esiberir no calendario
@@ -148,6 +154,18 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
             }
         }
 
+
+        fun inserirOpcionalModelo(modelo:String,diasOpcionais:String){
+           val opcional =  when(modelo){
+               "12/36"-> DiasOpcionais(1,"12/36",diasOpcionais)
+               "6/1"->  DiasOpcionais(2,"6/1",diasOpcionais)
+               "seg-sext"-> DiasOpcionais(3,"seg-sext",diasOpcionais)
+               else -> DiasOpcionais(0,"", OpicionalModelo1236.Vasio.opcao)
+           }
+            scopo.launch(context = Dispatchers.IO) {
+                repositorio.inserirOpcionais(opcional)
+            }
+        }
 
 
 

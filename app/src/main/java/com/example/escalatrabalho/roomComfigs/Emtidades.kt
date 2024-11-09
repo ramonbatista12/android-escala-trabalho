@@ -24,9 +24,13 @@ data class Executad0(@PrimaryKey(autoGenerate = true) val id:Int,
                      @ColumnInfo(name = "ezecutado") val s:String)
 //entidade responsavel por gerenciar os modelos de Escalas 12/36,6/1,seg-sext
 @Entity
-data class ModeloDeEScala(@PrimaryKey(autoGenerate = true)val id:Int,
+data class ModeloDeEScala(@PrimaryKey(autoGenerate = false)val id:Int,
                           @ColumnInfo(name = "modelo") val modelo:String,
-                           @ColumnInfo(name = "boolean") val check:Boolean,)
+                          @ColumnInfo(name = "boolean") val check:Boolean,)
+@Entity
+data class DiasOpcionais(@PrimaryKey(autoGenerate = false) val id:Int,
+                         @ColumnInfo(name = "modelo")val modelo:String,
+                         @ColumnInfo(name = "Opcional")val opicional:String,)
 //entidade responsavel por gerenciar os horarios dos alarmes
 @Entity
 data class HorioDosAlarmes(@PrimaryKey(autoGenerate = true) val id:Int,

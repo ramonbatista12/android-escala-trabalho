@@ -62,7 +62,24 @@ interface Daos {
     @Update
     suspend fun update(modeloDeEScala: ModeloDeEScala)
     @Update
-    suspend fun update(modeloDeEScala: List<ModeloDeEScala>)
+    suspend fun updateLista(modeloDeEScala: List<ModeloDeEScala>)
+
+    //dias opcionais
+    @Query("select * from DiasOpcionais where  modelo=:modelo")
+    fun getDiasOpcionais(modelo:String): Flow<List<DiasOpcionais>>
+    @Query("select * from DiasOpcionais where  modelo=:modelo")
+    fun getDiaOpcionaisMes(modelo:String): DiasOpcionais?
+    @Query("select COUNT (*) from DiasOpcionais ")
+    suspend fun countDiasOpcionais():Int
+    @Insert
+    suspend fun insertDiasOpcionais(vararg diasOpcionais: DiasOpcionais)
+    @Insert
+    suspend fun inserirListaDeOpcionais(diasOpcionais: List<DiasOpcionais>)
+    @Delete
+    suspend fun delete(diasOpcionais: DiasOpcionais)
+    @Update
+    suspend fun update(diasOpcionais: DiasOpcionais)
+
 
     //horario dos alarmes
     @Query("select * from HorioDosAlarmes")

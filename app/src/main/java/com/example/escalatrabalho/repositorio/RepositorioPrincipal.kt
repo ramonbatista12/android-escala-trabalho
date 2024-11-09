@@ -12,8 +12,10 @@ package com.example.escalatrabalho.repositorio
 * ,repositorioHorariosDosAlarmes
 * ,repositorioFerias
 * */
+import android.annotation.SuppressLint
 import android.util.Log
 import com.example.escalatrabalho.classesResultados.Requisicaoweb
+import com.example.escalatrabalho.repositorio.OpicionaiSealedClassess.OpicionalModelo1236
 
 import com.example.escalatrabalho.repositorio.repositoriodeDatas.RepositorioDatas
 import com.example.escalatrabalho.repositorio.repositoriodeDatas.SemanaDia
@@ -21,6 +23,7 @@ import com.example.escalatrabalho.retrofit.CalendarioApi
 import com.example.escalatrabalho.retrofit.CalendarioApiService
 import com.example.escalatrabalho.roomComfigs.Daos
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
+import com.example.escalatrabalho.roomComfigs.DiasOpcionais
 import com.example.escalatrabalho.roomComfigs.Executad0
 import com.example.escalatrabalho.roomComfigs.Feriados
 import com.example.escalatrabalho.roomComfigs.Ferias
@@ -31,10 +34,15 @@ import com.example.escalatrabalho.viewModel.modelosParaView.visulizacaoDatas
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 //classe repositorioPrincipal responsavel por gerenciar todos os repositorios
@@ -49,7 +57,7 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
     private val repositorioFerias = RepositorioFerias(bd.dao())                         //ferias
     private val repositorioExecutado = RepositorioExecutado(bd.dao())                   // executado
     private val criarDatas = RepositorioDatas()                                         //  instansia da classe que cria as datas
-
+    private val repositorioOpcionais = RepositorioOpcionais(bd.dao())                   //opcionais representam os opicionais exemplo 12/36 podem trabalhar em dias impare ou pares
 
 
               //fluxos que vao ser pasados as view atraves dos view models se ouver
@@ -74,7 +82,27 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
                 if(it==null) ModeloDeEScala(1, "defaut", false)
                 else it
             }        // fluxo com o modelo de trabalho ativo
-            val fluxoDatasTrabalhado = combine(                                                                    // fluxo combinado o repositorio o cria para formatar os dados
+            val fluxoOpcionais=fluxoModeloDeEscalaAtivo.flatMapLatest {
+               flow<DiasOpcionais?>  {
+                  while(true){
+                      if(it==null){
+                    emit(DiasOpcionais(id=0,"",OpicionalModelo1236.Vasio.opcao))
+                   } else{
+                       val aux = withContext(Dispatchers.IO){
+                           repositorioOpcionais.selectDiaOpcional(it.modelo)
+                       }
+                       if(aux==null) emit(DiasOpcionais(id=0,"",OpicionalModelo1236.Vasio.opcao))
+                       else emit(aux)
+
+                   }
+                      delay(1000)
+                  }
+               }
+            }
+
+
+
+             val fluxoDatasTrabalhado = combine(                                                                    // fluxo combinado o repositorio o cria para formatar os dados
                                               fluxoDasDatas,
                                               fluxoDatasFolgas,
                                               fluxoModeloDeEscalaAtivo,
@@ -183,6 +211,7 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
 
 
         //inserir modelo de trabalho se vasio se nao atualizar
+        @SuppressLint("SuspiciousIndentation")
         suspend fun inserirModeloDeTrabalho(modeloDeTrabalho: ModeloDeEScala) {
             var count =repositorioModeloDeTrabalho.count()//melhor maneira que achei para saber se alista ta vasia
             if (count == 0) { //quando vasia eu crio e insiro os valores do check
@@ -190,15 +219,56 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
                     ModeloDeEScala(1, "12/36", false),
                     ModeloDeEScala(2, "6/1", false),
                     ModeloDeEScala(3, "seg-sext", false))
-                    repositorioModeloDeTrabalho.insert(l)
+                    repositorioModeloDeTrabalho.updatelista(l)
                             }
 
-            else
-                repositorioModeloDeTrabalho.update(modeloDeTrabalho) //se a lista tiver algun registro eu atualizo o valor do check
+
+                 when{
+                     modeloDeTrabalho.modelo =="12/36" && modeloDeTrabalho.check->{
+                         var l = listOf(
+                             ModeloDeEScala(1, "12/36", true),
+                             ModeloDeEScala(2, "6/1", false),
+                             ModeloDeEScala(3, "seg-sext", false))
+                         repositorioModeloDeTrabalho.updatelista(l)
+                     }
+                     modeloDeTrabalho.modelo=="6/1" && modeloDeTrabalho.check->{
+                         var l = listOf(
+                             ModeloDeEScala(1, "12/36", false),
+                             ModeloDeEScala(2, "6/1", true),
+                             ModeloDeEScala(3, "seg-sext", false))
+                         repositorioModeloDeTrabalho.updatelista(l)
+                     }
+                     modeloDeTrabalho.modelo=="seg-sext" && modeloDeTrabalho.check->{
+                         var l = listOf(
+                             ModeloDeEScala(1, "12/36", false),
+                             ModeloDeEScala(2, "6/1", false),
+                             ModeloDeEScala(3, "seg-sext", true))
+                         repositorioModeloDeTrabalho.updatelista(l)
+                     }
+                     else ->{repositorioModeloDeTrabalho.update(modeloDeTrabalho)}
+
+                 }
+
+
+                 //se a lista tiver algun registro eu atualizo o valor do check
 
                                                                                  }
 
+        suspend fun inserirOpcionais(diasOpcionais: DiasOpcionais){
+            val contagem =repositorioOpcionais.contaDiasOpcionais()
+            if(contagem==0){//se vasio eu insiro
+                val lista = arrayListOf<DiasOpcionais>(
+                    DiasOpcionais(id=1,"12/36",OpicionalModelo1236.Vasio.opcao),
+                    DiasOpcionais(id=2,"6/1",OpicionalModelo1236.Vasio.opcao),
+                    DiasOpcionais(id=3,"seg-sext",OpicionalModelo1236.Vasio.opcao)
+                )
+                repositorioOpcionais.inserirLista(lista)
 
+                            }
+
+                repositorioOpcionais.update(diasOpcionais)
+
+        }
 
 }//fim da classe
 
@@ -230,6 +300,7 @@ class RepositorioModeloDeTrabalho(private val dao: Daos){
     suspend fun insert(modeloDeEScala: ModeloDeEScala)=dao.insertModeloDeEScala(modeloDeEScala)
     suspend fun insert(modeloDeEScala: List<ModeloDeEScala>)=dao.insert(modeloDeEScala)
     suspend fun update(modeloDeEScala: ModeloDeEScala)=dao.update(modeloDeEScala)
+    suspend fun updatelista(modeloDeEScala: List<ModeloDeEScala>)=dao.updateLista(modeloDeEScala)
     suspend fun delete(modeloDeEScala: ModeloDeEScala)=dao.delete(modeloDeEScala)
                                                           }
 
@@ -258,3 +329,14 @@ class RepositorioExecutado(private val dao: Daos){
     suspend fun update(executad0: Executad0)=dao.update(executad0)
     suspend fun delete(executad0: Executad0)=dao.delete(executad0)
                                                   }
+
+//clase Repositorio opcionais responsavel pelas opcoes dos modelos de escala
+class RepositorioOpcionais(private val dao: Daos){
+          fun select(modelo:String):Flow<List<DiasOpcionais>> =dao.getDiasOpcionais(modelo)
+          fun selectDiaOpcional(modelo:String):DiasOpcionais? =dao.getDiaOpcionaisMes(modelo)
+  suspend fun contaDiasOpcionais():Int =dao.countDiasOpcionais()
+  suspend fun insert(diasOpcionais: DiasOpcionais)=dao.insertDiasOpcionais(diasOpcionais)
+  suspend fun inserirLista(diasOpcionais: List<DiasOpcionais>)=dao.inserirListaDeOpcionais(diasOpcionais)
+  suspend fun update(diasOpcionais: DiasOpcionais)=dao.update(diasOpcionais)
+  suspend fun delete(diasOpcionais: DiasOpcionais)=dao.delete(diasOpcionais)
+}

@@ -8,6 +8,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
                     Feriados::class,
                     Executad0::class,
                     ModeloDeEScala::class,
+                    DiasOpcionais::class,
                     HorioDosAlarmes::class,
                     Ferias::class],
                     version = 1)

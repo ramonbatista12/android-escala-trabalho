@@ -1,20 +1,11 @@
 package com.example.escalatrabalho.estados
 
-import android.util.Log
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.runtime.mutableStateOf
-import com.example.escalatrabalho.classesResultados.ResultadosDatasFolgas
 import com.example.escalatrabalho.classesResultados.ResultadosSalvarDatasFolgas
-import com.example.escalatrabalho.repositorio.RepositorioPrincipal
-import com.example.escalatrabalho.repositorio.repositoriodeDatas.SemanaDia
-import com.example.escalatrabalho.viewModel.modelosParaView.visulizacaoDatas
-import com.example.escalatrabalho.viewModel.modelosParaView.mdcheck
-import com.example.escalatrabalho.views.ResultadosSalvarHora
-import com.example.escalatrabalho.views.TelaNavegacaoSimples
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import com.example.escalatrabalho.classesResultados.ResultadosSalvarHora
+
+import com.example.escalatrabalho.enums.TelaNavegacaoSimples
 
 class EstadosAuxVm(){//classe criada para manter os estados do viewmodel
 var disparaDialogoFerias = mutableStateOf(false)//estado dialog datas de ferias

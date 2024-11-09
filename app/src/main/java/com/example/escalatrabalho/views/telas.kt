@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -20,21 +19,16 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.safeGesturesPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.DrawerValue
@@ -42,51 +36,37 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemColors
-import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.escalatrabalho.R
-import com.example.escalatrabalho.classesResultados.ResultadosSalvarDatasFolgas
+import com.example.escalatrabalho.enums.TelaNavegacaoSimples
+import com.example.escalatrabalho.enums.TelaNavegacaoSinplesAlturaCompacta
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.viewModel.ViewModelTelas
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.Calendar
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -236,7 +216,7 @@ fun larguraExpandida(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: Wind
     BoxWithConstraints  (modifier=Modifier.fillMaxSize()){
 
         LaunchedEffect(Unit) {
-            vm.estadosVm.telasAlturaCompacta.value=TelaNavegacaoSinplesAlturaCompacta.relogio}
+            vm.estadosVm.telasAlturaCompacta.value= TelaNavegacaoSinplesAlturaCompacta.relogio}
             FlowRow {
                                     calendario(m=Modifier,vm=vm,windowSizeClass)
                                     Spacer(modifier=Modifier.padding(8.dp))
@@ -530,7 +510,7 @@ fun barraSuperior(vm:ViewModelTelas){
          // view model.estadosVm.telas.value=TelaNavegacaoSimples.calendario recebe um objeto do tipo do enun ou calendario ou configuracao
         // que representa as posiveis navegacoe simples tive essa ideia pois a vi em um code lab
          NavigationBarItem(//responsavel por navegar  para tela de calendario
-             onClick = {escopo.launch { vm.estadosVm.telas.value=TelaNavegacaoSimples.calendario }},
+             onClick = {escopo.launch { vm.estadosVm.telas.value= TelaNavegacaoSimples.calendario }},
              selected = false,
              modifier = Modifier.fillMaxWidth(),
              label = {  },
@@ -538,7 +518,7 @@ fun barraSuperior(vm:ViewModelTelas){
          )
 
         NavigationBarItem(//responsavel por navegar para tela de configuracao
-            onClick = {escopo.launch { vm.estadosVm.telas.value=TelaNavegacaoSimples.comfig }},
+            onClick = {escopo.launch { vm.estadosVm.telas.value= TelaNavegacaoSimples.comfig }},
             selected = false,
             modifier = Modifier.fillMaxWidth(),
             label = {  },
