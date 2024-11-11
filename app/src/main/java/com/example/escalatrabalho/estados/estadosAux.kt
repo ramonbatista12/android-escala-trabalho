@@ -8,7 +8,7 @@ import com.example.escalatrabalho.classesResultados.ResultadosSalvarHora
 import com.example.escalatrabalho.enums.TelaNavegacaoSimples
 
 class EstadosAuxVm(){//classe criada para manter os estados do viewmodel
-var disparaDialogoFerias = mutableStateOf(false)//estado dialog datas de ferias
+var disparaDialogoFerias = mutableStateOf(false)//estado dialog datas de Ferias
     var disparaDatass= mutableStateOf(false)//estado dialog datas fiogas
     var transicaoDatPiker =
         MutableTransitionState(true)//estado transicao animacao Datapiker selecao hr

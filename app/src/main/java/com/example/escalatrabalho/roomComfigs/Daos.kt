@@ -23,6 +23,8 @@ interface Daos {
     //referem a tabela feriados
     @Query("SELECT * FROM Feriados where mes=:mes")
     fun getFeriados(mes:Int): Flow<List<Feriados>>
+    @Query("SELECT * FROM Feriados where mes=:mes and dia=:dia")
+    fun getFeriados(mes:Int,dia:Int):Flow<Feriados?>
     @Query("SELECT Count(*) FROM Feriados")
     fun comtaferiados(): Int
     @Insert
@@ -95,13 +97,15 @@ interface Daos {
     @Update
     suspend fun updateAlarme(horioDosAlarmes: HorioDosAlarmes)
 
-    //ferias
+    //Ferias
     @Query("select * from Ferias")
-    fun getFerias(): Flow<List<Ferias>>
+    fun getFerias(): Flow<Ferias?>
     @Insert
     suspend fun insertFerias(vararg ferias: Ferias)
     @Delete
     suspend fun delete(ferias: Ferias)
+    @Query("delete from Ferias")
+    fun deleteFerias()
     @Update
     suspend fun update(ferias: Ferias)
 

@@ -25,7 +25,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Check
@@ -56,10 +58,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
+import com.example.escalatrabalho.R
 import com.example.escalatrabalho.classesResultados.ResultadosDatasFolgas
 import com.example.escalatrabalho.classesResultados.ResultadosSalvarHora
 import com.example.escalatrabalho.repositorio.OpicionaiSealedClassess.OpicionalModelo1236
@@ -69,6 +73,7 @@ import com.example.escalatrabalho.roomComfigs.DiasOpcionais
 import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
 import com.example.escalatrabalho.roomComfigs.ModeloDeEScala
 import com.example.escalatrabalho.viewModel.ViewModelTelas
+import com.example.escalatrabalho.viewModel.modelosParaView.FeriasView
 import com.example.escalatrabalho.viewModel.modelosParaView.mdcheck
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -76,7 +81,7 @@ import kotlinx.coroutines.launch
 @SuppressLint("SuspiciousIndentation")
 @Composable
 //comfiguracao responsavel por mostra otimer piker que agenda o horio dos alarmes
-fun horarioDosAlarmes(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {},windowSizeClass: WindowSizeClass){
+fun HorarioDosAlarmes(vm: ViewModelTelas, calbackSnackbar: suspend (String) -> Unit = {}, windowSizeClass: WindowSizeClass){
     //modtivo do uso de if ele vai selecionar  a fracao de acordo com o tamanho disponivel da janela
     // eu ainda estou estudando maneiras de faxer melhor  mas por emquanto foi o melhor que comsequi fazer
     //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
@@ -112,14 +117,14 @@ fun horarioDosAlarmes(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Un
         modifier = Modifier.align(Alignment.Center)
     ) { Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(Modifier.padding(30.dp))
-        Surface { timePicker(vm =vm ,calbackSnackbar = calbackSnackbar,windowSizeClass = windowSizeClass) }
+        Surface { TimePicker(vm =vm ,calbackSnackbar = calbackSnackbar,windowSizeClass = windowSizeClass) }
     } }
 
 }
 }
 @Composable
 //comfiguracao responsavel por mostra otimer piker que agenda o horio dos alarmes
-fun horarioDosAlarmesAuturaCompacta(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {},windowSizeClass: WindowSizeClass){
+fun HorarioDosAlarmesAuturaCompacta(vm: ViewModelTelas, calbackSnackbar: suspend (String) -> Unit = {}, windowSizeClass: WindowSizeClass){
     //modtivo do uso de if ele vai selecionar  a fracao de acordo com o tamanho disponivel da janela
     // eu ainda estou estudando maneiras de faxer melhor  mas por emquanto foi o melhor que comsequi fazer
     //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
@@ -155,14 +160,14 @@ fun horarioDosAlarmesAuturaCompacta(vm: ViewModelTelas,calbackSnackbar: suspend 
             modifier = Modifier.align(Alignment.Center)
         ) { Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(Modifier.padding(5.dp))
-            Surface { timePickerAlturaCompacta(vm =vm ,calbackSnackbar = calbackSnackbar,windowSizeClass = windowSizeClass) }
+            Surface { TimePickerAlturaCompacta(vm =vm ,calbackSnackbar = calbackSnackbar,windowSizeClass = windowSizeClass) }
         } }
 
     }
 }
 @Composable
 //responsavel por mostrar as datas de folgas
-fun dataDasFolgas(vm:ViewModelTelas, diparaDialogoDatas:()->Unit,windowSizeClass: WindowSizeClass){
+fun DataDasFolgas(vm:ViewModelTelas, diparaDialogoDatas:()->Unit, windowSizeClass: WindowSizeClass){
     var fluxo = vm.fluxoDatasFolgas.collectAsState(ResultadosDatasFolgas.caregando())
     //modtivo do uso de if ele vai selecionar  a fracao de acordo com o tamanho disponivel da janela
     // eu ainda estou estudando maneiras de faxer melhor  mas por emquanto foi o melhor que comsequi fazer
@@ -228,7 +233,7 @@ fun dataDasFolgas(vm:ViewModelTelas, diparaDialogoDatas:()->Unit,windowSizeClass
                             if(r.lista.isEmpty()) item{ //se a lista estiver vasia define o item com o aviso de vasio
                                 Text(text = "lista vazia ",
                                      style = androidx.compose.material3.MaterialTheme.typography.titleLarge)}
-                            else items(r.lista) { itemDatas(it,vm=vm) }
+                            else items(r.lista) { ItemDatas(it,vm=vm) }
                         }
                         is ResultadosDatasFolgas.erro->{
                             item{
@@ -266,7 +271,7 @@ fun dataDasFolgas(vm:ViewModelTelas, diparaDialogoDatas:()->Unit,windowSizeClass
     }
 @Composable
 //responsavel por mostrar as datas de folgas
-fun dataDasFolgasAlturaCompacta(vm:ViewModelTelas, diparaDialogoDatas:()->Unit,windowSizeClass: WindowSizeClass){
+fun DataDasFolgasAlturaCompacta(vm:ViewModelTelas, diparaDialogoDatas:()->Unit, windowSizeClass: WindowSizeClass){
     var fluxo = vm.fluxoDatasFolgas.collectAsState(ResultadosDatasFolgas.caregando())
     //modtivo do uso de if ele vai selecionar  a fracao de acordo com o tamanho disponivel da janela
     // eu ainda estou estudando maneiras de faxer melhor  mas por emquanto foi o melhor que comsequi fazer
@@ -326,7 +331,7 @@ fun dataDasFolgasAlturaCompacta(vm:ViewModelTelas, diparaDialogoDatas:()->Unit,w
                             if(r.lista.isEmpty()) item{ //se a lista estiver vasia define o item com o aviso de vasio
                                 Text(text = "lista vazia ",
                                     style = androidx.compose.material3.MaterialTheme.typography.titleLarge)}
-                            else items(r.lista) { itemDatas(it,vm=vm) }
+                            else items(r.lista) { ItemDatas(it,vm=vm) }
                         }
                         is ResultadosDatasFolgas.erro->{
                             item{
@@ -364,10 +369,10 @@ fun dataDasFolgasAlturaCompacta(vm:ViewModelTelas, diparaDialogoDatas:()->Unit,w
 }
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-//responsavel por mostrar as datas de ferias
-//dispara dialogo ferias responsavel por abrir o dialogo de datas de ferias
+//responsavel por mostrar as datas de Ferias
+//dispara dialogo Ferias responsavel por abrir o dialogo de datas de Ferias
 // ela vem do nivel superior pois o dialogo e esibido no  scaffold pai
-fun ferias(stadoTransicao: MutableTransitionState<Boolean>, scope: CoroutineScope, diparaDialogoFerias:()->Unit,windowSizeClass: WindowSizeClass){
+fun Ferias(vm: ViewModelTelas,stadoTransicao: MutableTransitionState<Boolean>, scope: CoroutineScope, diparaDialogoFerias:()->Unit, windowSizeClass: WindowSizeClass){
     //modtivo do uso de if ele vai selecionar  a fracao de acordo com o tamanho disponivel da janela
     // eu ainda estou estudando maneiras de faxer melhor  mas por emquanto foi o melhor que comsequi fazer
     //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
@@ -382,11 +387,11 @@ fun ferias(stadoTransicao: MutableTransitionState<Boolean>, scope: CoroutineScop
     else 1.0f
     Box(modifier= Modifier.fillMaxWidth(largura)){
     val scope= rememberCoroutineScope()
-    Text(//texto clicavel que aciona a animacao que mostra as datas de ferias
+    Text(//texto clicavel que aciona a animacao que mostra as datas de Ferias
         text = "Ferias", modifier = Modifier.align(Alignment.TopStart)
                                            .offset(20.dp)
                                            .clickable { scope.launch { stadoTransicao.targetState = !stadoTransicao.currentState } })
-    IconButton(//icone que aciona a animacao que mostra as datas de ferias
+    IconButton(//icone que aciona a animacao que mostra as datas de Ferias
         onClick = { scope.launch { stadoTransicao.targetState = !stadoTransicao.currentState }   },
         modifier = Modifier.align(Alignment.TopEnd)
     ) {
@@ -396,12 +401,14 @@ fun ferias(stadoTransicao: MutableTransitionState<Boolean>, scope: CoroutineScop
         )
         else Icon(Icons.Default.KeyboardArrowUp, contentDescription = "fechar")
     }
-    androidx.compose.animation.AnimatedVisibility( //amimacao que mostra as datas de ferias
+    androidx.compose.animation.AnimatedVisibility( //amimacao que mostra as datas de Ferias
         visibleState = stadoTransicao,
         modifier = Modifier.align(Alignment.Center)
     ){ Column (horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(Modifier.padding(30.dp))
-        var switchs0 by remember { mutableStateOf(false) }
+        val ferias = vm.fluxoFeriass.collectAsState(FeriasView(0, 0, 0, 0,0,0,0,false))
+
+
 
         Box(Modifier.fillMaxWidth()){
 
@@ -420,29 +427,29 @@ fun ferias(stadoTransicao: MutableTransitionState<Boolean>, scope: CoroutineScop
                                                 .width(280.dp)) {
                       Column (modifier = Modifier.align(Alignment.CenterVertically)){
                           Column  {
-                            Text(text = if(!switchs0) " Ferias" else "Ferias " )
+                            Text(text =  "Ferias " )
 
-                            Switch(checked = switchs0,
+                            Switch(checked = ferias.value!!.check,
                                 onCheckedChange = {
                                     scope.launch {
-                                        if(!switchs0) diparaDialogoFerias()
-                                        switchs0=!switchs0
+                                      if(it) vm.estadosVm.disparaDialogoFerias.value=true
+                                      else vm.apagarFerias()
                                     }
                                 })
                         }}
                         Spacer(Modifier.padding(20.dp))
-                        if(switchs0) {
-                            val visibilit=MutableTransitionState(switchs0)
+                        if(ferias.value!!.check) {
+                            val visibilit=MutableTransitionState(ferias.value!!.check)
                         AnimatedVisibility(visibleState = visibilit) {
                             Column {
                             Column {
                             Text(text = "Inicio")
-                            itemDatasFerias()
+                            itemDatasFerias(ferias.value!!.diaInicio,ferias.value!!.mesInici,ferias.value!!.anoInici)
                                   }
                             Spacer(Modifier.padding(9.dp))
                         Column {
                             Text(text = "Fim")
-                            itemDatasFerias()
+                            itemDatasFerias(ferias.value!!.diaFim,ferias.value!!.mesFim,ferias.value!!.anoFim)
                            }
                                 Spacer(Modifier.padding(10.dp))
                         }
@@ -458,23 +465,23 @@ fun ferias(stadoTransicao: MutableTransitionState<Boolean>, scope: CoroutineScop
     } }
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-//responsavel por mostrar as datas de ferias
-//dispara dialogo ferias responsavel por abrir o dialogo de datas de ferias
+//responsavel por mostrar as datas de Ferias
+//dispara dialogo Ferias responsavel por abrir o dialogo de datas de Ferias
 // ela vem do nivel superior pois o dialogo e esibido no  scaffold pai
-fun feriasAlturaCompacta(stadoTransicao: MutableTransitionState<Boolean>, scope: CoroutineScope, diparaDialogoFerias:()->Unit,windowSizeClass: WindowSizeClass){
+fun FeriasAlturaCompacta(vm :ViewModelTelas, stadoTransicao: MutableTransitionState<Boolean>, scope: CoroutineScope, diparaDialogoFerias:()->Unit, windowSizeClass: WindowSizeClass){
     //modtivo do uso de if ele vai selecionar  a fracao de acordo com o tamanho disponivel da janela
     // eu ainda estou estudando maneiras de faxer melhor  mas por emquanto foi o melhor que comsequi fazer
     //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
     // a documetacao diss que ate esse momento o uso de windowsize class e o mais indicado quandose referre a classes que cauculam o tamanho de janelas
-    val largura =  0.5f
+    val largura =  0.7f
 
     Box(modifier= Modifier.fillMaxWidth(largura)){
         val scope= rememberCoroutineScope()
-        Text(//texto clicavel que aciona a animacao que mostra as datas de ferias
+        Text(//texto clicavel que aciona a animacao que mostra as datas de Ferias
             text = "Ferias", modifier = Modifier.align(Alignment.TopStart)
                 .offset(20.dp)
                 .clickable { scope.launch { stadoTransicao.targetState = !stadoTransicao.currentState } })
-        IconButton(//icone que aciona a animacao que mostra as datas de ferias
+        IconButton(//icone que aciona a animacao que mostra as datas de Ferias
             onClick = { scope.launch { stadoTransicao.targetState = !stadoTransicao.currentState }   },
             modifier = Modifier.align(Alignment.TopEnd)
         ) {
@@ -484,12 +491,13 @@ fun feriasAlturaCompacta(stadoTransicao: MutableTransitionState<Boolean>, scope:
             )
             else Icon(Icons.Default.KeyboardArrowUp, contentDescription = "fechar")
         }
-        androidx.compose.animation.AnimatedVisibility( //amimacao que mostra as datas de ferias
+        androidx.compose.animation.AnimatedVisibility( //amimacao que mostra as datas de Ferias
             visibleState = stadoTransicao,
             modifier = Modifier.align(Alignment.Center)
         ){ Column (horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(Modifier.padding(30.dp))
-            var switchs0 by remember { mutableStateOf(false) }
+            val ferias = vm.fluxoFeriass.collectAsState(FeriasView(0, 0, 0, 0,0,0,0,false))
+            var checkFerias by remember { mutableStateOf(ferias.value!!.check) }
 
             Box(Modifier.fillMaxWidth()){
 
@@ -508,29 +516,29 @@ fun feriasAlturaCompacta(stadoTransicao: MutableTransitionState<Boolean>, scope:
                         .width(280.dp)) {
                     Column (modifier = Modifier.align(Alignment.CenterVertically)){
                         Column  {
-                            Text(text = if(!switchs0) " Ferias" else "Ferias " )
+                            Text(text = if(!checkFerias) " Ferias" else "Ferias " )
 
-                            Switch(checked = switchs0,
+                            Switch(checked = checkFerias,
                                 onCheckedChange = {
                                     scope.launch {
-                                        if(!switchs0) diparaDialogoFerias()
-                                        switchs0=!switchs0
+                                        if(!checkFerias) diparaDialogoFerias()
+                                        checkFerias=!checkFerias
                                     }
                                 })
                         }}
                     Spacer(Modifier.padding(20.dp))
-                    if(switchs0) {
-                        val visibilit=MutableTransitionState(switchs0)
+                    if(checkFerias) {
+                        val visibilit=MutableTransitionState(checkFerias)
                         AnimatedVisibility(visibleState = visibilit) {
                             Column {
                                 Column {
                                     Text(text = "Inicio")
-                                    itemDatasFerias()
+                                    itemDatasFerias(ferias.value!!.diaInicio,ferias.value!!.mesInici,ferias.value!!.anoInici)
                                 }
                                 Spacer(Modifier.padding(9.dp))
                                 Column {
                                     Text(text = "Fim")
-                                    itemDatasFerias()
+                                    itemDatasFerias(ferias.value!!.diaFim,ferias.value!!.mesFim,ferias.value!!.anoFim)
                                 }
                                 Spacer(Modifier.padding(10.dp))
                             }
@@ -549,7 +557,7 @@ fun feriasAlturaCompacta(stadoTransicao: MutableTransitionState<Boolean>, scope:
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 //responsavel por esibir o melo de escala ex 12/36,6/1,seg-sext
-fun modeloDeescala(vm: ViewModelTelas,windowSizeClass: WindowSizeClass){
+fun ModeloDeEscala(vm: ViewModelTelas, windowSizeClass: WindowSizeClass){
     //modtivo do uso de if ele vai selecionar  a fracao de acordo com o tamanho disponivel da janela
     // eu ainda estou estudando maneiras de faxer melhor  mas por emquanto foi o melhor que comsequi fazer
     //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
@@ -682,12 +690,12 @@ fun modeloDeescala(vm: ViewModelTelas,windowSizeClass: WindowSizeClass){
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 //responsavel por esibir o melo de escala ex 12/36,6/1,seg-sext
-fun modeloDeescalaAlturaCompacta(vm: ViewModelTelas,windowSizeClass: WindowSizeClass){
+fun ModeloDeEscalaAlturaCompacta(vm: ViewModelTelas, windowSizeClass: WindowSizeClass){
     //modtivo do uso de if ele vai selecionar  a fracao de acordo com o tamanho disponivel da janela
     // eu ainda estou estudando maneiras de faxer melhor  mas por emquanto foi o melhor que comsequi fazer
     //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
     // a documetacao diss que ate esse momento o uso de windowsize class e o mais indicado quandose referre a classes que cauculam o tamanho de janelas
-    val largura = 0.4f
+    val largura = 0.7f
 
     Box(modifier = Modifier.fillMaxWidth(largura)){
         Text(//texto clicavel que aciona a animacao que mostra o modelo de escala
@@ -709,11 +717,14 @@ fun modeloDeescalaAlturaCompacta(vm: ViewModelTelas,windowSizeClass: WindowSizeC
 
         androidx.compose.animation.AnimatedVisibility(//animacao que mostra o modelo de escala
             visibleState = vm.estadosVm.transicaoModeloTrabalho,
-            modifier = Modifier.align(Alignment.CenterStart).offset(x=3.dp)) {
-            var s1 =vm.estadosModeloTrabalho1236.collectAsState(mdcheck(1,false))
-            var s2 =vm.estadosModeloDeTrabalho61.collectAsState(mdcheck(2,false))
-            var s3 =vm.estadoModloTrabalhoSegsext.collectAsState(mdcheck(3,false))
-            Column {
+            modifier = Modifier.align(Alignment.CenterStart).offset(x=3.dp,y=25.dp)) {
+            var modelo1236 =vm.estadosModeloTrabalho1236.collectAsState(mdcheck(1,false))
+            var modelo61 =vm.estadosModeloDeTrabalho61.collectAsState(mdcheck(2,false))
+            var modeloSegSex =vm.estadoModloTrabalhoSegsext.collectAsState(mdcheck(3,false))
+            var diasOpcionais = vm.fluxoDiasOpcionais.collectAsState(DiasOpcionais(id=0,"",
+                OpicionalModelo1236.Vasio.opcao))
+            var scrollState=rememberScrollState()
+            Column (modifier = Modifier.verticalScroll(scrollState)){
                 Spacer(Modifier.padding(30.dp))
                 FlowRow (horizontalArrangement = Arrangement.spacedBy(20.dp),
                     modifier=Modifier.clip(RoundedCornerShape(20.dp))
@@ -722,27 +733,84 @@ fun modeloDeescalaAlturaCompacta(vm: ViewModelTelas,windowSizeClass: WindowSizeC
                             shape = RoundedCornerShape(20.dp))
                         .padding(horizontal = 30.dp,
                             vertical = 10.dp)
-                        .fillMaxWidth().fillMaxHeight()
+                        .fillMaxWidth()
                     /* .width(280.dp)*/) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally)  {
                         Text("12 / 36")
-                        Switch(checked = s1.value.check, onCheckedChange = {
-                            Log.e("switch","${s1.value.check} em onchange")
-                            vm.inserirModeloDeTrabalho(ModeloDeEScala(s1.value.id,"12/36",it))
+                        Switch(checked = if(modelo1236.value.check&&
+                            modelo61.value.check==false&&
+                            modeloSegSex.value.check==false)true else false, onCheckedChange = {
+                            Log.e("switch","${modelo1236.value.check} em onchange")
+                            vm.inserirModeloDeTrabalho(ModeloDeEScala(modelo1236.value.id,"12/36",it))
                         },modifier = Modifier.animateContentSize())
                     }
                     Column (horizontalAlignment = Alignment.CenterHorizontally){
                         Text(text = "6 / 1")
-                        Switch(checked = s2.value.check , onCheckedChange = {
-                            vm.inserirModeloDeTrabalho(ModeloDeEScala(s2.value.id,"6/1",it))
-                        },modifier = Modifier.animateContentSize())
+                        Switch(checked = if(modelo61.value.check&&
+                            modelo1236.value.check==false&&
+                            modeloSegSex.value.check==false) true else false ,
+                            onCheckedChange = {
+                                vm.inserirModeloDeTrabalho(ModeloDeEScala(modelo61.value.id,"6/1",it))
+                            },
+                            modifier = Modifier.animateContentSize())
                     }
                     Column (horizontalAlignment = Alignment.CenterHorizontally){
                         Text(text = "seg - sext")
-                        Switch(checked = s3.value.check, onCheckedChange = {
-                            vm.inserirModeloDeTrabalho(ModeloDeEScala(s3.value.id,"seg-sext",it))
-                        },modifier = Modifier.animateContentSize())
-                    }}
+                        Switch(checked = if(modeloSegSex.value.check&&
+                            modelo1236.value.check==false&&
+                            modelo61.value.check==false) true else false,
+                            onCheckedChange = {
+                                vm.inserirModeloDeTrabalho(ModeloDeEScala(modeloSegSex.value.id,"seg-sext",it))
+                            },
+                            modifier = Modifier.animateContentSize())
+                    }
+                    if(modelo1236.value.check){
+
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = "dia-impar")
+
+                            Switch(checked =
+                            if (diasOpcionais.value!!.opicional == OpicionalModelo1236.Impar.opcao)
+                                true else false, onCheckedChange = {
+                                if(it) vm.inserirOpcionalModelo("12/36",OpicionalModelo1236.Impar.opcao)
+                                else vm.inserirOpcionalModelo("12/36",OpicionalModelo1236.Vasio.opcao)
+                            })
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = "dia-par")
+                            Switch(checked = if(diasOpcionais.value!!.opicional==OpicionalModelo1236.Par.opcao)true else false
+                                , onCheckedChange = {
+                                    if(it) vm.inserirOpcionalModelo("12/36",OpicionalModelo1236.Par.opcao)
+                                    else  vm.inserirOpcionalModelo("12/36",OpicionalModelo1236.Vasio.opcao)
+                                })
+                        }
+                    }else if(modeloSegSex.value.check){
+                        Spacer(Modifier.padding(10.dp))
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = "  sabados")
+                            Switch(checked = if(diasOpcionais.value!!.opicional==OpicionalModeloSegSex.Sbados.opcao) true else false, onCheckedChange = {
+                                if(it) vm.inserirOpcionalModelo("seg-sext",OpicionalModeloSegSex.Sbados.opcao)
+                                else vm.inserirOpcionalModelo("seg-sext",OpicionalModeloSegSex.Vasios.opcao)
+                            })
+
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = "Domingos")
+                            Switch(checked =if (diasOpcionais.value!!.opicional==OpicionalModeloSegSex.Domingos.opcao) true else false, onCheckedChange = {
+                                if(it) vm.inserirOpcionalModelo("seg-sext",OpicionalModeloSegSex.Domingos.opcao)
+                                else vm.inserirOpcionalModelo("seg-sext",OpicionalModeloSegSex.Vasios.opcao)
+                            })
+                        }
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = "Feriados")
+                            Switch(checked =if (diasOpcionais.value!!.opicional==OpicionalModeloSegSex.Feriados.opcao) true else false, onCheckedChange = {
+                                if(it) vm.inserirOpcionalModelo("seg-sext",OpicionalModeloSegSex.Feriados.opcao)
+                                else vm.inserirOpcionalModelo("seg-sext",OpicionalModeloSegSex.Vasios.opcao)
+                            })
+                        }
+                    }
+
+                }
             }
 
         }   }
@@ -750,7 +818,7 @@ fun modeloDeescalaAlturaCompacta(vm: ViewModelTelas,windowSizeClass: WindowSizeC
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 //minha implementacao de timer piker
-fun timePicker(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {},windowSizeClass: WindowSizeClass) {
+fun TimePicker(vm: ViewModelTelas, calbackSnackbar: suspend (String) -> Unit = {}, windowSizeClass: WindowSizeClass) {
     val state = rememberTimePickerState(0, 59)
     val scope = rememberCoroutineScope()
     val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
@@ -770,9 +838,10 @@ fun timePicker(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {}
                 vm.inserirHorariosDosAlarmes( HorioDosAlarmes(0,state.hour,state.minute),calbakSnackbar = calbackSnackbar)
             }, modifier = Modifier .animateContentSize().width(190.dp))
             {
+                Icon(painterResource(R.drawable.baseline_add_alarm_24),null,modifier = Modifier)
                 when ( vm.estadosVm.salvandoHorariosResultados.value ) {
                   ResultadosSalvarHora.clicavel -> {
-                        Text(text = "Alterar e Salvar Horio",maxLines = 1)
+                        Text(text = "Editar e Salvar Horário",maxLines = 1)
                     }
 
                   ResultadosSalvarHora.comcluido -> {
@@ -800,7 +869,7 @@ fun timePicker(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {}
             }
 
             Spacer(Modifier.padding(10.dp))
-            TimePicker(state = state, modifier = Modifier.fillMaxWidth(largura).fillMaxHeight(altura), layoutType = layout)
+        TimePicker(state = state, modifier = Modifier.fillMaxWidth(largura).fillMaxHeight(altura), layoutType = layout)
 
     }
 
@@ -809,7 +878,7 @@ fun timePicker(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 //minha implementacao de timer piker
-fun timePickerAlturaCompacta(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {},windowSizeClass: WindowSizeClass) {
+fun TimePickerAlturaCompacta(vm: ViewModelTelas, calbackSnackbar: suspend (String) -> Unit = {}, windowSizeClass: WindowSizeClass) {
     val state = rememberTimePickerState(0, 59)
     val scope = rememberCoroutineScope()
     val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
@@ -831,9 +900,11 @@ fun timePickerAlturaCompacta(vm: ViewModelTelas,calbackSnackbar: suspend (String
                 vm.inserirHorariosDosAlarmes( HorioDosAlarmes(0,state.hour,state.minute),calbakSnackbar = calbackSnackbar)
             }, modifier = Modifier .animateContentSize().width(190.dp))
             {
+                Icon(painterResource(R.drawable.baseline_add_alarm_24),null,modifier = Modifier)
+
                 when ( vm.estadosVm.salvandoHorariosResultados.value ) {
                     ResultadosSalvarHora.clicavel -> {
-                        Text(text = "Alterar e Salvar Horio",maxLines = 1)
+                        Text(text = "Editar e Salvar Horário",maxLines = 1)
                     }
 
                     ResultadosSalvarHora.comcluido -> {
@@ -869,7 +940,7 @@ fun timePickerAlturaCompacta(vm: ViewModelTelas,calbackSnackbar: suspend (String
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 //minha implementacao de timer piker
-fun timePickerAlturaCompactLarguraEspandida(vm: ViewModelTelas,calbackSnackbar: suspend (String) -> Unit = {},windowSizeClass: WindowSizeClass) {
+fun TimePickerAlturaCompactLarguraEspandida(vm: ViewModelTelas, calbackSnackbar: suspend (String) -> Unit = {}, windowSizeClass: WindowSizeClass) {
     val state = rememberTimePickerState(0, 59)
     val scope = rememberCoroutineScope()
     val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
@@ -891,9 +962,10 @@ fun timePickerAlturaCompactLarguraEspandida(vm: ViewModelTelas,calbackSnackbar: 
                 vm.inserirHorariosDosAlarmes( HorioDosAlarmes(0,state.hour,state.minute),calbakSnackbar = calbackSnackbar)
             }, modifier = Modifier .animateContentSize().width(190.dp))
             {
+                 Icon(painterResource(R.drawable.baseline_add_alarm_24),null,modifier = Modifier)
                 when ( vm.estadosVm.salvandoHorariosResultados.value ) {
                     ResultadosSalvarHora.clicavel -> {
-                        Text(text = "Alterar e Salvar Horio",maxLines = 1)
+                        Text(text = "Editar e Salvar Horário",maxLines = 1)
                     }
 
                     ResultadosSalvarHora.comcluido -> {
@@ -930,7 +1002,7 @@ fun timePickerAlturaCompactLarguraEspandida(vm: ViewModelTelas,calbackSnackbar: 
 
 
 @Composable
-fun itemDatas(item:DatasFolgas,vm:ViewModelTelas){
+fun ItemDatas(item:DatasFolgas, vm:ViewModelTelas){
     Card(modifier = Modifier.width(140.dp).height(40.dp)){
         Box(modifier = Modifier.width(140.dp)){
             Text(text = "${
@@ -951,13 +1023,14 @@ fun itemDatas(item:DatasFolgas,vm:ViewModelTelas){
 
 }
 @Composable
-fun itemDatasFerias(){
+fun itemDatasFerias( dia:Int,mes:Int,ano:Int){
 
 
     Card(modifier = Modifier.width(140.dp).height(40.dp)){
         Box(modifier = Modifier.width(140.dp)){
-            Text(text = "01/01/2023", modifier = Modifier.align(Alignment.CenterStart).offset(x=10.dp))
-            IconButton(onClick = {/*vm.deletarDatasFolgas(item)*/}, modifier = Modifier.align(Alignment.TopEnd)) { Icon(Icons.Default.Edit, contentDescription = "apagar data") }
+            Text(text = "${if(dia<10) "0" + dia else dia}/${if(mes<10) "0" + mes else mes}/${ano}", modifier = Modifier.align(Alignment.CenterStart).offset(x=10.dp))
+            IconButton(onClick = {/*vm.deletarDatasFolgas(item)*/}, modifier = Modifier.align(Alignment.TopEnd)) {
+                Icon(Icons.Default.Edit, contentDescription = "apagar data") }
 
 
         }

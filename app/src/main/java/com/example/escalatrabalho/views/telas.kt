@@ -29,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DateRangePicker
 import androidx.compose.material3.DrawerValue
@@ -36,7 +37,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -44,6 +44,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.material3.rememberDrawerState
@@ -65,6 +66,7 @@ import com.example.escalatrabalho.enums.TelaNavegacaoSimples
 import com.example.escalatrabalho.enums.TelaNavegacaoSinplesAlturaCompacta
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.viewModel.ViewModelTelas
+import com.example.escalatrabalho.viewModel.modelosParaView.FeriasView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -116,7 +118,7 @@ fun telainicial(vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
 
 
  dialogoDatasFolgas(disparar = vm.estadosVm.disparaDatass.value, acaoFechar = {vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value},vm = vm)
- dialogoDatasFerrias(disparar =vm.estadosVm.disparaDialogoFerias.value, acaoFechar = {vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value})
+ dialogoDatasFerrias(vm = vm,disparar =vm.estadosVm.disparaDialogoFerias.value, acaoFechar = {vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value})
 }
 
 @Composable
@@ -221,20 +223,20 @@ fun larguraExpandida(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: Wind
                                     calendario(m=Modifier,vm=vm,windowSizeClass)
                                     Spacer(modifier=Modifier.padding(8.dp))
                                    if (windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.COMPACT){
-                                       Box(modifier = Modifier.fillMaxWidth(0.6f)){ painelExpandidoAlturaCompacta(vm,scop,windowSizeClass)}
+                                       Box(modifier = Modifier.fillMaxWidth(0.6f), contentAlignment = Alignment.Center){ painelExpandidoAlturaCompacta(vm,scop,windowSizeClass)}
                                    }
-                                   else{ horarioDosAlarmes(vm,calbackSnackbar = {it->vm.hostState.showSnackbar(it)},windowSizeClass)
+                                   else{ HorarioDosAlarmes(vm,calbackSnackbar = { it->vm.hostState.showSnackbar(it)},windowSizeClass)
                                     Spacer(modifier=Modifier.padding(8.dp))
                                     Column {
-                                                 ferias(stadoTransicao = vm.estadosVm.transicaoFerias,
+                                                 Ferias(vm=vm,stadoTransicao = vm.estadosVm.transicaoFerias,
                                                      scope = scop,
                                                      diparaDialogoFerias = {
                                                          vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value
                                                                             },
                                                      windowSizeClass )
-                                                 modeloDeescala(vm = vm,
+                                                 ModeloDeEscala(vm = vm,
                                                      windowSizeClass = windowSizeClass)
-                                                 dataDasFolgas(vm = vm,
+                                                 DataDasFolgas(vm = vm,
                                                      diparaDialogoDatas = {
                                                          scop.launch {  vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value}
                                                                            } ,
@@ -256,11 +258,11 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
 
 
             TelaNavegacaoSinplesAlturaCompacta.relogio ->
-                timePickerAlturaCompacta(vm =vm ,calbackSnackbar = {vm.hostState.showSnackbar(it)},windowSizeClass)
+                TimePickerAlturaCompacta(vm =vm ,calbackSnackbar = {vm.hostState.showSnackbar(it)},windowSizeClass)
 
             TelaNavegacaoSinplesAlturaCompacta.selecoes->{
                 Spacer(Modifier.padding(3.dp))
-                feriasAlturaCompacta(
+                FeriasAlturaCompacta(vm=vm,
                     stadoTransicao = vm.estadosVm.transicaoFerias,
                     scope = scop,
                     diparaDialogoFerias = {
@@ -269,8 +271,8 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
                     },
                     windowSizeClass
                 )
-                Spacer(Modifier.padding(3.dp))
-                modeloDeescalaAlturaCompacta(
+                Spacer(Modifier.padding(10.dp))
+                ModeloDeEscalaAlturaCompacta(
                     vm = vm,
                     windowSizeClass = windowSizeClass
                 )
@@ -278,7 +280,7 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
 
             }
             TelaNavegacaoSinplesAlturaCompacta.datasFolgas->
-                dataDasFolgasAlturaCompacta(
+                DataDasFolgasAlturaCompacta(
                     vm = vm,
                     diparaDialogoDatas = {
                         scop.launch {
@@ -306,20 +308,21 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
                                   }
                                   calendario(m=Modifier,vm=vm,windowSizeClass)
                                   FlowRow(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                                   horarioDosAlarmes(vm,calbackSnackbar = {it->},windowSizeClass)
+                                                   HorarioDosAlarmes(vm,calbackSnackbar = { it->},windowSizeClass)
                                                    Spacer(modifier=Modifier.padding(8.dp))
                                                    Column  {
-                                                                ferias(stadoTransicao = vm.estadosVm.transicaoFerias,
+                                                                Ferias(vm=vm,
+                                                                    stadoTransicao = vm.estadosVm.transicaoFerias,
                                                                     scope = scop,
                                                                     diparaDialogoFerias = {
                                                                         vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value
                                                                     },
                                                                     windowSizeClass )
                                                                 Spacer(modifier=Modifier.padding(3.dp))
-                                                                modeloDeescala(vm = vm,
+                                                                ModeloDeEscala(vm = vm,
                                                                     windowSizeClass = windowSizeClass)
                                                                 Spacer(modifier=Modifier.padding(3.dp))
-                                                                dataDasFolgas(vm = vm,
+                                                                DataDasFolgas(vm = vm,
                                                                     diparaDialogoDatas = {
                                                                         scop.launch {  vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value}
                                                                     } ,
@@ -403,11 +406,12 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
                                                                   )
 
                                           TelaNavegacaoSinplesAlturaCompacta.relogio ->
-                                                timePickerAlturaCompacta(vm =vm ,calbackSnackbar = {it->vm.hostState.showSnackbar(it)},windowSizeClass)
+                                                TimePickerAlturaCompacta(vm =vm ,calbackSnackbar = { it->vm.hostState.showSnackbar(it)},windowSizeClass)
 
                                           TelaNavegacaoSinplesAlturaCompacta.selecoes->{
                                                 Spacer(Modifier.padding(3.dp))
-                                                 feriasAlturaCompacta(
+                                                 FeriasAlturaCompacta(
+                                                        vm = vm,
                                                         stadoTransicao = vm.estadosVm.transicaoFerias,
                                                         scope = scop,
                                                         diparaDialogoFerias = {
@@ -417,7 +421,7 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
                                                         windowSizeClass
                                                         )
                                               Spacer(Modifier.padding(3.dp))
-                                                 modeloDeescalaAlturaCompacta(
+                                                 ModeloDeEscalaAlturaCompacta(
                                                                vm = vm,
                                                                windowSizeClass = windowSizeClass
                                                                 )
@@ -425,7 +429,7 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
 
                                           }
                                           TelaNavegacaoSinplesAlturaCompacta.datasFolgas->
-                                                  dataDasFolgasAlturaCompacta(
+                                                  DataDasFolgasAlturaCompacta(
                                                                             vm = vm,
                                                                             diparaDialogoDatas = {
                                                                                 scop.launch {
@@ -484,10 +488,35 @@ fun dialogoDatasFolgas(disparar:Boolean,acaoFechar:()->Unit,vm:ViewModelTelas){
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-//dialogo de datas de ferias responsavel por permirtir a selecao das ferias
-fun dialogoDatasFerrias(disparar:Boolean,acaoFechar:()->Unit){
+//dialogo de datas de Ferias responsavel por permirtir a selecao das Ferias
+fun dialogoDatasFerrias(vm: ViewModelTelas,disparar:Boolean,acaoFechar:()->Unit){
     if(disparar) Surface {
         ModalBottomSheet(onDismissRequest = acaoFechar) {  var estate = rememberDateRangePickerState()
+            TextButton(onClick ={
+                var calendar=Calendar.getInstance()
+                calendar.timeInMillis=estate.selectedStartDateMillis!!
+                val diaInicio=calendar.get(Calendar.DAY_OF_MONTH)
+                val mesInicio=calendar.get(Calendar.MONTH)
+                val anoInicio=calendar.get(Calendar.YEAR)
+                val masimoDia=calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+                calendar= Calendar.getInstance()
+                calendar.timeInMillis=estate.selectedEndDateMillis!!
+                val diaFim=calendar.get(Calendar.DAY_OF_MONTH)
+                val mesFim=calendar.get(Calendar.MONTH)
+                val anoFim=calendar.get(Calendar.YEAR)
+                val masimoDiaFim=calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+                vm.inserirFerias(FeriasView(id=0,
+                                            diaInicio= if ((diaInicio+1)>masimoDia) 1  else diaInicio+1,
+                                            diaFim =  diaFim+1,
+                                            mesFim = mesFim+1,
+                                            mesInici = mesInicio+1,
+                                            anoFim = anoFim,
+                                            anoInici = anoInicio,
+                                            check = true ))
+            }) {
+                Icon(painterResource(R.drawable.baseline_save_24),"salvar icone")
+                Text("Salvar Intervalo Das Ferias")
+            }
             Surface {   Box{
                 DateRangePicker(state = estate, showModeToggle = true)
             }
@@ -501,7 +530,7 @@ fun dialogoDatasFerrias(disparar:Boolean,acaoFechar:()->Unit){
 //barra de navegacao responsavel por navegar entre as telas
 fun barraSuperior(vm:ViewModelTelas){
    var escopo = rememberCoroutineScope()//corotina interna
-    NavigationBar(modifier = Modifier.fillMaxWidth()
+    BottomAppBar (modifier = Modifier.fillMaxWidth()
                                      .height(50.dp)
                                      .background(color = Color.Transparent)
                                      .clip(RoundedCornerShape(30.dp))

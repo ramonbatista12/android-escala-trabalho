@@ -78,11 +78,11 @@ class ServicoAlarme:Service() {
     }
     override fun onDestroy() {
         Log.i("servico","ondestroy")
-        val notificationcompat=NotificationManagerCompat.from(this)
-         notificationcompat.cancel(canalId)
+
         if(mensagem==BroadcastReceiverMensagems.Para.mensagems){
           if(ringtone.isPlaying) ringtone.stop()
-
+            val notificationcompat=NotificationManagerCompat.from(this)
+            notificationcompat.cancel(canalId)
 
         }
   else if(mensagem==BroadcastReceiverMensagems.Soneca.mensagems){
@@ -92,6 +92,8 @@ class ServicoAlarme:Service() {
             val pendingIntent=PendingIntent.getBroadcast(this,0,intent,PendingIntent.FLAG_IMMUTABLE)
             val horarios= System.currentTimeMillis()+((60*1000)*5)
             alarme.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,horarios,pendingIntent)
+            notifirSoneca()
+            notificar()
   }
         super.onDestroy()
     }
@@ -109,7 +111,8 @@ class ServicoAlarme:Service() {
            .setContentTitle("escala trabalho")
            .setContentText("Voce vai trabalhar hoje")
            .setPriority(NotificationCompat.PRIORITY_MAX)
-           .addAction(R.drawable.ic_launcher_foreground,"parar",
+           .addAction(
+               R.drawable.baseline_access_alarms_24,"parar",
                PendingIntent.getBroadcast(this,
                                       1,
                                                  intentParar,
@@ -131,6 +134,16 @@ class ServicoAlarme:Service() {
                                         ,PendingIntent.FLAG_IMMUTABLE))
            .build()
    }
+
+  fun notifirSoneca(){
+
+      notificao= NotificationCompat.Builder(this ,canalNome)
+          .setSmallIcon(R.drawable.baseline_access_alarms_24)
+          .setContentTitle("escala trabalho")
+          .setContentText("O alarme disparara novamente em 5 minutos")
+          .setPriority(NotificationCompat.PRIORITY_MAX)
+          .build()
+  }
     @RequiresApi(Build.VERSION_CODES.O)
    fun registrarCanal(){
        val canal = NotificationChannel(canalNome,

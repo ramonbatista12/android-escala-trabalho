@@ -36,10 +36,15 @@ data class DiasOpcionais(@PrimaryKey(autoGenerate = false) val id:Int,
 data class HorioDosAlarmes(@PrimaryKey(autoGenerate = true) val id:Int,
                            @ColumnInfo(name = "hora")val hora:Int,
                            @ColumnInfo(name = "minuto")val minuto:Int)
-//entidade responsavel por gerenciar as datas de ferias
+//entidade responsavel por gerenciar as datas de Ferias
 @Entity
 data class Ferias(@PrimaryKey(autoGenerate = true) val id:Int,
-                  @ColumnInfo(name = "ano")val ano:Int,
-                  @ColumnInfo(name = "mes")val mes:Int,
+                  @ColumnInfo(name = "anoInicio")val ano:Int,
+                  @ColumnInfo(name = "anoFim")val anoFim:Int,
+                  @ColumnInfo(name = "mesInicio")val mes:Int,
+                  @ColumnInfo(name = "mesFim")val mesFim:Int,
                   @ColumnInfo(name = "diaInicio")val dia:Int,
                   @ColumnInfo(name = "diaFim")val diaFim:Int)
+
+
+

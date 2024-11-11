@@ -1,8 +1,6 @@
 package com.example.escalatrabalho.views
 
 
-import android.util.Log
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,19 +19,15 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,10 +36,8 @@ import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.escalatrabalho.repositorio.repositoriodeDatas.Datas
-import com.example.escalatrabalho.classesResultados.Resultados
 import com.example.escalatrabalho.viewModel.ViewModelTelas
 import com.example.escalatrabalho.viewModel.modelosParaView.visulizacaoDatas
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.map
 
 @Composable
@@ -85,8 +77,11 @@ fun calendario(m:Modifier, vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
 
         }
         items(items = estado.value){
-            if(feriados.value.contains(it.dia)) itrmcalendario2(it.copy(trabalhado = "fer\n ${it.trabalhado}"))
-           else itrmcalendario2(it)
+
+            if(it.mes==vm.numeroMes)
+                if(feriados.value.contains(it.dia)) itrmcalendario2(it.copy(trabalhado = "fer\n ${it.trabalhado}"))
+                else itrmcalendario2(it)
+            else Spacer(Modifier.padding(20.dp))
         }
 
     }
@@ -125,8 +120,10 @@ fun calendarioSmallSmall(m:Modifier, vm:ViewModelTelas,windowSizeClass: WindowSi
 
         }
         items(items = estado.value){
-            if(feriados.value.contains(it.dia)) itrmcalendario2(it.copy(trabalhado = "fer\n ${it.trabalhado}"))
-            else itrmcalendario2(it)
+          if(it.mes==vm.numeroMes)
+              if(feriados.value.contains(it.dia)) itrmcalendario2(it.copy(trabalhado = "fer\n ${it.trabalhado}"))
+              else itrmcalendario2(it)
+          else Spacer(Modifier.padding(20.dp))
         }
 
     }
@@ -155,6 +152,7 @@ fun itemCalendario(data: Datas){
 }
 @Composable
 fun itrmcalendario2(data:visulizacaoDatas){
+
     Box(modifier = Modifier
         .width(50.dp)
         .height(80.dp)){
@@ -164,10 +162,15 @@ fun itrmcalendario2(data:visulizacaoDatas){
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .offset(y = 5.dp))
-        Column(modifier= Modifier
+        Column(horizontalAlignment = Alignment.CenterHorizontally,modifier= Modifier
             .align(Alignment.BottomCenter)
             .offset(y = -5.dp)) {
-            Text(text = data.trabalhado)
+            if(data.trabalhado.contains("fer")){
+                val split = data.trabalhado.split("\n")
+                Text(text = split[0],textAlign = TextAlign.Center)
+                Text(text = split[1],textAlign = TextAlign.Center)
+            }
+            else Text(text = data.trabalhado)
         }
     }
 }
@@ -185,13 +188,13 @@ Column(modifier = m
     .fillMaxSize()
     .verticalScroll(state = scrollState)) {
     val scopo = rememberCoroutineScope()//escopo corotina
-    horarioDosAlarmes(vm,calbackSnackbar, windowSizeClass = windowSizeClass)//botão horario dos alarmes ao clicar aparesera o alarma
+    HorarioDosAlarmes(vm,calbackSnackbar, windowSizeClass = windowSizeClass)//botão horario dos alarmes ao clicar aparesera o alarma
     Spacer(Modifier.padding(3.dp))//espaçamento entre os componentes
-    dataDasFolgas(vm,disparaDialogoDatas,windowSizeClass)//botão data das folgas ao clicar aparesera a data das folgas
+    DataDasFolgas(vm,disparaDialogoDatas,windowSizeClass)//botão data das folgas ao clicar aparesera a data das folgas
     Spacer(Modifier.padding(3.dp))//espaçamento entre os componentes
-    ferias(vm.estadosVm.transicaoFerias,scopo,disparaDialogoFerias,windowSizeClass)//botão ferias ao clicar aparesera as ferias
+    Ferias(vm=vm,vm.estadosVm.transicaoFerias,scopo,disparaDialogoFerias,windowSizeClass)//botão Ferias ao clicar aparesera as Ferias
     Spacer(Modifier.padding(8.dp))//espaçamento entre os componentes
-    modeloDeescala(vm,windowSizeClass)//botão modelo de escala ao clicar aparesera o modelo de escala
+    ModeloDeEscala(vm,windowSizeClass)//botão modelo de escala ao clicar aparesera o modelo de escala
     Spacer(Modifier.padding(40.dp))
 }
 }
@@ -217,5 +220,5 @@ fun previaConfig(){
 @Composable
 @Preview
 fun previaTimer(){
-   // Surface { timePicker() }
+   // Surface { TimePicker() }
 }

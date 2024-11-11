@@ -31,6 +31,7 @@ import com.example.escalatrabalho.enums.TelaNavegacaoSimples
 import com.example.escalatrabalho.enums.TelaNavegacaoSinplesAlturaCompacta
 import com.example.escalatrabalho.repositorio.OpicionaiSealedClassess.OpicionalModelo1236
 import com.example.escalatrabalho.roomComfigs.DiasOpcionais
+import com.example.escalatrabalho.viewModel.modelosParaView.FeriasView
 import com.example.escalatrabalho.worlk.AgendarAlarmes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -40,7 +41,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val workManager: WorkManager):ViewModel() {
-    var trabalhado = arrayOf("tab", "folg", "cp")
+
     var scopo = viewModelScope         //escopo de corotina
     var estadosVm = EstadosAuxVm()    //os estados estao emcapisulsulados por essa classe
 
@@ -49,49 +50,58 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
     val fluxoDatasFolgas = repositorio.fluxoDatasFolgas.map {
         ResultadosDatasFolgas.ok(it)
     }
+    //emite o fluxo com check value do modelo de trabalho 12/36
     val estadosModeloTrabalho1236 = repositorio.fluxoModeloDeTrabalho1236.map {
         mdcheck(it.id, it.check)
     }.stateIn(
         scope = scopo,
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
         initialValue = mdcheck(1, false)
-    )
+             )
 
-    //responsavel por emitir o fluxo com check value do modelo de trabalho 12/36
+    //responsavel por emitir o fluxo com check value do modelo de trabalho 6/1
     val estadosModeloDeTrabalho61 = repositorio.fluxoModeloDeTrabalho61.map {
         mdcheck(it.id, it.check)
     }.stateIn(
         scope = scopo,
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
         initialValue = mdcheck(2, false)
-    )//responsavel por emitir o fluxo com check value do modelo de trabalho 6/1
+              )//responsavel por emitir o fluxo com check value do modelo de trabalho seg-sexta
     val estadoModloTrabalhoSegsext = repositorio.fluxoModeloDeTrabalhoSegsext.map {
         mdcheck(it.id, it.check)
     }.stateIn(
         scope = scopo,
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
         initialValue = mdcheck(3, false)
-    )//responsavel por emitir o fluxo com check value do modelo de trabalho seg-sext
-    val fluxoDatas = repositorio.fluxoDasDatas//o fluxo que emite as datas do mes
-    val fluxoViewCalendario = repositorio.fluxoDatasTrabalhado.stateIn(
+             )
+
+    val fluxoViewCalendario = repositorio.fluxoDatasTrabalhado
+        .stateIn(
         scope = scopo,
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
-    )
-    val fluxoDiasOpcionais = repositorio.fluxoOpcionais.stateIn(
+               )
+    val fluxoDiasOpcionais = repositorio.fluxoOpcionais
+        .stateIn(
         scope = scopo,
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
         initialValue = DiasOpcionais(id=0,"", OpicionalModelo1236.Vasio.opcao)
-    )
-
-    //fluxo criado com combine me permite checar as outras variaveis para criar o fluxo que vai esiberir no calendario
+                  )
     val nomeMes = repositorio.nomeDomes// nome do mes
+    val numeroMes = repositorio.numeroMes//numero do mes
     val fluxoFeriados = repositorio.fluxoFeriados
         .stateIn(
             scope = scopo,
             started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
-        )
+               )
+    val fluxoFeriass = repositorio.fluxoDeferias
+        .stateIn(
+        scope = scopo,
+        started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+        initialValue = FeriasView(0,0,0,0,0,0,0,false)
+               )
+
     val hostState = SnackbarHostState()//responsavel por mostrar snackbar)
 
     init {
@@ -167,7 +177,19 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
             }
         }
 
+    fun apagarFerias(){
+        scopo.launch(context = Dispatchers.IO) {
+            repositorio.apagarFerias()
+        }
 
+                                         }
+
+
+    fun inserirFerias(ferias: FeriasView){
+        scopo.launch(context = Dispatchers.IO) {
+            repositorio.inserirFerias(ferias)
+        }
+    }
 
 
 }//fim vm
@@ -175,7 +197,7 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
 
 
 class EstadosAuxVm(){//classe criada para manter os estados do viewmodel
-    var disparaDialogoFerias =mutableStateOf(false)                                     //estado dialog datas de ferias
+    var disparaDialogoFerias =mutableStateOf(false)                                     //estado dialog datas de Ferias
     var disparaDatass=mutableStateOf(false)                                             //estado dialog datas fiogas
     var transicaoDatPiker =MutableTransitionState(true)                             //estado transicao animacao Datapiker selecao hr
     var telas=mutableStateOf(TelaNavegacaoSimples.calendario)                                //estado das telas da navegacao simples
