@@ -29,7 +29,7 @@ class RepositorioDatas {
 
     fun getDatas():Flow <List<Datas>> = flow {
         var list = mutableListOf<Datas>()
-
+        data=Calendar.getInstance()
         var ultimoDia = data.getActualMaximum(Calendar.DAY_OF_MONTH)+1
 
         for (i in 1..ultimoDia) {
@@ -105,8 +105,46 @@ class RepositorioDatas {
         return l
     }
 
+    suspend fun getDiaAtualEprosimo():DiasChecagen{
+        data = Calendar.getInstance()
+         val diaS = when (data.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.SUNDAY -> SemanaDia.doming
+            Calendar.MONDAY -> SemanaDia.segunda
+            Calendar.TUESDAY -> SemanaDia.terca
+            Calendar.WEDNESDAY -> SemanaDia.quarta
+            Calendar.THURSDAY -> SemanaDia.quinta
+            Calendar.FRIDAY -> SemanaDia.sexta
+            Calendar.SATURDAY -> SemanaDia.sabado
+            else -> {
+                SemanaDia.sexta
+            }
+         }
+        val numeroDia=data.get(Calendar.DAY_OF_MONTH)
+        data.roll(Calendar.DAY_OF_MONTH,1)
+        data.set(Calendar.DAY_OF_MONTH,numeroDia+1)
+        val prosimodiaS = when (data.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.SUNDAY -> SemanaDia.doming
+            Calendar.MONDAY -> SemanaDia.segunda
+            Calendar.TUESDAY -> SemanaDia.terca
+            Calendar.WEDNESDAY -> SemanaDia.quarta
+            Calendar.THURSDAY -> SemanaDia.quinta
+            Calendar.FRIDAY -> SemanaDia.sexta
+            Calendar.SATURDAY -> SemanaDia.sabado
+            else -> {
+                SemanaDia.sexta
+            }
+        }
+        val prosimoNumeroDia=data.get(Calendar.DAY_OF_MONTH)
+        return DiasChecagen(numeroDia,diaS,prosimoNumeroDia,prosimodiaS)
+    }
+
     fun getMes():String{
         return tabelaMeses[data.get(Calendar.MONTH)]
     }
+
+
+
+
 }
 
+class DiasChecagen(val dia:Int,val diasemana: SemanaDia,val prosimoDia:Int,val prosimoDiasemana: SemanaDia)

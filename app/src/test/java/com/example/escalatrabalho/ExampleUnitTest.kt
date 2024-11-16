@@ -1,5 +1,6 @@
 package com.example.escalatrabalho
 
+import com.example.escalatrabalho.worlk.AgendarAlarmes
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -13,5 +14,12 @@ class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
         assertEquals(4, 2 + 2)
+    }
+}
+
+class TesteAgendarAlarme{
+    @Test
+    fun agendarAlarme(): Unit {
+
     }
 }

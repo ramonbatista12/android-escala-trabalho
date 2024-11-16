@@ -4,10 +4,13 @@ import android.app.Application
 import android.content.Context
 import android.util.Log
 import androidx.room.Room
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
 import com.example.escalatrabalho.retrofit.CalendarioApi
 import com.example.escalatrabalho.retrofit.CalendarioApiService
 import com.example.escalatrabalho.roomComfigs.CalbacInicializacaoBd
 import com.example.escalatrabalho.roomComfigs.RoomDb
+import com.example.escalatrabalho.worlk.AgendarAlarmes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -38,11 +41,19 @@ class AplicationCuston: Application()  {
         applicationScope.launch(Dispatchers.IO) {
            db.db.dao().getExecutado()
 
+           applicationScope.launch {
+               val work = PeriodicWorkRequest.Builder(AgendarAlarmes::class.java,
+                                          10000,
+                                                     java.util.concurrent.TimeUnit.MINUTES).build()
+               WorkManager.getInstance(applicationContext).enqueue(work)
+           }
+
         }
 
 
 
     }
+
 }
 
 

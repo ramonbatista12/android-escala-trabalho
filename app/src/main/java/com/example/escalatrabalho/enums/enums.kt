@@ -15,4 +15,20 @@ enum class TelaNavegacaoSinplesAlturaCompacta{
      calendario,relogio,selecoes,datasFolgas
  }
 
+sealed class MensagemNoticacaoWork(val mensagem:String){
+    object MensagemsChecando:MensagemNoticacaoWork("Checando se voce precisa trabalhar ")
+    object Folga:MensagemNoticacaoWork("nao agendarei alarme  voce estara de folga")
+    object compensado:MensagemNoticacaoWork("nao agendarei alarme  o dia de trabalho foi compensado")
+    object Feriado:MensagemNoticacaoWork("nao agendarei alarme amanha e feriado Feriado")
+    object feriadoTrabalhado:MensagemNoticacaoWork("agendarei um alarme para o prosimo feriado")
+    object Ferias:MensagemNoticacaoWork("nao agendarei alarme hoje voce esta de Ferias")
+
+}
+
+sealed class NomesDeModelosDeEscala(val nome:String){
+    object Modelo1236:NomesDeModelosDeEscala("12/36")
+    object Modelo61:NomesDeModelosDeEscala("6/1")
+    object ModeloSegSex:NomesDeModelosDeEscala("seg-sext")
+
+}
 

@@ -20,8 +20,11 @@ data class Feriados(@PrimaryKey(autoGenerate = true) val id:Int,
 //entidades do banco de dados responsavel pelas configuracoes
 //entidae responsavel por saber se ja foi esecutado
 @Entity
-data class Executad0(@PrimaryKey(autoGenerate = true) val id:Int,
-                     @ColumnInfo(name = "ezecutado") val s:String)
+data class Executad0(@PrimaryKey(autoGenerate = false) val id:Int,
+                     @ColumnInfo(name = "ezecutado") val ezecutado:Boolean,
+                     @ColumnInfo("diaAgendado") val diaAgendado:Int,
+                     @ColumnInfo("mesAgendado") val mesAgendado:Int,
+                     @ColumnInfo("anoAgendado") val anoAgendado:Int)
 //entidade responsavel por gerenciar os modelos de Escalas 12/36,6/1,seg-sext
 @Entity
 data class ModeloDeEScala(@PrimaryKey(autoGenerate = false)val id:Int,
@@ -33,7 +36,7 @@ data class DiasOpcionais(@PrimaryKey(autoGenerate = false) val id:Int,
                          @ColumnInfo(name = "Opcional")val opicional:String,)
 //entidade responsavel por gerenciar os horarios dos alarmes
 @Entity
-data class HorioDosAlarmes(@PrimaryKey(autoGenerate = true) val id:Int,
+data class HorioDosAlarmes(@PrimaryKey(autoGenerate = false) val id:Int,
                            @ColumnInfo(name = "hora")val hora:Int,
                            @ColumnInfo(name = "minuto")val minuto:Int)
 //entidade responsavel por gerenciar as datas de Ferias

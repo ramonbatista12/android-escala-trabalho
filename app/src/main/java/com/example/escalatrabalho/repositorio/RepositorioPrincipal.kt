@@ -16,8 +16,10 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import com.example.escalatrabalho.classesResultados.Requisicaoweb
+import com.example.escalatrabalho.enums.NomesDeModelosDeEscala
 import com.example.escalatrabalho.repositorio.OpicionaiSealedClassess.OpicionalModelo1236
 import com.example.escalatrabalho.repositorio.OpicionaiSealedClassess.OpicionalModeloSegSex
+import com.example.escalatrabalho.repositorio.repositoriodeDatas.DiasChecagen
 
 import com.example.escalatrabalho.repositorio.repositoriodeDatas.RepositorioDatas
 import com.example.escalatrabalho.repositorio.repositoriodeDatas.SemanaDia
@@ -49,7 +51,7 @@ import kotlinx.coroutines.withContext
 
 
 //classe repositorioPrincipal responsavel por gerenciar todos os repositorios
-class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
+class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {//fim da classe
     val escopo = CoroutineScope(Dispatchers.IO)
     // variaveis privadas pois as outras classes nao presisao delas
     private val tabelaFormatacaoDatas = arrayOf("tb", "fg", "cp")                      //tabela representa trabalhado folga compensado
@@ -82,27 +84,33 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
             val nomeDomes = criarDatas.getMes()                                                                    // string com o nome do mes
             val numeroMes = criarDatas.mes                                                                         // numero do mes
             val fluxoFeriados =repositorioFeriados.get(criarDatas.mes+1)                                           // fluxo com os feriados do mes
-            val fluxoModeloDeEscalaAtivo = repositorioModeloDeTrabalho.fluxoModeloDeEscalaAtivo().map {
-                if(it==null) ModeloDeEScala(1, "defaut", false)
-                else it
-            }        // fluxo com o modelo de trabalho ativo
-            val fluxoOpcionais=fluxoModeloDeEscalaAtivo.flatMapLatest {
-               flow<DiasOpcionais?>  {
-                  while(true){
-                      if(it==null){
-                    emit(DiasOpcionais(id=0,"",OpicionalModelo1236.Vasio.opcao))
-                   } else{
-                       val aux = withContext(Dispatchers.IO){
-                           repositorioOpcionais.selectDiaOpcional(it.modelo)
-                       }
-                       if(aux==null) emit(DiasOpcionais(id=0,"",OpicionalModelo1236.Vasio.opcao))
-                       else emit(aux)
+            val fluxoModeloDeEscalaAtivo = repositorioModeloDeTrabalho.fluxoModeloDeEscalaAtivo()
+               .map {
+                      if(it==null) ModeloDeEScala(1, "defaut", false)
+                      else it
+                    }        // fluxo com o modelo de trabalho ativo
+            val fluxoOpcionais=fluxoModeloDeEscalaAtivo
+                .flatMapLatest {
+                                   flow<DiasOpcionais?>  {
+                                      while(true)   {
 
-                   }
-                      delay(1000)
-                  }
-               }
-            }                                        //fluxo com os opcionais eles representao as opcoes para um determinado modelo de escala
+                                          if(it==null)
+                                                  emit(DiasOpcionais(id=0,"",OpicionalModelo1236.Vasio.opcao))
+                                          else{
+                                              val aux = withContext(Dispatchers.IO){
+                                                    repositorioOpcionais.selectDiaOpcional(it.modelo)
+                                                                                   }
+                                           if(aux==null)
+                                               emit(DiasOpcionais(id=0,"",OpicionalModelo1236.Vasio.opcao))
+                                           else emit(aux)
+
+                                              }
+
+                                              delay(1000)
+
+                                                     }
+                                        }
+                             }                                        //fluxo com os opcionais eles representao as opcoes para um determinado modelo de escala
             val fluxoDeferias = repositorioFerias.select().map {
                 if(it==null) FeriasView(0,0,0,0,0,0,0,false)
                 else
@@ -274,16 +282,20 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
         //inserir horario dos alarmes
         suspend fun inserirHorariosDosAlarmes(horariosDosAlarmes: HorioDosAlarmes) {
             val aux = repositorioHorariosDosAlarmes.count()
-            if (aux == 0)
-                repositorioHorariosDosAlarmes.insert(horariosDosAlarmes)
+            if (aux == 0){
+                repositorioHorariosDosAlarmes.insert(HorioDosAlarmes(id=1,
+                                                                     hora = horariosDosAlarmes.hora,
+                                                                     minuto = horariosDosAlarmes.minuto))
+            }
             else {
-                val obj = repositorioHorariosDosAlarmes.getPrimeiro()
-                repositorioHorariosDosAlarmes.update(HorioDosAlarmes(id = obj.id,
+
+                repositorioHorariosDosAlarmes.update(HorioDosAlarmes(id = 1,
                                                                     hora = horariosDosAlarmes.hora,
                                                                     minuto = horariosDosAlarmes.minuto))
                  }
 
                                                                                     }
+        suspend fun getObjetosHorariosAlsrme()=repositorioHorariosDosAlarmes.getObjeto()
 
         suspend fun apagarFerias(ferias: FeriasView){
             repositorioFerias.delete(Ferias(id=ferias.id,
@@ -298,7 +310,7 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
             repositorioFerias.delete()
         }
 
-       suspend fun inserirFerias(ferias: FeriasView){
+         suspend fun inserirFerias(ferias: FeriasView){
             repositorioFerias.insert(Ferias(id=0,
                                             ano = ferias.anoInici,
                                             anoFim = ferias.anoFim,
@@ -316,9 +328,9 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
             var count =repositorioModeloDeTrabalho.count()//melhor maneira que achei para saber se alista ta vasia
             if (count == 0) { //quando vasia eu crio e insiro os valores do check
                 var l = listOf(
-                    ModeloDeEScala(1, "12/36", false),
-                    ModeloDeEScala(2, "6/1", false),
-                    ModeloDeEScala(3, "seg-sext", false))
+                    ModeloDeEScala(1, NomesDeModelosDeEscala.Modelo1236.nome, false),
+                    ModeloDeEScala(2, NomesDeModelosDeEscala.Modelo61.nome, false),
+                    ModeloDeEScala(3, NomesDeModelosDeEscala.ModeloSegSex.nome, false))
                     repositorioModeloDeTrabalho.insert(l)
                             }
 
@@ -370,8 +382,13 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {
 
         }
 
-}//fim da classe
+        suspend fun getDiaAtualEprosimo(): DiasChecagen =criarDatas.getDiaAtualEprosimo()
 
+       suspend fun getmodeloObjeto()=repositorioModeloDeTrabalho.getMOdelodeEscala()
+       suspend fun getOpcionaisObjeto(m:String)=repositorioOpcionais.selectDiaOpcional(m)
+
+
+}
 
 
 //classe RepositorioDatasFolgas responsavel por gerenciar a tabela DatasFolgas
@@ -397,6 +414,7 @@ class RepositorioModeloDeTrabalho(private val dao: Daos){
             fun select():Flow<List<ModeloDeEScala>> =dao.getModeloDeEScala()
             fun select(colune:String):Flow<ModeloDeEScala?> =dao.selectFeriascheck(colune)
             fun fluxoModeloDeEscalaAtivo():Flow<ModeloDeEScala?> =dao.selectModeloDeEscalaAtivo()
+    suspend fun getMOdelodeEscala()=dao.getModeloDeEscalaObjeto()
     suspend fun count():Int =dao.count()
     suspend fun insert(modeloDeEScala: ModeloDeEScala)=dao.insertModeloDeEScala(modeloDeEScala)
     suspend fun insert(modeloDeEScala: List<ModeloDeEScala>)=dao.insert(modeloDeEScala)
@@ -407,9 +425,10 @@ class RepositorioModeloDeTrabalho(private val dao: Daos){
 
 //classe RepositorioHorariosDosAlarmes responsavel por gerenciar a tabela HorioDosAlarmes
 class RepositorioHorariosDosAlarmes(private val dao: Daos){
-            fun select():Flow<List<HorioDosAlarmes>> =dao.getHorariosDosAlarmes()
+            fun select():Flow<HorioDosAlarmes?> =dao.getHorariosDosAlarmes()
             fun count():Int =dao.countHorarios()
     suspend fun getPrimeiro():HorioDosAlarmes= dao.getHorariosPrimeiroDosAlarmes()
+    suspend fun getObjeto():HorioDosAlarmes? =dao.getHorariosDosAlarmesObjeto()
     suspend fun insert(horioDosAlarmes: HorioDosAlarmes)=dao.insertHorariosDosAlarmes(horioDosAlarmes)
     suspend fun update(horioDosAlarmes: HorioDosAlarmes)=dao.updateAlarme(horioDosAlarmes)
     suspend fun delete(horioDosAlarmes: HorioDosAlarmes)=dao.delete(horioDosAlarmes)

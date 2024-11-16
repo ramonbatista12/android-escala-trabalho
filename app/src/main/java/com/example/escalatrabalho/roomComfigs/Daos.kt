@@ -39,6 +39,8 @@ interface Daos {
     //tabela executando
     @Query("SELECT * FROM executad0")
     fun getExecutado(): Flow<List<Executad0>>
+    @Query("SELECT COUNT (*) FROM executad0")
+    suspend fun countExecutado():Int
     @Insert
     suspend fun insertExecutado(vararg executad0: Executad0)
     @Delete
@@ -53,6 +55,8 @@ interface Daos {
     suspend fun count(): Int
     @Query("SELECT  * FROM ModeloDeEScala where boolean=1")
     fun selectModeloDeEscalaAtivo():Flow<ModeloDeEScala?>
+    @Query("SELECT * FROM ModeloDeEScala where boolean=1")
+    fun getModeloDeEscalaObjeto():ModeloDeEScala?
     @Query("SELECT * FROM ModeloDeEScala where modelo=:colune")
     fun selectFeriascheck(colune:String): Flow<ModeloDeEScala?>
     @Insert
@@ -84,8 +88,11 @@ interface Daos {
 
 
     //horario dos alarmes
-    @Query("select * from HorioDosAlarmes")
-    fun getHorariosDosAlarmes(): Flow<List<HorioDosAlarmes>>
+
+    @Query("select * from HorioDosAlarmes where id=1 ")
+    fun getHorariosDosAlarmes(): Flow<HorioDosAlarmes?>
+    @Query("select * from HorioDosAlarmes where id=1 ")
+    suspend fun getHorariosDosAlarmesObjeto(): HorioDosAlarmes?
     @Query("select * from HorioDosAlarmes limit 1")
     fun getHorariosPrimeiroDosAlarmes(): HorioDosAlarmes
     @Query("select COUNT (*) from HorioDosAlarmes ")

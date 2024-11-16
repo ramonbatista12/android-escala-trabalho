@@ -107,7 +107,7 @@ class ServicoAlarme:Service() {
            it.action=BroadcastReceiverMensagems.Soneca.mensagems
        }
        notificao= NotificationCompat.Builder(this ,canalNome)
-           .setSmallIcon(R.drawable.ic_launcher_foreground)
+           .setSmallIcon(R.drawable.baseline_access_alarms_24)
            .setContentTitle("escala trabalho")
            .setContentText("Voce vai trabalhar hoje")
            .setPriority(NotificationCompat.PRIORITY_MAX)

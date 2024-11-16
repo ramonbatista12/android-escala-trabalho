@@ -506,8 +506,8 @@ fun dialogoDatasFerrias(vm: ViewModelTelas,disparar:Boolean,acaoFechar:()->Unit)
                 val anoFim=calendar.get(Calendar.YEAR)
                 val masimoDiaFim=calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
                 vm.inserirFerias(FeriasView(id=0,
-                                            diaInicio= if ((diaInicio+1)>masimoDia) 1  else diaInicio+1,
-                                            diaFim =  diaFim+1,
+                                            diaInicio= if ((diaInicio+1)>masimoDia) 1  else diaInicio,
+                                            diaFim =  diaFim,
                                             mesFim = mesFim+1,
                                             mesInici = mesInicio+1,
                                             anoFim = anoFim,
