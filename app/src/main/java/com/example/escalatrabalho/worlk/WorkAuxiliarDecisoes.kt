@@ -18,13 +18,13 @@ import java.time.LocalTime
 class WorkAuxiliarDecisoes {
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun modelo1232(diasOpcionais:DiasOpcionais,
+    fun modelo1236(diasOpcionais:DiasOpcionais,
                    diasDeFolgas:List<Int>,
                    diasChecagen:DiasChecagen,
                    horario: HorioDosAlarmes,
-                   calbackAlarme:()->Unit){
+                   calbackAlarmeAmanha:(h:Int,m:Int)->Unit,calbackAlarmeHoje:(h:Int,m:Int)->Unit){
 
-        Log.i("modelo selecionado","modelo 1232")
+        Log.i("modelo selecionado","modelo 1236")
         when(diasOpcionais.opicional){
 
             OpicionalModelo1236.Impar.opcao->{
@@ -32,14 +32,14 @@ class WorkAuxiliarDecisoes {
                 if(diasChecagen.dia%2==0){
                     if(!diasDeFolgas.contains(diasChecagen.prosimoDia)){
                         Log.i("dias ","dia nao esta na lista")
-                        calbackAlarme()
+                        calbackAlarmeAmanha(horario.hora,horario.minuto)
                     }
                 }
                 else{
                     Log.i("dias ","alarme e para o dia de hoje ")
                     if(checaHorarioParaAgendadmento(horario)){
                         Log.i("dias ","horario do alarme e depois do atual")
-                        calbackAlarme()
+                        calbackAlarmeHoje(horario.hora,horario.minuto)
 
                     }
 
@@ -50,12 +50,12 @@ class WorkAuxiliarDecisoes {
             OpicionalModelo1236.Par.opcao->{
                 if(diasChecagen.dia%2!=0){
                     if(!diasDeFolgas.contains(diasChecagen.prosimoDia)){
-                        calbackAlarme()
+                        calbackAlarmeAmanha(horario.hora,horario.minuto)
                     }
                 }
                 else{
                     if(checaHorarioParaAgendadmento(horario)){
-                        calbackAlarme()
+                        calbackAlarmeHoje(horario.hora,horario.minuto)
 
                     }
 
@@ -86,126 +86,152 @@ class WorkAuxiliarDecisoes {
                            feriados:List<Feriados>,
                            diasChecagen: DiasChecagen,
                            horario: HorioDosAlarmes,
-                           calbackAlarme:()->Unit){
+                           calbackAlarmeHoje:(h:Int,m:Int)->Unit,
+                           calbackAlarmeAmanha: (h: Int, m: Int) -> Unit){
         val feriadosDias=feriados.map { it.dia }
-          when(diasOpcionais.opicional){
-              OpicionalModeloSegSex.Domingos.opcao->{
-                  if(diasChecagen.diasemana!= SemanaDia.doming){
-                      if(checaHorarioParaAgendadmento(horario)){
-                          if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                              calbackAlarme()
 
-                      }else{
-                          when(diasChecagen.prosimoDiasemana){
-                              SemanaDia.segunda->{
-                             if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                                  calbackAlarme()
-                              }
-                              SemanaDia.terca->{
-                              if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                                  calbackAlarme()
-                              }
-                              SemanaDia.quarta->{
-                              if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                                  calbackAlarme()
-                              }
-                              SemanaDia.quinta->{
-                              if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                                  calbackAlarme
-                              }
-                              SemanaDia.sexta->{
-                              if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                                  calbackAlarme()
-                              }
-                              SemanaDia.doming->{
-                               if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                                  calbackAlarme()
-                              }
-                              SemanaDia.sabado->{}
 
-                          }
-                      }
-                  }
-              }
-              OpicionalModeloSegSex.Sbados.opcao->{
-              if(diasChecagen.diasemana!= SemanaDia.sabado){
-                  if(checaHorarioParaAgendadmento(horario)){
-                      if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                         calbackAlarme()
+        when(diasOpcionais.opicional){
+            OpicionalModeloSegSex.Domingos.opcao->{
+               when(diasChecagen.diasemana){
+                   SemanaDia.segunda-> auxiliarDomingosEscalaSegundaseSexta(diasChecagen,horario,feriadosDias,calbackAlarmeHoje,calbackAlarmeAmanha)
 
-                  }else{
-                      when(diasChecagen.prosimoDiasemana){
-                          SemanaDia.segunda->{
-                          if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                              calbackAlarme()
-                          }
-                          SemanaDia.terca->{
-                          if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                              calbackAlarme()
-                          }
-                          SemanaDia.quarta->{
-                              if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                                  calbackAlarme()
-                          }
-                          SemanaDia.quinta->{
-                              if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                                  calbackAlarme
-                          }
-                          SemanaDia.sexta->{
-                              if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                                  calbackAlarme()
-                          }
-                          SemanaDia.doming->{}
-                          SemanaDia.sabado->{
-                              if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                                 calbackAlarme()
-                          }
 
-                      }
-                  }
-              }}
-              OpicionalModeloSegSex.Feriados.opcao->{}
-              OpicionalModeloSegSex.Vasios.opcao->{
-                  if(diasChecagen.diasemana!= SemanaDia.doming&& diasChecagen.diasemana!= SemanaDia.sabado){
-                    if(checaHorarioParaAgendadmento(horario)){
+                   SemanaDia.terca->auxiliarDomingosEscalaSegundaseSexta(diasChecagen,horario,feriadosDias,calbackAlarmeHoje,calbackAlarmeAmanha)
+
+                   SemanaDia.quarta-> auxiliarDomingosEscalaSegundaseSexta(diasChecagen,horario,feriadosDias,calbackAlarmeHoje,calbackAlarmeAmanha)
+
+                   SemanaDia.quinta-> auxiliarDomingosEscalaSegundaseSexta(diasChecagen,horario,feriadosDias,calbackAlarmeHoje,calbackAlarmeAmanha)
+                   SemanaDia.sexta-> {
+                       if(!feriadosDias.contains(diasChecagen.dia))
+                           if(checaHorarioParaAgendadmento(horario))
+                               calbackAlarmeHoje(horario.hora,horario.minuto)
+                   }
+
+                   SemanaDia.sabado->{
                         if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                           calbackAlarme()
+                               calbackAlarmeAmanha(horario.hora,horario.minuto)
 
-                    }else{
-                      when(diasChecagen.prosimoDiasemana){
-                          SemanaDia.segunda->{
-                              if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                                 calbackAlarme()
-                          }
-                          SemanaDia.terca->{
-                              if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                                 calbackAlarme()
-                          }
-                          SemanaDia.quarta->{
-                              if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                                 calbackAlarme()
-                          }
-                          SemanaDia.quinta->{
-                              if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                                  calbackAlarme()
-                          }
-                          SemanaDia.sexta->{
-                              if(!feriadosDias.contains(diasChecagen.prosimoDia))
-                                  calbackAlarme()
-                          }
-                          SemanaDia.doming->{}
-                          SemanaDia.sabado->{}
-
-                      }
+                   }
+                   SemanaDia.doming-> auxiliarDomingosEscalaSegundaseSexta(diasChecagen,horario,feriadosDias,calbackAlarmeHoje,calbackAlarmeAmanha)
+               }
+            }
+            OpicionalModeloSegSex.Sbados.opcao->{
+                when(diasChecagen.diasemana){
+                    SemanaDia.segunda->auxiliarSabadosEscalaSegundaseSexta(diasChecagen, horario, feriadosDias, calbackAlarmeHoje, calbackAlarmeAmanha)
+                    SemanaDia.terca->auxiliarSabadosEscalaSegundaseSexta(diasChecagen, horario, feriadosDias, calbackAlarmeHoje, calbackAlarmeAmanha)
+                    SemanaDia.quarta->auxiliarSabadosEscalaSegundaseSexta(diasChecagen, horario, feriadosDias, calbackAlarmeHoje, calbackAlarmeAmanha)
+                    SemanaDia.quinta->auxiliarSabadosEscalaSegundaseSexta(diasChecagen, horario, feriadosDias, calbackAlarmeHoje, calbackAlarmeAmanha)
+                    SemanaDia.sexta->auxiliarSabadosEscalaSegundaseSexta(diasChecagen, horario, feriadosDias, calbackAlarmeHoje, calbackAlarmeAmanha)
+                    SemanaDia.sabado->{
+                        if(!feriadosDias.contains(diasChecagen.dia))
+                            if(checaHorarioParaAgendadmento(horario))
+                                calbackAlarmeHoje(horario.hora,horario.minuto)
                     }
-                  }
-              }
+                    SemanaDia.doming->{
+                        if(!feriadosDias.contains(diasChecagen.prosimoDia))
+                            calbackAlarmeAmanha(horario.hora,horario.minuto)
 
-          }
+                    }
+
+
+                }
+            }
+            OpicionalModeloSegSex.Feriados.opcao->{
+                when(diasChecagen.diasemana){
+                    SemanaDia.segunda->auxiliarFeriadosEscalaSegundaseSexta(diasChecagen, horario, feriadosDias, calbackAlarmeHoje, calbackAlarmeAmanha)
+                    SemanaDia.terca->auxiliarFeriadosEscalaSegundaseSexta(diasChecagen, horario, feriadosDias, calbackAlarmeHoje, calbackAlarmeAmanha)
+                    SemanaDia.quarta->auxiliarFeriadosEscalaSegundaseSexta(diasChecagen, horario, feriadosDias, calbackAlarmeHoje, calbackAlarmeAmanha)
+                    SemanaDia.quinta->auxiliarFeriadosEscalaSegundaseSexta(diasChecagen, horario, feriadosDias, calbackAlarmeHoje, calbackAlarmeAmanha)
+                    SemanaDia.sexta->{
+                        if(diasChecagen.diasemana!=SemanaDia.sabado&&diasChecagen.diasemana!=SemanaDia.doming)
+                            if(checaHorarioParaAgendadmento(horario))
+                                calbackAlarmeHoje(horario.hora,horario.minuto)
+                    }
+                    SemanaDia.sabado->{}
+                    SemanaDia.doming->{
+                        if(diasChecagen.prosimoDiasemana!=SemanaDia.sabado&&diasChecagen.prosimoDiasemana!=SemanaDia.doming)
+                            calbackAlarmeAmanha(horario.hora,horario.minuto)
+                    }
+                }
+            }
+            OpicionalModeloSegSex.Vasios.opcao->{
+                when(diasChecagen.diasemana){
+                    SemanaDia.segunda->auxiliarVasioEscalaSegundaseSexta(diasChecagen, horario, feriadosDias, calbackAlarmeHoje, calbackAlarmeAmanha)
+                    SemanaDia.terca->auxiliarVasioEscalaSegundaseSexta(diasChecagen, horario, feriadosDias, calbackAlarmeHoje, calbackAlarmeAmanha)
+                    SemanaDia.quarta->auxiliarVasioEscalaSegundaseSexta(diasChecagen, horario, feriadosDias, calbackAlarmeHoje, calbackAlarmeAmanha)
+                    SemanaDia.quinta->auxiliarVasioEscalaSegundaseSexta(diasChecagen, horario, feriadosDias, calbackAlarmeHoje, calbackAlarmeAmanha)
+                    SemanaDia.sexta->{
+                       if( diasChecagen.diasemana!=SemanaDia.sabado&&diasChecagen.diasemana!=SemanaDia.doming)
+                        if(checaHorarioParaAgendadmento(horario))
+                            calbackAlarmeHoje(horario.hora,horario.minuto)
+                    }
+                    SemanaDia.sabado->{}
+                    SemanaDia.doming->{
+                        if(diasChecagen.prosimoDiasemana!=SemanaDia.sabado&&diasChecagen.prosimoDiasemana!=SemanaDia.doming)
+                            calbackAlarmeAmanha(horario.hora,horario.minuto)
+                    }
+                }
+
+            }
+
+
+
+        }
+
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun checaHorarioParaAgendadmento(horario:HorioDosAlarmes):Boolean{
+    private fun auxiliarDomingosEscalaSegundaseSexta(diasChecagen: DiasChecagen,
+                                                     horario: HorioDosAlarmes,
+                                                     feriadosDias:List<Int>,
+                                                     calbackAlarmeHoje:(h:Int,m:Int)->Unit,
+                                                     calbackAlarmeAmanha: (h: Int, m: Int) -> Unit){
+        if(!feriadosDias.contains(diasChecagen.dia))
+            if(checaHorarioParaAgendadmento(horario))
+                calbackAlarmeHoje(horario.hora,horario.minuto)
+            else if(!feriadosDias.contains(diasChecagen.prosimoDia)&&diasChecagen.prosimoDiasemana!=SemanaDia.sabado)
+                calbackAlarmeAmanha(horario.hora,horario.minuto)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun auxiliarSabadosEscalaSegundaseSexta(diasChecagen: DiasChecagen,
+                                                     horario: HorioDosAlarmes,
+                                                     feriadosDias:List<Int>,
+                                                     calbackAlarmeHoje:(h:Int,m:Int)->Unit,
+                                                     calbackAlarmeAmanha: (h: Int, m: Int) -> Unit){
+        if(!feriadosDias.contains(diasChecagen.dia))
+            if(checaHorarioParaAgendadmento(horario))
+                calbackAlarmeHoje(horario.hora,horario.minuto)
+            else if(!feriadosDias.contains(diasChecagen.prosimoDia)&&diasChecagen.prosimoDiasemana!=SemanaDia.doming)
+                calbackAlarmeAmanha(horario.hora,horario.minuto)
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun auxiliarFeriadosEscalaSegundaseSexta(diasChecagen: DiasChecagen,
+                                                    horario: HorioDosAlarmes,
+                                                    feriadosDias:List<Int>,
+                                                    calbackAlarmeHoje:(h:Int,m:Int)->Unit,
+                                                    calbackAlarmeAmanha: (h: Int, m: Int) -> Unit){
+        if(diasChecagen.diasemana!=SemanaDia.sabado&&diasChecagen.diasemana!=SemanaDia.doming)
+            if(checaHorarioParaAgendadmento(horario))
+                calbackAlarmeHoje(horario.hora,horario.minuto)
+            else if(diasChecagen.prosimoDiasemana!=SemanaDia.sabado&&diasChecagen.prosimoDiasemana!=SemanaDia.doming)
+                calbackAlarmeAmanha(horario.hora,horario.minuto)
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun auxiliarVasioEscalaSegundaseSexta(diasChecagen: DiasChecagen,
+                                                     horario: HorioDosAlarmes,
+                                                     feriadosDias:List<Int>,
+                                                     calbackAlarmeHoje:(h:Int,m:Int)->Unit,
+                                                     calbackAlarmeAmanha: (h: Int, m: Int) -> Unit){
+        if(diasChecagen.diasemana!=SemanaDia.sabado&&diasChecagen.diasemana!=SemanaDia.doming&&!feriadosDias.contains(diasChecagen.dia))
+            if(checaHorarioParaAgendadmento(horario))
+                calbackAlarmeHoje(horario.hora,horario.minuto)
+            else if(diasChecagen.prosimoDiasemana!=SemanaDia.sabado&&diasChecagen.prosimoDiasemana!=SemanaDia.doming&&!feriadosDias.contains(diasChecagen.prosimoDia))
+                calbackAlarmeAmanha(horario.hora,horario.minuto)
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun checaHorarioParaAgendadmento(horario:HorioDosAlarmes):Boolean{
        val horarioAtual=LocalTime.now()
        val localTaimer=LocalTime.of(horario.hora,horario.minuto)
        if(horarioAtual.isBefore(localTaimer)){

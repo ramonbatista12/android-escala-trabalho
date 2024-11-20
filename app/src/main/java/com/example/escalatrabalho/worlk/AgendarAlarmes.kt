@@ -24,7 +24,9 @@ import com.example.escalatrabalho.enums.NomesDeModelosDeEscala
 import com.example.escalatrabalho.repositorio.OpicionaiSealedClassess.OpicionalModelo1236
 import com.example.escalatrabalho.repositorio.RepositorioPrincipal
 import com.example.escalatrabalho.repositorio.repositoriodeDatas.DiasChecagen
+import com.example.escalatrabalho.repositorio.repositoriodeDatas.SemanaDia
 import com.example.escalatrabalho.roomComfigs.DiasOpcionais
+import com.example.escalatrabalho.roomComfigs.Feriados
 import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
 import com.example.escalatrabalho.roomComfigs.ModeloDeEScala
 import kotlinx.coroutines.Dispatchers
@@ -51,139 +53,77 @@ val Tag = "AgendarAlarmes"
         @SuppressLint("ScheduleExactAlarm")
 
         override suspend fun doWork(): Result {
-            scop.launch {
             registrarCanal()
             criarCanalNotificacao(MensagemNoticacaoWork.MensagemsChecando.mensagem)
             notificar()
-            val job = Job()
-            val scop = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main + job)
-            val repositorio = RepositorioExecutado(AplicationCuston.db.db.dao())
-            val repositorioPrincipal =
-                RepositorioPrincipal(AplicationCuston.db, AplicationCuston.db.endpoint)
-            val modeloDeEscala = repositorioPrincipal.getmodeloObjeto()?: ModeloDeEScala(0,"",false)
-            val opcionais=repositorioPrincipal.getOpcionaisObjeto(modeloDeEscala!!.modelo) ?: DiasOpcionais(0,"","")
-            val auxiliarDeDecisoes = WorkAuxiliarDecisoes()
-            val listaFolgas=repositorioPrincipal.fluxoDatasFolgas.first().map { it.data }
-            val diasChecagen=repositorioPrincipal.getDiaAtualEprosimo()?:DiasChecagen(0,com.example.escalatrabalho.repositorio.repositoriodeDatas.SemanaDia.doming,0,com.example.escalatrabalho.repositorio.repositoriodeDatas.SemanaDia.doming)
-            val feriados=repositorioPrincipal.fluxoFeriados.first()
-            val alarmes =repositorioPrincipal.getObjetosHorariosAlsrme()?:HorioDosAlarmes(0,0,0)
-            when (modeloDeEscala.modelo) {
-                NomesDeModelosDeEscala.Modelo61.nome -> {
-                    Log.i(TAG, "modelo 61")
-                    auxiliarDeDecisoes.modelo61(opcionais)
-                }
+            val repositorioPrincipal = RepositorioPrincipal(AplicationCuston.db, AplicationCuston.endpoint)
+            val repositorioExecutado = RepositorioExecutado(AplicationCuston.db.db.dao())
+            val auxiliarDecisoes= WorkAuxiliarDecisoes()
 
-                NomesDeModelosDeEscala.Modelo1236.nome -> {
-                    Log.i(TAG, "modelo 1236")
-                    auxiliarDeDecisoes.modelo1232(opcionais,
-                        listaFolgas,
-                        diasChecagen,
-                        alarmes, {
-                            scop.launch {
-                                agendarAlarme(
-                                    alarmes.hora,
-                                    alarmes.minuto
-                                )
-                            }
+          val _job= scop.launch(Dispatchers.IO) {
+               val modeloDeEscala =  repositorioPrincipal.getmodeloObjeto()?: ModeloDeEScala(0,"",false)
+               val horioDosAlarmes = repositorioPrincipal.getObjetosHorariosAlsrme()?: HorioDosAlarmes(0,0,0)
+               val diasOpcionais = repositorioPrincipal.getOpcionaisObjeto(modeloDeEscala.modelo)?: DiasOpcionais(0,"","")
+               val dia = repositorioPrincipal.getDiaAtualEprosimo()?: DiasChecagen(0,SemanaDia.doming,0,SemanaDia.doming)
+               val lisat =MutableStateFlow<List<Int>>(emptyList())
+               val feriado =MutableStateFlow<List<Feriados>>(emptyList())
+               repositorioPrincipal.fluxoDatasFolgas.first{
+                   lisat.value=it.map { it.data }
+                   true
+               }
+               repositorioPrincipal.fluxoFeriados.first {
+                   feriado.value=it
+                   true
+               }
 
-                        })
-                }
+               when(modeloDeEscala.modelo){
+                   NomesDeModelosDeEscala.Modelo1236.nome-> auxiliarDecisoes.modelo1236(diasOpcionais= diasOpcionais,
+                                                                                        diasDeFolgas = lisat.value,
+                                                                                        diasChecagen = dia,horioDosAlarmes,
+                                                                                        {h,m->
+                                                                                        scop.launch {agendarAlarmeProsimoDia(h,m)}
+                                                                                         },{h,m->
+                                                                                            scop.launch {agendarAlarmeHoje(h,m)}
+                                                                                           })
+                   NomesDeModelosDeEscala.Modelo61.nome-> auxiliarDecisoes.modelo61(diasOpcionais)
 
-                NomesDeModelosDeEscala.ModeloSegSex.nome -> {
-                    Log.i(TAG, "modelo seg sex")
+                   NomesDeModelosDeEscala.ModeloSegSex.nome->auxiliarDecisoes.modeloSegundaSexta(diasOpcionais=diasOpcionais,
+                                                                                            feriados=feriado.value,
+                                                                                            diasChecagen = dia,
+                                                                                            horioDosAlarmes,
+                                                                                            {h,m->
+                                                                                            scop.launch {agendarAlarmeHoje(h,m)}
+                                                                                            },
+                                                                                            {h,m->
+                                                                                             scop.launch { agendarAlarmeProsimoDia(h,m) }
+                                                                                            })
+                   else->{Log.i("modelo selecionado","modelo nao encontrado")}
+               }
 
-                    auxiliarDeDecisoes.modeloSegundaSexta(opcionais,
-                        feriados,
-                        diasChecagen,
-                        alarmes, {
-                            scop.launch {
-                                agendarAlarme(
-                                   alarmes.hora,
-                                    alarmes.minuto
-                                )
-                            }
-
-                        })
-
-                }
-
-                else -> {}
-
-
-            }
-
-
-            job.cancel()
-        }
-        job.join()
-        job.cancel()
+           }
+            _job.join()
+           while (!_job.isCompleted) Log.i("executando work","loop while trabalhando emquanto o job nao for completo")
             return Result.success()
         }
 
 
 
 
+
         @RequiresApi(Build.VERSION_CODES.O)
-        suspend fun modelo1232(diasOpcionais: DiasOpcionais, dia: DiasChecagen, repositorio:RepositorioExecutado, repositorioPrincipal: RepositorioPrincipal){
-            val estadoAlarme= MutableStateFlow(HorioDosAlarmes(0,0,0))
-            val estadoFolgas = MutableStateFlow(emptyList<Int>())
-            GlobalScope.launch {
-                repositorioPrincipal.fluxoDatasFolgas.map { it.map { it.data } } .collect{
-                    estadoFolgas.value=it
-                }
-            }
-            GlobalScope.launch {
-                repositorioPrincipal.fluxoHorariosDosAlarmes.collect{
-                    estadoAlarme.value=it?:HorioDosAlarmes(0,0,0)
-
-                }
-                when(diasOpcionais.opicional){
-                    OpicionalModelo1236.Impar.opcao->{
-                        if(dia.dia%2==0){
-                            if(!estadoFolgas.value.contains(dia.dia)){
-
-                                agendarAlarme(estadoAlarme.value.hora,estadoAlarme.value.minuto)
-
-                            }
-
-                        }else {
-                            val agora = LocalDateTime.now()
-
-                            val horarioAlvo = agora.withHour(estadoAlarme.value.hora)
-                                .withMinute(estadoAlarme.value.minuto)
-                                .withSecond(0).withNano(0)
-                            val horarioLong= horarioAlvo.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                            val calendar = Calendar.getInstance()
-                            val horalocal =LocalDateTime.now()
-                            if(horalocal.isBefore(horarioAlvo)){
-                                Log.e("teste ","a hora ja passou")
-                            }
-
-                        }
-                    }
-                    OpicionalModelo1236.Par.opcao->{
-
-
-                        if(dia.dia%2!=0){
-
-
-                        }
-                        else{
-
-                        }}
-
-                    OpicionalModelo1236.Vasio.opcao->{
-
-                    }
-                }
-            }
-        }
-        @RequiresApi(Build.VERSION_CODES.O)
-        suspend fun agendarAlarme(hora:Int, minuto:Int){
+        suspend fun agendarAlarmeProsimoDia (hora:Int, minuto:Int){
             val agora = LocalDateTime.now()
             val amanha = agora.plusDays(1)
             val horarioAlvo = amanha.withHour(hora).withMinute(minuto).withSecond(0).withNano(0)
             val horarioLong= horarioAlvo.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            alarme(horarioLong)
+        }
+        @RequiresApi(Build.VERSION_CODES.O)
+        suspend fun agendarAlarmeHoje (hora:Int, minuto:Int){
+            val agora = LocalDateTime.now()
+            val horarioAlvo = agora.withHour(hora).withMinute(minuto).withSecond(0).withNano(0)
+            val horarioLong= horarioAlvo.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            Log.i("horarioAlvo","${horarioAlvo} alvo long number ${horarioLong}")
             alarme(horarioLong)
         }
         suspend fun alarme(horario:Long){
@@ -191,7 +131,10 @@ val Tag = "AgendarAlarmes"
             val intent=Intent(c,BroadcastRacever::class.java)
             val pendingIntent=PendingIntent.getBroadcast(c,0,intent,PendingIntent.FLAG_IMMUTABLE)
             withContext(Dispatchers.Main) {
+
             alarme.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,horario,pendingIntent)
+                Log.i("alarme","alarme agendadod")
+
             }
         }
         fun criarCanalNotificacao(mensagem:String){

@@ -27,7 +27,7 @@ import com.example.escalatrabalho.alarmemanager.BroadcastRacever
 
 class ServicoAlarme:Service() {
     lateinit var notificao: Notification
-    final val  canalNome="escala trabalho"
+    final val  canalNome="escala trabalho Service"
     final val  canalId=1
     inner class ServicoAlarmeBinder: Binder(){
         fun getService(): ServicoAlarme=this@ServicoAlarme
@@ -68,7 +68,7 @@ class ServicoAlarme:Service() {
         registrarCanal()
         criarCanalNotificacao()
         startForeground(canalId,notificao)
-        notificar()
+
         val ringtoneUri=RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
         ringtone=RingtoneManager.getRingtone(this,ringtoneUri)
         ringtone.isLooping=true
@@ -107,6 +107,7 @@ class ServicoAlarme:Service() {
            it.action=BroadcastReceiverMensagems.Soneca.mensagems
        }
        notificao= NotificationCompat.Builder(this ,canalNome)
+           .setOngoing(true)
            .setSmallIcon(R.drawable.baseline_access_alarms_24)
            .setContentTitle("escala trabalho")
            .setContentText("Voce vai trabalhar hoje")
@@ -131,8 +132,12 @@ class ServicoAlarme:Service() {
                               0,
                                         Intent(this,
                                                ActivityAlarrme::class.java)
-                                        ,PendingIntent.FLAG_IMMUTABLE))
+                                        ,PendingIntent.FLAG_IMMUTABLE)).setDeleteIntent(PendingIntent.getBroadcast(
+                                            this,2,intentSoneca,PendingIntent.FLAG_IMMUTABLE
+                                        ))
+
            .build()
+       notificao.flags= notificao.flags or Notification.FLAG_NO_CLEAR
    }
 
   fun notifirSoneca(){

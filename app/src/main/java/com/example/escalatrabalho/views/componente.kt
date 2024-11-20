@@ -819,7 +819,8 @@ fun ModeloDeEscalaAlturaCompacta(vm: ViewModelTelas, windowSizeClass: WindowSize
 @Composable
 //minha implementacao de timer piker
 fun TimePicker(vm: ViewModelTelas, calbackSnackbar: suspend (String) -> Unit = {}, windowSizeClass: WindowSizeClass) {
-    val state = rememberTimePickerState(0, 59)
+    val horario = vm.fluxoHorariosDosAlarmes.collectAsState(HorioDosAlarmes(0,0,0))
+    val state = rememberTimePickerState(horario.value!!.hora, horario.value!!.minuto )
     val scope = rememberCoroutineScope()
     val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
               else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 1.0f
@@ -879,7 +880,8 @@ fun TimePicker(vm: ViewModelTelas, calbackSnackbar: suspend (String) -> Unit = {
 @Composable
 //minha implementacao de timer piker
 fun TimePickerAlturaCompacta(vm: ViewModelTelas, calbackSnackbar: suspend (String) -> Unit = {}, windowSizeClass: WindowSizeClass) {
-    val state = rememberTimePickerState(0, 59)
+    val horario = vm.fluxoHorariosDosAlarmes.collectAsState(HorioDosAlarmes(0,0,0))
+    val state = rememberTimePickerState(horario.value!!.hora, horario.value!!.minuto)
     val scope = rememberCoroutineScope()
     val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
               else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 1.0f

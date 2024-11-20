@@ -15,7 +15,7 @@ import androidx.core.app.NotificationManagerCompat
 import com.example.escalatrabalho.R
 import com.example.escalatrabalho.serviceAlarme.ServicoAlarme
 
-class BroadcastRacever: BroadcastReceiver() {
+ class BroadcastRacever: BroadcastReceiver() {
 
 
     @RequiresApi(Build.VERSION_CODES.O)

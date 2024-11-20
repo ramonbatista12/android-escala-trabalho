@@ -190,12 +190,13 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {//f
                                         "seg-sext" -> {
 
                                             if (it.diaSemana == SemanaDia.sabado) {
-                                                if (opcional!!.opicional == OpicionalModeloSegSex.Sbados.opcao)
+                                                if (opcional!!.opicional == OpicionalModeloSegSex.Sbados.opcao){
+
                                                     visulizacaoDatas(
                                                         it.dia.toInt(),
                                                         it.mes.toInt(),
                                                         tabelaFormatacaoDatas[0]
-                                                    )
+                                                    )}
                                                 else visulizacaoDatas(
                                                     it.dia.toInt(),
                                                      it.mes.toInt(),

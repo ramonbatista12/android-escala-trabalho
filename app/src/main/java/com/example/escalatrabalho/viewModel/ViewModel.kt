@@ -101,7 +101,11 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
         initialValue = FeriasView(0,0,0,0,0,0,0,false)
                )
-
+    val fluxoHorariosDosAlarmes = repositorio.fluxoHorariosDosAlarmes.stateIn(
+        scope = scopo,
+        started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+        HorioDosAlarmes(0,0,0)
+    )
     val hostState = SnackbarHostState()//responsavel por mostrar snackbar)
 
     init {

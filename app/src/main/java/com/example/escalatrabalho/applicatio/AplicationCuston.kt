@@ -43,7 +43,7 @@ class AplicationCuston: Application()  {
 
            applicationScope.launch {
                val work = PeriodicWorkRequest.Builder(AgendarAlarmes::class.java,
-                                          10000,
+                                          600000,
                                                      java.util.concurrent.TimeUnit.MINUTES).build()
                WorkManager.getInstance(applicationContext).enqueue(work)
            }
