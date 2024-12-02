@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -40,14 +41,18 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerLayoutType
+import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,6 +65,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
@@ -72,12 +79,15 @@ import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.roomComfigs.DiasOpcionais
 import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
 import com.example.escalatrabalho.roomComfigs.ModeloDeEScala
+import com.example.escalatrabalho.ui.theme.AzulClareoAcinzentado
 import com.example.escalatrabalho.viewModel.ViewModelTelas
 import com.example.escalatrabalho.viewModel.modelosParaView.FeriasView
+import com.example.escalatrabalho.viewModel.modelosParaView.HorarioView
 import com.example.escalatrabalho.viewModel.modelosParaView.mdcheck
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @SuppressLint("SuspiciousIndentation")
 @Composable
 //comfiguracao responsavel por mostra otimer piker que agenda o horio dos alarmes
@@ -91,8 +101,8 @@ fun HorarioDosAlarmes(vm: ViewModelTelas, calbackSnackbar: suspend (String) -> U
              else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.3F
              else 1.0f
    val altura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
-            else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.98f
-            else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.8F
+            else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.4f
+            else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.4f
             else 1.0f
      Box(Modifier.fillMaxWidth(largura ).fillMaxHeight(altura)) {
     val scope = rememberCoroutineScope()//corotina interna
@@ -115,13 +125,43 @@ fun HorarioDosAlarmes(vm: ViewModelTelas, calbackSnackbar: suspend (String) -> U
     androidx.compose.animation.AnimatedVisibility(
         visibleState =vm.estadosVm.transicaoDatPiker,
         modifier = Modifier.align(Alignment.Center)
-    ) { Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+    ) {
+       var  disparaTrocaDEHorario by  remember { mutableStateOf(false) }
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        val horario = vm.fluxoHorariosDosAlarmes.collectAsState(HorarioView(" -- "," -- "))
         Spacer(Modifier.padding(30.dp))
-        Surface { TimePicker(vm =vm ,calbackSnackbar = calbackSnackbar,windowSizeClass = windowSizeClass) }
+       Box(Modifier.padding(20.dp)
+                   .fillMaxWidth(1f)
+                   .height(200.dp).clickable { disparaTrocaDEHorario=true }
+                   .border(width = 0.4.dp,shape = RoundedCornerShape(20.dp),color = Color.Black)){
+        FlowRow (horizontalArrangement = Arrangement.Center,
+                 modifier = Modifier.align(Alignment.Center) ) {
+              Text(text=horario.value.hora ,
+                   fontSize = 70.sp, modifier = Modifier.border(width = 0.4.dp, shape =RoundedCornerShape(20.dp),color = Color.Black ))
+              Spacer(Modifier.padding(5.dp))
+              Text(text=":",
+                   fontSize = 70.sp)
+              Spacer(Modifier.padding(5.dp))
+              Text(text=horario.value.minuto ,
+                  fontSize = 70.sp,modifier = Modifier.border(width = 0.4.dp, shape =RoundedCornerShape(20.dp),color = Color.Black ))
+            }
+           IconButton(onClick = {disparaTrocaDEHorario=true},
+           modifier=Modifier.size(if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 40.dp else 70.dp )
+                            .align(Alignment.TopEnd)) {
+           Icon(Icons.Default.Edit, contentDescription = "editar horario",modifier=Modifier.size(45.dp))
+         }}
+
+       if(disparaTrocaDEHorario)
+          ModalBottomSheet (onDismissRequest = { disparaTrocaDEHorario = false})
+          {
+              Surface { TimePicker(vm =vm ,calbackSnackbar = calbackSnackbar,windowSizeClass = windowSizeClass) }}
     } }
 
 }
 }
+
+
 @Composable
 //comfiguracao responsavel por mostra otimer piker que agenda o horio dos alarmes
 fun HorarioDosAlarmesAuturaCompacta(vm: ViewModelTelas, calbackSnackbar: suspend (String) -> Unit = {}, windowSizeClass: WindowSizeClass){
@@ -382,8 +422,8 @@ fun Ferias(vm: ViewModelTelas,stadoTransicao: MutableTransitionState<Boolean>, s
     else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.3F
     else 1.0f
     val altura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
-    else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.4f
-    else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.5F
+    else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.3f
+    else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.3F
     else 1.0f
     Box(modifier= Modifier.fillMaxWidth(largura)){
     val scope= rememberCoroutineScope()
@@ -563,7 +603,7 @@ fun ModeloDeEscala(vm: ViewModelTelas, windowSizeClass: WindowSizeClass){
     //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
     // a documetacao diss que ate esse momento o uso de windowsize class e o mais indicado quandose referre a classes que cauculam o tamanho de janelas
     val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
-              else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.5f
+              else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.4f
               else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.3F
               else 1.0f
     val altura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
@@ -657,7 +697,7 @@ fun ModeloDeEscala(vm: ViewModelTelas, windowSizeClass: WindowSizeClass){
                         })
                 }
                 }else if(modeloSegSex.value.check){
-                    Spacer(Modifier.padding(10.dp))
+                   if(windowSizeClass.windowWidthSizeClass!=WindowWidthSizeClass.MEDIUM) Spacer(Modifier.padding(10.dp))
                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                        Text(text = "  sabados")
                        Switch(checked = if(diasOpcionais.value!!.opicional==OpicionalModeloSegSex.Sbados.opcao) true else false, onCheckedChange = {
@@ -819,8 +859,14 @@ fun ModeloDeEscalaAlturaCompacta(vm: ViewModelTelas, windowSizeClass: WindowSize
 @Composable
 //minha implementacao de timer piker
 fun TimePicker(vm: ViewModelTelas, calbackSnackbar: suspend (String) -> Unit = {}, windowSizeClass: WindowSizeClass) {
-    val horario = vm.fluxoHorariosDosAlarmes.collectAsState(HorioDosAlarmes(0,0,0))
-    val state = rememberTimePickerState(horario.value!!.hora, horario.value!!.minuto )
+
+    var state =  rememberTimePickerState(7, 0,true)
+
+
+
+
+
+
     val scope = rememberCoroutineScope()
     val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
               else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 1.0f
@@ -830,9 +876,7 @@ fun TimePicker(vm: ViewModelTelas, calbackSnackbar: suspend (String) -> Unit = {
     val layout = if( windowSizeClass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT) TimePickerLayoutType.Horizontal
                  else TimePickerLayoutType.Vertical
     Column(modifier = Modifier.clip(RoundedCornerShape(20.dp))
-                               .border(width = 0.4.dp,
-                                       color = Color.Black,
-                                       shape = RoundedCornerShape(20.dp))) {
+                               ) {
         Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
 
             TextButton (onClick = {
@@ -880,8 +924,8 @@ fun TimePicker(vm: ViewModelTelas, calbackSnackbar: suspend (String) -> Unit = {
 @Composable
 //minha implementacao de timer piker
 fun TimePickerAlturaCompacta(vm: ViewModelTelas, calbackSnackbar: suspend (String) -> Unit = {}, windowSizeClass: WindowSizeClass) {
-    val horario = vm.fluxoHorariosDosAlarmes.collectAsState(HorioDosAlarmes(0,0,0))
-    val state = rememberTimePickerState(horario.value!!.hora, horario.value!!.minuto)
+
+    val state = rememberTimePickerState(7, 0,is24Hour = true)
     val scope = rememberCoroutineScope()
     val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
               else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 1.0f

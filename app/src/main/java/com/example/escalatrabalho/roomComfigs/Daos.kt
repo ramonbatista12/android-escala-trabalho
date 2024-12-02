@@ -107,6 +107,10 @@ interface Daos {
     //Ferias
     @Query("select * from Ferias")
     fun getFerias(): Flow<Ferias?>
+    @Query("select * from Ferias where id=1")
+    fun getFeriasObjeto(): Ferias?
+    @Query("select COUNT (*) from Ferias ")
+    fun countFerias():Int
     @Insert
     suspend fun insertFerias(vararg ferias: Ferias)
     @Delete

@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.FlowRow
 
 import androidx.compose.foundation.layout.Spacer
@@ -117,8 +118,8 @@ fun telainicial(vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
          }
 
 
- dialogoDatasFolgas(disparar = vm.estadosVm.disparaDatass.value, acaoFechar = {vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value},vm = vm)
- dialogoDatasFerrias(vm = vm,disparar =vm.estadosVm.disparaDialogoFerias.value, acaoFechar = {vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value})
+ dialogoDatasFolgas( acaoFechar = {vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value},vm = vm)
+ dialogoDatasFerrias(vm = vm, acaoFechar = {vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value})
 }
 
 @Composable
@@ -225,29 +226,34 @@ fun larguraExpandida(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: Wind
                                    if (windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.COMPACT){
                                        Box(modifier = Modifier.fillMaxWidth(0.6f), contentAlignment = Alignment.Center){ painelExpandidoAlturaCompacta(vm,scop,windowSizeClass)}
                                    }
-                                   else{ HorarioDosAlarmes(vm,calbackSnackbar = { it->vm.hostState.showSnackbar(it)},windowSizeClass)
-                                    Spacer(modifier=Modifier.padding(8.dp))
-                                    Column {
-                                                 Ferias(vm=vm,stadoTransicao = vm.estadosVm.transicaoFerias,
-                                                     scope = scop,
-                                                     diparaDialogoFerias = {
-                                                         vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value
-                                                                            },
-                                                     windowSizeClass )
-                                                 ModeloDeEscala(vm = vm,
-                                                     windowSizeClass = windowSizeClass)
-                                                 DataDasFolgas(vm = vm,
-                                                     diparaDialogoDatas = {
-                                                         scop.launch {  vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value}
-                                                                           } ,
-                                                     windowSizeClass)
+                                   else{
+                                          FlowColumn {
+                                              HorarioDosAlarmes(vm,calbackSnackbar = { it->vm.hostState.showSnackbar(it)},windowSizeClass)
+                                              ModeloDeEscala(vm = vm,
+                                              windowSizeClass = windowSizeClass)}
+                                           Spacer(modifier=Modifier.padding(8.dp))
+                                           FlowColumn {
+                                               Ferias(vm=vm,stadoTransicao = vm.estadosVm.transicaoFerias,
+                                                   scope = scop,
+                                                   diparaDialogoFerias = {
+                                                       vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value
+                                                   },
+                                                   windowSizeClass )
+
+                                               DataDasFolgas(vm = vm,
+                                                   diparaDialogoDatas = {
+                                                       scop.launch {  vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value}
+                                                   } ,
+                                                   windowSizeClass)
                                            }
+
+                                       }
                                    }
 
                      }
     }
 }
-}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass){
@@ -308,9 +314,14 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
                                   }
                                   calendario(m=Modifier,vm=vm,windowSizeClass)
                                   FlowRow(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                                   HorarioDosAlarmes(vm,calbackSnackbar = { it->},windowSizeClass)
+                                                 Column {
+                                                     HorarioDosAlarmes(vm,calbackSnackbar = { it->},windowSizeClass)
+                                                     ModeloDeEscala(vm = vm,
+                                                     windowSizeClass = windowSizeClass)
+                                                 }
+
                                                    Spacer(modifier=Modifier.padding(8.dp))
-                                                   Column  {
+                                                   FlowColumn  {
                                                                 Ferias(vm=vm,
                                                                     stadoTransicao = vm.estadosVm.transicaoFerias,
                                                                     scope = scop,
@@ -319,9 +330,8 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
                                                                     },
                                                                     windowSizeClass )
                                                                 Spacer(modifier=Modifier.padding(3.dp))
-                                                                ModeloDeEscala(vm = vm,
-                                                                    windowSizeClass = windowSizeClass)
-                                                                Spacer(modifier=Modifier.padding(3.dp))
+
+
                                                                 DataDasFolgas(vm = vm,
                                                                     diparaDialogoDatas = {
                                                                         scop.launch {  vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value}
@@ -449,14 +459,14 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 //dialogo de datas de folgas responsavel por permirtir a selecao das folgas
-fun dialogoDatasFolgas(disparar:Boolean,acaoFechar:()->Unit,vm:ViewModelTelas){
-    if(disparar) Surface {
+fun dialogoDatasFolgas(acaoFechar:()->Unit,vm:ViewModelTelas){
+    if(vm.estadosVm.disparaDatass.value) Surface {
     ModalBottomSheet(onDismissRequest = acaoFechar) {
         var estate = rememberDatePickerState()
 
         Surface {   Box{
 
-             IconButton(onClick ={
+             TextButton (onClick ={
                  //eu uso a classe calendar para pegar a data selecionada e inserir no banco de dados
                  // pois esiste a nessesitade de receber um nuimerro e comverter ele em uma date
 
@@ -470,6 +480,8 @@ fun dialogoDatasFolgas(disparar:Boolean,acaoFechar:()->Unit,vm:ViewModelTelas){
                      ))
              }, modifier = Modifier.align(Alignment.TopEnd) ) {
                  Icon(painterResource(R.drawable.baseline_save_24),"salvar")//aparesera quando for clicavel novamente
+                 Text("Salvar Data")
+
             }
 
 
@@ -489,8 +501,8 @@ fun dialogoDatasFolgas(disparar:Boolean,acaoFechar:()->Unit,vm:ViewModelTelas){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 //dialogo de datas de Ferias responsavel por permirtir a selecao das Ferias
-fun dialogoDatasFerrias(vm: ViewModelTelas,disparar:Boolean,acaoFechar:()->Unit){
-    if(disparar) Surface {
+fun dialogoDatasFerrias(vm: ViewModelTelas,acaoFechar:()->Unit){
+    if(vm.estadosVm.disparaDialogoFerias.value) Surface {
         ModalBottomSheet(onDismissRequest = acaoFechar) {  var estate = rememberDateRangePickerState()
             TextButton(onClick ={
                 var calendar=Calendar.getInstance()

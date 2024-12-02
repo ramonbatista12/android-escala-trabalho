@@ -19,6 +19,7 @@ import androidx.work.WorkManager
 import com.example.escalatrabalho.classesResultados.ResultadosDatasFolgas
 import com.example.escalatrabalho.classesResultados.ResultadosSalvarDatasFolgas
 import com.example.escalatrabalho.classesResultados.ResultadosSalvarHora
+import com.example.escalatrabalho.enums.NomesDeModelosDeEscala
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
 import com.example.escalatrabalho.roomComfigs.ModeloDeEScala
@@ -32,6 +33,7 @@ import com.example.escalatrabalho.enums.TelaNavegacaoSinplesAlturaCompacta
 import com.example.escalatrabalho.repositorio.OpicionaiSealedClassess.OpicionalModelo1236
 import com.example.escalatrabalho.roomComfigs.DiasOpcionais
 import com.example.escalatrabalho.viewModel.modelosParaView.FeriasView
+import com.example.escalatrabalho.viewModel.modelosParaView.HorarioView
 import com.example.escalatrabalho.worlk.AgendarAlarmes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -101,10 +103,13 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
         initialValue = FeriasView(0,0,0,0,0,0,0,false)
                )
-    val fluxoHorariosDosAlarmes = repositorio.fluxoHorariosDosAlarmes.stateIn(
+    val fluxoHorariosDosAlarmes = repositorio.fluxoHorariosDosAlarmes.map {
+        if(it ==null) HorarioView(" -- ", " -- ")
+        else HorarioView("${if(it.hora<10) "0" else ""}${it.hora}","${if(it.minuto<10) "0" else ""}${it.minuto}")
+    }.stateIn(
         scope = scopo,
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
-        HorioDosAlarmes(0,0,0)
+       HorarioView(" -- "," -- ")
     )
     val hostState = SnackbarHostState()//responsavel por mostrar snackbar)
 
@@ -129,7 +134,11 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
     fun inserirDatasFolgas(datasFolgas: DatasFolgas) {
         scopo.launch(context = Dispatchers.IO) {
             repositorio.inserirDatasdefolgas(datasFolgas)
-                                               }     }
+                                               }
+            .invokeOnCompletion { estadosVm.disparaDatass.value=false }
+
+
+    }
 
         //responsavel por deletar as datas de folgas                                                }
     fun deletarDatasFolgas(datasFolgas: DatasFolgas) {
@@ -143,6 +152,7 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
             horariosDosAlarmes: HorioDosAlarmes,
             calbakSnackbar: suspend (String) -> Unit
         ) {
+
             estadosVm.salvandoHorariosResultados.value =
                 ResultadosSalvarHora.salvando//estado de salvando horario
             scopo.launch(Dispatchers.IO) {
@@ -171,9 +181,9 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
 
         fun inserirOpcionalModelo(modelo:String,diasOpcionais:String){
            val opcional =  when(modelo){
-               "12/36"-> DiasOpcionais(1,"12/36",diasOpcionais)
-               "6/1"->  DiasOpcionais(2,"6/1",diasOpcionais)
-               "seg-sext"-> DiasOpcionais(3,"seg-sext",diasOpcionais)
+               NomesDeModelosDeEscala.Modelo1236.nome-> DiasOpcionais(1,NomesDeModelosDeEscala.Modelo1236.nome,diasOpcionais)
+               NomesDeModelosDeEscala.Modelo61.nome->  DiasOpcionais(2,NomesDeModelosDeEscala.Modelo61.nome,diasOpcionais)
+               NomesDeModelosDeEscala.ModeloSegSex.nome-> DiasOpcionais(3,NomesDeModelosDeEscala.ModeloSegSex.nome,diasOpcionais)
                else -> DiasOpcionais(0,"", OpicionalModelo1236.Vasio.opcao)
            }
             scopo.launch(context = Dispatchers.IO) {
@@ -192,6 +202,8 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
     fun inserirFerias(ferias: FeriasView){
         scopo.launch(context = Dispatchers.IO) {
             repositorio.inserirFerias(ferias)
+        }.invokeOnCompletion {
+            estadosVm.disparaDialogoFerias.value=false
         }
     }
 

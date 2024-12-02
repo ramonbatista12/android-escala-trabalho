@@ -31,7 +31,7 @@ sealed class OpicionalModeloSegSex(val opcao:String){
     object Sbados : OpicionalModeloSegSex("Sabados")
     object Domingos : OpicionalModeloSegSex("Domingos")
     object Feriados : OpicionalModeloSegSex("Feriados")
-    object Vasios : OpicionalModeloSegSex("Vasios")
+    object Vasios : OpicionalModeloSegSex("Vasio")
 
 
 }

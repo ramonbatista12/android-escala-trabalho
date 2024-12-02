@@ -88,7 +88,7 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {//f
                .map {
                       if(it==null) ModeloDeEScala(1, "defaut", false)
                       else it
-                    }        // fluxo com o modelo de trabalho ativo
+                    }                                                                                          // fluxo com o modelo de trabalho ativo
             val fluxoOpcionais=fluxoModeloDeEscalaAtivo
                 .flatMapLatest {
                                    flow<DiasOpcionais?>  {
@@ -110,7 +110,7 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {//f
 
                                                      }
                                         }
-                             }                                        //fluxo com os opcionais eles representao as opcoes para um determinado modelo de escala
+                             }                                                                              //fluxo com os opcionais eles representao as opcoes para um determinado modelo de escala
             val fluxoDeferias = repositorioFerias.select().map {
                 if(it==null) FeriasView(0,0,0,0,0,0,0,false)
                 else
@@ -122,7 +122,7 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {//f
                     anoInici = it!!.ano,
                     anoFim = it!!.anoFim,
                     check = true)
-            }                                                //fluxo das Ferias
+            }                                                                                                       //fluxo das Ferias
 
 
              val fluxoDatasTrabalhado = combine(                                                                    // fluxo combinado o repositorio o cria para formatar os dados
@@ -139,41 +139,42 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {//f
                     val _feriados: List<Int> = feriados.map { it.dia; }
                     var l = data.map {
                                   when(modeloAtivo!!.modelo) {    //checa a string do modelo ativo
-                                        "12/36" -> {
-                                             if (_folga.contains(it.dia.toInt())) {
+                                        NomesDeModelosDeEscala.Modelo1236.nome -> {
+                                        if (_folga.contains(it.dia.toInt())) {
                                                   visulizacaoDatas(it.dia.toInt(),
                                                                    it.mes.toInt(),
                                                                    tabelaFormatacaoDatas[1])
                                                                                    }
                                              else {
-                                                 if(opcional!!.opicional == OpicionalModelo1236.Par.opcao)
-                                                 {
-                                                 if (it.dia.toInt() % 2 == 0)
-                                                     visulizacaoDatas(it.dia.toInt(),
-                                                                      it.mes.toInt(),
-                                                                      tabelaFormatacaoDatas[0]
-                                                                       )
-                                                 else
-                                                     visulizacaoDatas(it.dia.toInt(),
-                                                                      it.mes.toInt(),
-                                                                      tabelaFormatacaoDatas[2])
-                                                  } else if(opcional.opicional == OpicionalModelo1236.Impar.opcao){
-                                                     if (it.dia.toInt() % 2 != 0)
-                                                         visulizacaoDatas(it.dia.toInt(),
+                                                 if(opcional!!.opicional == OpicionalModelo1236.Par.opcao){
+                                                                if (it.dia.toInt() % 2 == 0)
+                                                                    visulizacaoDatas(it.dia.toInt(),
+                                                                                     it.mes.toInt(),
+                                                                                     tabelaFormatacaoDatas[0]
+                                                                                      )
+                                                                else
+                                                                    visulizacaoDatas(it.dia.toInt(),
+                                                                                     it.mes.toInt(),
+                                                                                     tabelaFormatacaoDatas[2])
+                                                  }
+                                            else if(opcional.opicional == OpicionalModelo1236.Impar.opcao){
+                                                          if (it.dia.toInt() % 2 != 0)
+                                                              visulizacaoDatas(it.dia.toInt(),
+                                                                               it.mes.toInt(),
+                                                                               tabelaFormatacaoDatas[0]
+                                                              )
+                                                          else
+                                                              visulizacaoDatas(it.dia.toInt(),
+                                                                               it.mes.toInt(),
+                                                                               tabelaFormatacaoDatas[2])
+                                                  }
+                                                 else visulizacaoDatas(it.dia.toInt(),
                                                                           it.mes.toInt(),
-                                                                          tabelaFormatacaoDatas[0]
-                                                         )
-                                                     else
-                                                         visulizacaoDatas(it.dia.toInt(),
-                                                                          it.mes.toInt(),
-                                                                          tabelaFormatacaoDatas[2])
-                                                  } else visulizacaoDatas(it.dia.toInt(),
-                                                                          it.mes.toInt(),
-                                                                          tabelaFormatacaoDatas[0])
+                                                                          "")
                                              }
                                                      }
 
-                                        "6/1"-> {
+                                        NomesDeModelosDeEscala.Modelo61.nome-> {
 
                                                if (_folga.contains(it.dia.toInt())) {
                                                         visulizacaoDatas(it.dia.toInt(),
@@ -187,49 +188,44 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {//f
 
                                                 }
 
-                                        "seg-sext" -> {
-
-                                            if (it.diaSemana == SemanaDia.sabado) {
-                                                if (opcional!!.opicional == OpicionalModeloSegSex.Sbados.opcao){
-
-                                                    visulizacaoDatas(
-                                                        it.dia.toInt(),
-                                                        it.mes.toInt(),
-                                                        tabelaFormatacaoDatas[0]
-                                                    )}
-                                                else visulizacaoDatas(
-                                                    it.dia.toInt(),
-                                                     it.mes.toInt(),
-                                                    tabelaFormatacaoDatas[1]
-                                                )                              }
-
-                                                else if (it.diaSemana == SemanaDia.doming) {
-                                                    if (opcional!!.opicional == OpicionalModeloSegSex.Domingos.opcao) {
-                                                        visulizacaoDatas(
-                                                            it.dia.toInt(),
-                                                            it.mes.toInt(),
-                                                            tabelaFormatacaoDatas[0]
-                                                        )
-                                                    } else visulizacaoDatas( it.dia.toInt(),
-                                                                             it.mes.toInt(),
-                                                                             tabelaFormatacaoDatas[1]
-                                                    )
-                                                                                         }
-                                                else if(_folga.contains(it.dia.toInt())){
-                                                     if (opcional!!.opicional == OpicionalModeloSegSex.Feriados.opcao)
-                                                              visulizacaoDatas(it.dia.toInt(),
-                                                                               it.mes.toInt(),
-                                                                               tabelaFormatacaoDatas[0])
-                                                     else visulizacaoDatas(it.dia.toInt(),
-                                                                           it.mes.toInt(),
-                                                                           tabelaFormatacaoDatas[1])
+                                        NomesDeModelosDeEscala.ModeloSegSex.nome -> {
+                                            when(opcional!!.opicional){
+                                                OpicionalModeloSegSex.Domingos.opcao->{
+                                                    if(_feriados.contains(it.dia.toInt()))
+                                                        visulizacaoDatas(it.dia.toInt(),it.mes.toInt(),tabelaFormatacaoDatas[1])
+                                               else if(it.diaSemana!=SemanaDia.sabado)
+                                                         visulizacaoDatas(it.dia.toInt(),it.mes.toInt(),tabelaFormatacaoDatas[0])
+                                                    else visulizacaoDatas(it.dia.toInt(),it.mes.toInt(),tabelaFormatacaoDatas[1])
+                                                }
+                                                OpicionalModeloSegSex.Sbados.opcao->{
+                                                    if(_feriados.contains(it.dia.toInt()))
+                                                        visulizacaoDatas(it.dia.toInt(),it.mes.toInt(),tabelaFormatacaoDatas[1])
+                                               else if(it.diaSemana!=SemanaDia.doming)
+                                                         visulizacaoDatas(it.dia.toInt(),it.mes.toInt(),tabelaFormatacaoDatas[0])
+                                                    else visulizacaoDatas(it.dia.toInt(),it.mes.toInt(),tabelaFormatacaoDatas[1])
 
                                                 }
-                                             else visulizacaoDatas( it.dia.toInt(),
-                                                                    it.mes.toInt(),
-                                                                    tabelaFormatacaoDatas[0])
+                                                OpicionalModeloSegSex.Feriados.opcao->{
+                                                    if(it.diaSemana!=SemanaDia.doming && it.diaSemana!=SemanaDia.sabado)
+                                                        visulizacaoDatas(it.dia.toInt(),it.mes.toInt(),tabelaFormatacaoDatas[0])
+                                                    else visulizacaoDatas(it.dia.toInt(),it.mes.toInt(),tabelaFormatacaoDatas[1])
 
 
+                                                }
+                                                OpicionalModeloSegSex.Vasios.opcao->{
+
+
+                                                    if(it.diaSemana!=SemanaDia.doming && it.diaSemana!=SemanaDia.sabado&& !_feriados.contains(it.dia.toInt()))
+                                                        visulizacaoDatas(it.dia.toInt(),it.mes.toInt(),tabelaFormatacaoDatas[0])
+                                                    else visulizacaoDatas(it.dia.toInt(),it.mes.toInt(),tabelaFormatacaoDatas[1])
+                                                }
+                                                else ->{
+                                                    Log.i("modelo selecionado","modelo nao encontrado")
+                                                    visulizacaoDatas(it.dia.toInt(),it.mes.toInt(),"")
+
+                                                }
+
+                                            }
 
 
 
@@ -237,7 +233,7 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {//f
 
                                         else -> visulizacaoDatas(it.dia.toInt(),
                                                                  it.mes.toInt(),
-                                                                 tabelaFormatacaoDatas[0])
+                                                                 "")
                                    }
 
                                         }
@@ -312,7 +308,7 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {//f
         }
 
          suspend fun inserirFerias(ferias: FeriasView){
-            repositorioFerias.insert(Ferias(id=0,
+            repositorioFerias.insert(Ferias(id=1,
                                             ano = ferias.anoInici,
                                             anoFim = ferias.anoFim,
                                             mes =ferias.mesInici,
@@ -337,25 +333,25 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {//f
 
 
                  when{
-                     modeloDeTrabalho.modelo =="12/36" && modeloDeTrabalho.check->{
+                     modeloDeTrabalho.modelo ==NomesDeModelosDeEscala.Modelo1236.nome && modeloDeTrabalho.check->{
                          var l = listOf(
-                             ModeloDeEScala(1, "12/36", true),
-                             ModeloDeEScala(2, "6/1", false),
-                             ModeloDeEScala(3, "seg-sext", false))
+                             ModeloDeEScala(1, NomesDeModelosDeEscala.Modelo1236.nome, true),
+                             ModeloDeEScala(2, NomesDeModelosDeEscala.Modelo61.nome, false),
+                             ModeloDeEScala(3, NomesDeModelosDeEscala.ModeloSegSex.nome, false))
                          repositorioModeloDeTrabalho.updatelista(l)
                      }
-                     modeloDeTrabalho.modelo=="6/1" && modeloDeTrabalho.check->{
+                     modeloDeTrabalho.modelo==NomesDeModelosDeEscala.Modelo61.nome && modeloDeTrabalho.check->{
                          var l = listOf(
-                             ModeloDeEScala(1, "12/36", false),
-                             ModeloDeEScala(2, "6/1", true),
-                             ModeloDeEScala(3, "seg-sext", false))
+                             ModeloDeEScala(1, NomesDeModelosDeEscala.Modelo1236.nome, false),
+                             ModeloDeEScala(2, NomesDeModelosDeEscala.Modelo61.nome, true),
+                             ModeloDeEScala(3, NomesDeModelosDeEscala.ModeloSegSex.nome, false))
                          repositorioModeloDeTrabalho.updatelista(l)
                      }
-                     modeloDeTrabalho.modelo=="seg-sext" && modeloDeTrabalho.check->{
+                     modeloDeTrabalho.modelo==NomesDeModelosDeEscala.ModeloSegSex.nome && modeloDeTrabalho.check->{
                          var l = listOf(
-                             ModeloDeEScala(1, "12/36", false),
-                             ModeloDeEScala(2, "6/1", false),
-                             ModeloDeEScala(3, "seg-sext", true))
+                             ModeloDeEScala(1, NomesDeModelosDeEscala.Modelo1236.nome, false),
+                             ModeloDeEScala(2, NomesDeModelosDeEscala.Modelo1236.nome, false),
+                             ModeloDeEScala(3, NomesDeModelosDeEscala.ModeloSegSex.nome, true))
                          repositorioModeloDeTrabalho.updatelista(l)
                      }
                      else ->{repositorioModeloDeTrabalho.update(modeloDeTrabalho)}
@@ -387,9 +383,11 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {//f
 
        suspend fun getmodeloObjeto()=repositorioModeloDeTrabalho.getMOdelodeEscala()
        suspend fun getOpcionaisObjeto(m:String)=repositorioOpcionais.selectDiaOpcional(m)
+       suspend fun getFerias()=repositorioFerias.getFerias()
 
 
 }
+
 
 
 //classe RepositorioDatasFolgas responsavel por gerenciar a tabela DatasFolgas
@@ -438,6 +436,7 @@ class RepositorioHorariosDosAlarmes(private val dao: Daos){
 //classe RepositorioFerias responsavel por gerenciar a tabela Ferias
 class RepositorioFerias(private val dao: Daos){
             fun select():Flow<Ferias?> =dao.getFerias()
+    suspend fun getFerias()=dao.getFeriasObjeto()
     suspend fun insert(ferias: Ferias)=dao.insertFerias(ferias)
     suspend fun update(ferias: Ferias)=dao.update(ferias)
     suspend fun delete(ferias: Ferias)=dao.delete(ferias)

@@ -18,3 +18,7 @@ data class FeriasView(val id:Int,
                   val anoInici:Int,
                   val anoFim:Int,
                   val check: Boolean)
+
+//responsavel por mostrar as horas
+data class HorarioView(val hora:String,
+                       val minuto:String)

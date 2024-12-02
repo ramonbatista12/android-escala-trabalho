@@ -2,6 +2,8 @@ package com.example.escalatrabalho.classesResultados
 
 import com.example.escalatrabalho.repositorio.repositoriodeDatas.Datas
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
+import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
+
 //aqui estao os resultados que serao usados no app para mostrar as informacoes
 //eles serao usados para representatar esdtados como caregando erro etc....
 
@@ -42,6 +44,11 @@ enum  class ResultadosSalvarHora{
 
 }
 
+sealed class ResultadoHorarios{
+    object vasio: ResultadoHorarios()
+    class horario(val hora:Int,val minuto:Int): ResultadoHorarios()
+}
+
 
 //resultados para as datas de folgas
 sealed class ResultadosDatasFolgas {
@@ -56,4 +63,9 @@ sealed class ResultadosModeloTrabalh{
     class visualizando()
 
 
+}
+// resultados do caregamento dos horarios para o TimerPiker
+sealed class ResultadoHorariosCaregados{
+    object Caregando: ResultadoHorariosCaregados()
+    class Caregado(val horario:HorioDosAlarmes): ResultadoHorariosCaregados()
 }

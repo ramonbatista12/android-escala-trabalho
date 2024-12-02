@@ -90,6 +90,10 @@ class MainActivity : ComponentActivity() {
                         )
                     ), classeDetela
                 )
+
+                LaunchedEffect(classeDetela.windowWidthSizeClass,classeDetela.windowHeightSizeClass) {
+                    Log.i("tela", "largura: ${classeDetela.windowWidthSizeClass}, autura ${classeDetela.windowHeightSizeClass}")
+                }
                 val state = vmMain.dialog
                 if (state.value) {
                     AlertDialog(onDismissRequest = { vmMain.dialog.value = false },

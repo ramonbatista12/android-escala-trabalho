@@ -127,14 +127,24 @@ class ServicoAlarme:Service() {
                                                  intentSoneca,
                                                  PendingIntent.FLAG_IMMUTABLE
                                          )
-                     ).setContentIntent(
+                     )
+           .setContentIntent(
                PendingIntent.getActivity(this,
                               0,
                                         Intent(this,
                                                ActivityAlarrme::class.java)
-                                        ,PendingIntent.FLAG_IMMUTABLE)).setDeleteIntent(PendingIntent.getBroadcast(
+                                        ,PendingIntent.FLAG_IMMUTABLE))
+           .setFullScreenIntent(
+               PendingIntent.getActivity(this,
+                                      0,
+                                        Intent(this,
+                                               ActivityAlarrme::class.java)
+                                        ,PendingIntent.FLAG_IMMUTABLE),true
+                                  )
+           .setDeleteIntent(PendingIntent.getBroadcast(
                                             this,2,intentSoneca,PendingIntent.FLAG_IMMUTABLE
                                         ))
+
 
            .build()
        notificao.flags= notificao.flags or Notification.FLAG_NO_CLEAR

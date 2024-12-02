@@ -41,7 +41,7 @@ data class HorioDosAlarmes(@PrimaryKey(autoGenerate = false) val id:Int,
                            @ColumnInfo(name = "minuto")val minuto:Int)
 //entidade responsavel por gerenciar as datas de Ferias
 @Entity
-data class Ferias(@PrimaryKey(autoGenerate = true) val id:Int,
+data class Ferias(@PrimaryKey(autoGenerate = false) val id:Int,
                   @ColumnInfo(name = "anoInicio")val ano:Int,
                   @ColumnInfo(name = "anoFim")val anoFim:Int,
                   @ColumnInfo(name = "mesInicio")val mes:Int,

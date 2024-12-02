@@ -22,6 +22,7 @@ sealed class MensagemNoticacaoWork(val mensagem:String){
     object Feriado:MensagemNoticacaoWork("nao agendarei alarme amanha e feriado Feriado")
     object feriadoTrabalhado:MensagemNoticacaoWork("agendarei um alarme para o prosimo feriado")
     object Ferias:MensagemNoticacaoWork("nao agendarei alarme hoje voce esta de Ferias")
+    object ultimoDiaFerias:MensagemNoticacaoWork("ultimo dia de ferias !!!!")
 
 }
 

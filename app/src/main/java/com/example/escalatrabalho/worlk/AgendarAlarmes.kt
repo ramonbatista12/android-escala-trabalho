@@ -27,6 +27,7 @@ import com.example.escalatrabalho.repositorio.repositoriodeDatas.DiasChecagen
 import com.example.escalatrabalho.repositorio.repositoriodeDatas.SemanaDia
 import com.example.escalatrabalho.roomComfigs.DiasOpcionais
 import com.example.escalatrabalho.roomComfigs.Feriados
+import com.example.escalatrabalho.roomComfigs.Ferias
 import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
 import com.example.escalatrabalho.roomComfigs.ModeloDeEScala
 import kotlinx.coroutines.Dispatchers
@@ -38,6 +39,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.internal.wait
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Calendar
@@ -47,8 +49,8 @@ val Tag = "AgendarAlarmes"
     class AgendarAlarmes(private val c: Context,val p: WorkerParameters):CoroutineWorker(c,p) {
         private final val TAG = "AgendarAlarmes teste "
         lateinit var notificao: android.app.Notification
-        private val job= Job()
-        private val scop= kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main + job)
+        private val job= Job()//para que eu nao me esquessa job e usado para comtrolar o siclo de vida das corotinas em um determinado escopo
+        private val scop= kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main + job)//esse escopo e comtrolado pelo job
         @RequiresApi(Build.VERSION_CODES.O)
         @SuppressLint("ScheduleExactAlarm")
 
@@ -67,6 +69,7 @@ val Tag = "AgendarAlarmes"
                val dia = repositorioPrincipal.getDiaAtualEprosimo()?: DiasChecagen(0,SemanaDia.doming,0,SemanaDia.doming)
                val lisat =MutableStateFlow<List<Int>>(emptyList())
                val feriado =MutableStateFlow<List<Feriados>>(emptyList())
+              val ferias = repositorioPrincipal.getFerias() ?: Ferias(0,0,0,0,0,0,0)
                repositorioPrincipal.fluxoDatasFolgas.first{
                    lisat.value=it.map { it.data }
                    true
@@ -76,6 +79,24 @@ val Tag = "AgendarAlarmes"
                    true
                }
 
+              if(auxiliarDecisoes.checarFerias(ferias))
+               auxiliarDecisoes.modeloFerias(calbackAlarmeHoje = {h,m->},
+                                             calbackAlarmeAmanha = {h,m->
+                                                 scop.launch { agendarAlarmeProsimoDia(h,m)} },
+                                            calbackNoificacaoEmferias = {
+                                                criarCanalNotificacao(MensagemNoticacaoWork.Ferias.mensagem)
+                                                notificar() },
+                                            horario = horioDosAlarmes,
+                                            calbackNoificacaoUltimoDiaDeFerias ={
+                                                criarCanalNotificacao(MensagemNoticacaoWork.ultimoDiaFerias.mensagem)
+                                                notificar()
+                                                                                 },
+                                            ferias = ferias,
+                                            feriados = feriado.value,
+                                            modeloEscala = modeloDeEscala,
+                                            folgas = lisat.value, diasChecagen = dia, opicional = diasOpcionais)
+
+              else
                when(modeloDeEscala.modelo){
                    NomesDeModelosDeEscala.Modelo1236.nome-> auxiliarDecisoes.modelo1236(diasOpcionais= diasOpcionais,
                                                                                         diasDeFolgas = lisat.value,
@@ -85,7 +106,15 @@ val Tag = "AgendarAlarmes"
                                                                                          },{h,m->
                                                                                             scop.launch {agendarAlarmeHoje(h,m)}
                                                                                            })
-                   NomesDeModelosDeEscala.Modelo61.nome-> auxiliarDecisoes.modelo61(diasOpcionais)
+                   NomesDeModelosDeEscala.Modelo61.nome-> auxiliarDecisoes.modelo61(diasOpcionais=diasOpcionais,
+                                                                                    diasDeFolgas = lisat.value,
+                                                                                    feriados = feriado.value,
+                                                                                    diasChecagen = dia, horario = horioDosAlarmes,
+                                                                                    {h,m->
+                                                                                        scop.launch {agendarAlarmeProsimoDia(h,m)}
+                                                                                    },{h,m->
+                                                                                        scop.launch {agendarAlarmeHoje(h,m)}
+                                                                                    })
 
                    NomesDeModelosDeEscala.ModeloSegSex.nome->auxiliarDecisoes.modeloSegundaSexta(diasOpcionais=diasOpcionais,
                                                                                             feriados=feriado.value,
@@ -118,6 +147,7 @@ val Tag = "AgendarAlarmes"
             val horarioLong= horarioAlvo.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
             alarme(horarioLong)
         }
+
         @RequiresApi(Build.VERSION_CODES.O)
         suspend fun agendarAlarmeHoje (hora:Int, minuto:Int){
             val agora = LocalDateTime.now()
@@ -126,6 +156,7 @@ val Tag = "AgendarAlarmes"
             Log.i("horarioAlvo","${horarioAlvo} alvo long number ${horarioLong}")
             alarme(horarioLong)
         }
+
         suspend fun alarme(horario:Long){
             val alarme =c.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
             val intent=Intent(c,BroadcastRacever::class.java)
@@ -137,6 +168,10 @@ val Tag = "AgendarAlarmes"
 
             }
         }
+
+        @RequiresApi(Build.VERSION_CODES.O)
+
+
         fun criarCanalNotificacao(mensagem:String){
              notificao= NotificationCompat.Builder(this.c , "canal")
             .setSmallIcon(R.drawable.baseline_access_alarms_24)
@@ -144,20 +179,22 @@ val Tag = "AgendarAlarmes"
             .setContentText(mensagem)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .build()
-    }
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun registrarCanal(){
-        val canal = NotificationChannel("canal",
-            "escala trabalho",
-            NotificationManager.IMPORTANCE_HIGH)
-            .apply {
-                description="motificao dos alarmes"
-            }
-        val notificationManager = c.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(canal)
-    }
-    @SuppressLint("MissingPermission")
-    fun notificar(){
+         }
+
+        @RequiresApi(Build.VERSION_CODES.O)
+        fun registrarCanal(){
+            val canal = NotificationChannel("canal",
+                "escala trabalho",
+                NotificationManager.IMPORTANCE_HIGH)
+                .apply {
+                    description="motificao dos alarmes"
+                }
+            val notificationManager = c.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(canal)
+        }
+
+        @SuppressLint("MissingPermission")
+        fun notificar(){
         val notificationManage= NotificationManagerCompat.from(this.c)
         notificationManage.notify(2,notificao)
     }
