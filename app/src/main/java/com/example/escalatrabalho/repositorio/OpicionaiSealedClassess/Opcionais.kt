@@ -12,6 +12,7 @@ sealed class OpicionalModelo1236(val opcao:String){
     object Vasio : OpicionalModelo1236("Vasio")
 }
 
+
 //opcoes para modelo 6/1
 sealed class OpicionalModelo61(val opcao:String){
     object Segunda : OpicionalModelo61("Seg")

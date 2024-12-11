@@ -66,7 +66,7 @@ val Tag = "AgendarAlarmes"
                val modeloDeEscala =  repositorioPrincipal.getmodeloObjeto()?: ModeloDeEScala(0,"",false)
                val horioDosAlarmes = repositorioPrincipal.getObjetosHorariosAlsrme()?: HorioDosAlarmes(0,0,0)
                val diasOpcionais = repositorioPrincipal.getOpcionaisObjeto(modeloDeEscala.modelo)?: DiasOpcionais(0,"","")
-               val dia = repositorioPrincipal.getDiaAtualEprosimo()?: DiasChecagen(0,SemanaDia.doming,0,SemanaDia.doming)
+               val dia = repositorioPrincipal.getDiaAtualEprosimo()?: DiasChecagen(0,SemanaDia.doming,0,SemanaDia.doming,0,0,0,0)
                val lisat =MutableStateFlow<List<Int>>(emptyList())
                val feriado =MutableStateFlow<List<Feriados>>(emptyList())
               val ferias = repositorioPrincipal.getFerias() ?: Ferias(0,0,0,0,0,0,0)
@@ -82,7 +82,10 @@ val Tag = "AgendarAlarmes"
               if(auxiliarDecisoes.checarFerias(ferias))
                auxiliarDecisoes.modeloFerias(calbackAlarmeHoje = {h,m->},
                                              calbackAlarmeAmanha = {h,m->
-                                                 scop.launch { agendarAlarmeProsimoDia(h,m)} },
+                                                 scop.launch { agendarAlarmeProsimoDia(h,m,ferias.dia,ferias.mes,ferias.ano,dia,{
+                                                                criarCanalNotificacao(MensagemNoticacaoWork.FeriasInicio.mensagem)
+                                                                notificar()
+                                                 })} },
                                             calbackNoificacaoEmferias = {
                                                 criarCanalNotificacao(MensagemNoticacaoWork.Ferias.mensagem)
                                                 notificar() },
@@ -102,7 +105,12 @@ val Tag = "AgendarAlarmes"
                                                                                         diasDeFolgas = lisat.value,
                                                                                         diasChecagen = dia,horioDosAlarmes,
                                                                                         {h,m->
-                                                                                        scop.launch {agendarAlarmeProsimoDia(h,m)}
+                                                                                            scop.launch {
+                                                                                                agendarAlarmeProsimoDia(h,m,ferias.dia,ferias.mes,ferias.ano,dia,{
+                                                                                                    criarCanalNotificacao(MensagemNoticacaoWork.FeriasInicio.mensagem)
+                                                                                                    notificar()
+                                                                                                })
+                                                                                            }
                                                                                          },{h,m->
                                                                                             scop.launch {agendarAlarmeHoje(h,m)}
                                                                                            })
@@ -111,7 +119,12 @@ val Tag = "AgendarAlarmes"
                                                                                     feriados = feriado.value,
                                                                                     diasChecagen = dia, horario = horioDosAlarmes,
                                                                                     {h,m->
-                                                                                        scop.launch {agendarAlarmeProsimoDia(h,m)}
+                                                                                        scop.launch {
+                                                                                              agendarAlarmeProsimoDia(h,m,ferias.dia,ferias.mes,ferias.ano,dia,{
+                                                                                                criarCanalNotificacao(MensagemNoticacaoWork.FeriasInicio.mensagem)
+                                                                                                notificar()
+                                                                                            })
+                                                                                        }
                                                                                     },{h,m->
                                                                                         scop.launch {agendarAlarmeHoje(h,m)}
                                                                                     })
@@ -124,7 +137,12 @@ val Tag = "AgendarAlarmes"
                                                                                             scop.launch {agendarAlarmeHoje(h,m)}
                                                                                             },
                                                                                             {h,m->
-                                                                                             scop.launch { agendarAlarmeProsimoDia(h,m) }
+                                                                                                scop.launch {
+                                                                                                    agendarAlarmeProsimoDia(h,m,ferias.dia,ferias.mes,ferias.ano,dia,{
+                                                                                                        criarCanalNotificacao(MensagemNoticacaoWork.FeriasInicio.mensagem)
+                                                                                                        notificar()
+                                                                                                    })
+                                                                                                }
                                                                                             })
                    else->{Log.i("modelo selecionado","modelo nao encontrado")}
                }
@@ -140,12 +158,22 @@ val Tag = "AgendarAlarmes"
 
 
         @RequiresApi(Build.VERSION_CODES.O)
-        suspend fun agendarAlarmeProsimoDia (hora:Int, minuto:Int){
-            val agora = LocalDateTime.now()
-            val amanha = agora.plusDays(1)
-            val horarioAlvo = amanha.withHour(hora).withMinute(minuto).withSecond(0).withNano(0)
-            val horarioLong= horarioAlvo.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-            alarme(horarioLong)
+        suspend fun agendarAlarmeProsimoDia (hora:Int,
+                                             minuto:Int,
+                                             diaInicioFerias:Int,
+                                             mesInicioFerias:Int,
+                                             anoInicioFerias:Int,
+                                             diasChecagen: DiasChecagen,calbakNotificacaoInicioFerias:()->Unit){
+            if(diaInicioFerias!=diasChecagen.prosimoDia|| mesInicioFerias!=diasChecagen.mesProsimodia||anoInicioFerias!=diasChecagen.anoProsimodia){
+                          val agora = LocalDateTime.now()
+                          val amanha = agora.plusDays(1)
+                          val horarioAlvo = amanha.withHour(hora).withMinute(minuto).withSecond(0).withNano(0)
+                          val horarioLong= horarioAlvo.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                          alarme(horarioLong)}
+            else {
+                Log.i("ferias","inicio de ferias inicio= ${diaInicioFerias},mes inicio=${mesInicioFerias},ano inicio =${anoInicioFerias},prosimo dia= ${diasChecagen.prosimoDia},mes proximo dia= ${diasChecagen.mesProsimodia},ano proximo dia= ${diasChecagen.anoProsimodia}" )
+               calbakNotificacaoInicioFerias()
+            }
         }
 
         @RequiresApi(Build.VERSION_CODES.O)

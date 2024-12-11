@@ -43,6 +43,7 @@ android {
     }
     buildFeatures {
         compose = true
+        viewBinding = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -55,7 +56,7 @@ android {
 }
 
 dependencies {
-
+    implementation("com.google.android.gms:play-services-ads:23.6.0")//admob modificacao
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -66,6 +67,7 @@ dependencies {
     implementation("androidx.compose.material3.adaptive:adaptive:1.1.0-alpha02")
     implementation("androidx.compose.material3.adaptive:adaptive-layout:1.1.0-alpha02")
     implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.1.0-alpha02")
+    implementation("androidx.compose.ui:ui-viewbinding:1.7.5")
     annotationProcessor("androidx.room:room-compiler:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")

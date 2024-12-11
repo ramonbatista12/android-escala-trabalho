@@ -9,5 +9,5 @@ val Pink80 = Color(0xFFEFB8C8)
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
-
-val  AzulClareoAcinzentado = Color(red = 173, green = 216, blue = 230, alpha = 100)
+val vermelhoClarro=Color(0xFFBA5C55)
+val  AzulClareoAcinzentado = Color(red = 76, green = 113, blue = 132, alpha = 255)

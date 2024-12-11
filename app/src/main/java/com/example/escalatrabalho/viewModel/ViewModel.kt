@@ -8,17 +8,27 @@ package com.example.escalatrabalho.viewModel
 
 
 import android.annotation.SuppressLint
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.example.escalatrabalho.alarmemanager.BroadcastRacever
+import com.example.escalatrabalho.applicatio.AplicationCuston
 import com.example.escalatrabalho.classesResultados.ResultadosDatasFolgas
 import com.example.escalatrabalho.classesResultados.ResultadosSalvarDatasFolgas
 import com.example.escalatrabalho.classesResultados.ResultadosSalvarHora
+import com.example.escalatrabalho.enums.IdsDeModelosDeEscala
 import com.example.escalatrabalho.enums.NomesDeModelosDeEscala
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
@@ -35,13 +45,21 @@ import com.example.escalatrabalho.roomComfigs.DiasOpcionais
 import com.example.escalatrabalho.viewModel.modelosParaView.FeriasView
 import com.example.escalatrabalho.viewModel.modelosParaView.HorarioView
 import com.example.escalatrabalho.worlk.AgendarAlarmes
+import com.example.escalatrabalho.worlk.ChecartrocaDeDeEscala
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.concurrent.TimeUnit
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
+@RequiresApi(Build.VERSION_CODES.O)
 class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val workManager: WorkManager):ViewModel() {
 
     var scopo = viewModelScope         //escopo de corotina
@@ -114,15 +132,28 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
     val hostState = SnackbarHostState()//responsavel por mostrar snackbar)
 
     init {
-        scopo.launch(context = Dispatchers.IO) {  // joga o agendamento para trhead de defaut usada para cauculos pesados
+        scopo.launch(context = Dispatchers.Default) {  // joga o agendamento para trhead de defaut usada para cauculos pesados
             val mk = PeriodicWorkRequestBuilder<AgendarAlarmes>(
-                10,
+                15,
                 TimeUnit.MINUTES,
                 5,
                 TimeUnit.MINUTES
             )
                 .addTag("agendamento de alarmes")
-            workManager.enqueue(mk.build())
+            workManager.enqueueUniquePeriodicWork("agendamento de alarmes",
+                ExistingPeriodicWorkPolicy.KEEP,mk.build())
+
+
+            val timer =LocalDateTime.now()
+            val timer2=timer.plusDays(1)
+            timer2.withHour(0).withMinute(0)
+            val deley=timer2.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val duracao=Duration.ofNanos(deley)
+            val workchecagem= PeriodicWorkRequestBuilder<ChecartrocaDeDeEscala>(1,TimeUnit.DAYS)
+                                                                                .setInitialDelay(duracao)
+                                                                                .addTag("checagem de horario")
+                                                                                 .build()
+             workManager.enqueueUniquePeriodicWork("checagem de horario",ExistingPeriodicWorkPolicy.KEEP, workchecagem)
 
 
         }
@@ -166,6 +197,9 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
                         estadosVm.salvandoHorariosResultados.value = ResultadosSalvarHora.clicavel
 
                     }
+                    scopo.launch(Dispatchers.Default) {
+                       apagarAlarmesEreagendar()
+                    }
                 }
         }
 
@@ -181,9 +215,15 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
 
         fun inserirOpcionalModelo(modelo:String,diasOpcionais:String){
            val opcional =  when(modelo){
-               NomesDeModelosDeEscala.Modelo1236.nome-> DiasOpcionais(1,NomesDeModelosDeEscala.Modelo1236.nome,diasOpcionais)
-               NomesDeModelosDeEscala.Modelo61.nome->  DiasOpcionais(2,NomesDeModelosDeEscala.Modelo61.nome,diasOpcionais)
-               NomesDeModelosDeEscala.ModeloSegSex.nome-> DiasOpcionais(3,NomesDeModelosDeEscala.ModeloSegSex.nome,diasOpcionais)
+               NomesDeModelosDeEscala.Modelo1236.nome-> DiasOpcionais(id=IdsDeModelosDeEscala.IdModelo1236.id,
+                                                                     NomesDeModelosDeEscala.Modelo1236.nome,
+                                                                     diasOpcionais)
+               NomesDeModelosDeEscala.Modelo61.nome->  DiasOpcionais(id=IdsDeModelosDeEscala.IdModelo61.id,
+                                                                     NomesDeModelosDeEscala.Modelo61.nome,
+                                                                     diasOpcionais)
+               NomesDeModelosDeEscala.ModeloSegSex.nome-> DiasOpcionais(id=IdsDeModelosDeEscala.IdModeloSegSex.id,
+                                                                       NomesDeModelosDeEscala.ModeloSegSex.nome,
+                                                                       diasOpcionais)
                else -> DiasOpcionais(0,"", OpicionalModelo1236.Vasio.opcao)
            }
             scopo.launch(context = Dispatchers.IO) {
@@ -205,6 +245,20 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
         }.invokeOnCompletion {
             estadosVm.disparaDialogoFerias.value=false
         }
+    }
+
+
+    private suspend fun apagarAlarmesEreagendar(){
+        val applicationContext =AplicationCuston.context
+        val alarme =applicationContext.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+        val intent= Intent(applicationContext, BroadcastRacever::class.java)
+        val pendingIntent=PendingIntent.getBroadcast(applicationContext,0,intent, PendingIntent.FLAG_IMMUTABLE)
+
+        if(pendingIntent!=null)
+           alarme.cancel(pendingIntent)
+        val onitime = OneTimeWorkRequestBuilder<AgendarAlarmes>().build()
+        val mk = workManager.enqueue(onitime)
+
     }
 
 
@@ -235,6 +289,7 @@ class Fabricar() {
     ) = object : ViewModelProvider.Factory {
         //funcao que recebe um objeto do tipo viewmodelProvider.Factory e retorna um objeto do tipo ViewModelTelas
         //que recebe um objeto do tipo RoomDb e um objeto do tipo WorkManager
+        @RequiresApi(Build.VERSION_CODES.O)
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             return ViewModelTelas(repositorio = RepositorioPrincipal(
                                   bd = bd,

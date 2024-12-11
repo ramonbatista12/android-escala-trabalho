@@ -120,6 +120,8 @@ class RepositorioDatas {
             }
          }
         val numeroDia=data.get(Calendar.DAY_OF_MONTH)
+        val mes =data.get(Calendar.MONTH)
+        val ano =data.get(Calendar.YEAR)
         data.roll(Calendar.DAY_OF_MONTH,1)
         data.set(Calendar.DAY_OF_MONTH,numeroDia+1)
         val prosimodiaS = when (data.get(Calendar.DAY_OF_WEEK)) {
@@ -135,7 +137,9 @@ class RepositorioDatas {
             }
         }
         val prosimoNumeroDia=data.get(Calendar.DAY_OF_MONTH)
-        return DiasChecagen(numeroDia,diaS,prosimoNumeroDia,prosimodiaS)
+        val mesProsimodia =data.get(Calendar.MONTH)
+        val anoProsimodia=data.get(Calendar.YEAR)
+        return DiasChecagen(numeroDia,diaS,prosimoNumeroDia,prosimodiaS, mes = mes,mesProsimodia=mesProsimodia,ano=ano,anoProsimodia=anoProsimodia)
     }
 
     fun getMes():String{
@@ -147,4 +151,4 @@ class RepositorioDatas {
 
 }
 
-class DiasChecagen(val dia:Int,val diasemana: SemanaDia,val prosimoDia:Int,val prosimoDiasemana: SemanaDia)
+class DiasChecagen(val dia:Int,val diasemana: SemanaDia,val prosimoDia:Int,val prosimoDiasemana: SemanaDia,val mes:Int,val mesProsimodia:Int,val ano:Int,val anoProsimodia:Int)

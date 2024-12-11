@@ -19,12 +19,15 @@ import kotlinx.coroutines.withContext
 
 class MainViewModel(val repositorio :RepositorioPrincipal) : ViewModel() {
     val scop=viewModelScope
+    val tag_contador ="contador admob"
     private val estadoPermicaoNotificacao = MutableStateFlow(false)
     val _estadoPermicaoNotificacao: SharedFlow<Boolean> = estadoPermicaoNotificacao.stateIn(
         scope = scop,
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
         initialValue = false
     )
+    private val contadorInteracoes: MutableStateFlow<Int> = MutableStateFlow(0)
+    val contador=contadorInteracoes
     private val permissaoEspecial = MutableStateFlow(false)
     val _permissaoEspecial: SharedFlow<Boolean> = permissaoEspecial.stateIn(
         scope = scop,
@@ -64,19 +67,33 @@ class MainViewModel(val repositorio :RepositorioPrincipal) : ViewModel() {
 
     }
 
-    fun carregarFeriados(){
+    fun carregarFeriados(callbackSackBarFalha:()->Unit,callbackSackBarSucesso:()->Unit){
         scop.launch {
             val r =repositorio.caregarDatasFeriados()
             when(val resposta =r){
                 is Requisicaoweb.ok->{
+                    callbackSackBarSucesso()
                     datasColetadas.value=true
                                       }
                 is Requisicaoweb.erro->{
-                    datasColetadas.value=false
+                    withContext(Dispatchers.Main){
+                        Log.i("caregar feriados", " falha ao caregar ferriados  erros :${resposta.erro}")
+                        callbackSackBarFalha()
+                    }
+                    datasColetadas.value=true
                                        }
             }
 
         }
+    }
+    fun cancelarColetaDeFeriados(){
+        datasColetadas.value=true
+    }
+
+    fun incrementaContador(){
+        this.contadorInteracoes.value++
+        if(contadorInteracoes.value==5)contadorInteracoes.value=0
+        Log.i(tag_contador,"valor contador admob ${contadorInteracoes.value}")
     }
 
 }

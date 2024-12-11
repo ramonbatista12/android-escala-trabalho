@@ -1,6 +1,10 @@
 package com.example.escalatrabalho.views
 
 
+import android.content.res.Resources.Theme
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,12 +26,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,11 +41,13 @@ import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
+import com.example.escalatrabalho.admob.NativoAdmob
 import com.example.escalatrabalho.repositorio.repositoriodeDatas.Datas
 import com.example.escalatrabalho.viewModel.ViewModelTelas
 import com.example.escalatrabalho.viewModel.modelosParaView.visulizacaoDatas
 import kotlinx.coroutines.flow.map
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun calendario(m:Modifier, vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
     var estado=vm.fluxoViewCalendario.collectAsState()//estado do fluxo que mite uma clsse sealed do Tipo Resultados representando a montagem das datas
@@ -57,6 +65,9 @@ fun calendario(m:Modifier, vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
              else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.5f
              else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.8F
              else 1.0f
+    LaunchedEffect(Unit) {
+        Log.i("calendario teste drobravel","largura ${windowSizeClass.windowWidthSizeClass},autura ${windowSizeClass.windowHeightSizeClass}")
+    }
 
     var colunasDesc = remember {
         if(windowSizeClass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT)
@@ -89,6 +100,7 @@ fun calendario(m:Modifier, vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
 
 
 }
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun calendarioSmallSmall(m:Modifier, vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
     var estado=vm.fluxoViewCalendario.collectAsState()//estado do fluxo que mite uma clsse sealed do Tipo Resultados representando a montagem das datas
@@ -175,13 +187,14 @@ fun itrmcalendario2(data:visulizacaoDatas){
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun config(m:Modifier,
            disparaDialogoDatas: ()->Unit,
            disparaDialogoFerias:()->Unit,
            calbackSnackbar:suspend (String) -> Unit ,
-           vm: ViewModelTelas,windowSizeClass: WindowSizeClass){
+           vm: ViewModelTelas,windowSizeClass: WindowSizeClass,calbackInteresticial: () -> Unit){
     var scrollState = rememberScrollState(0)
 
 Column(modifier = m
@@ -190,11 +203,13 @@ Column(modifier = m
     val scopo = rememberCoroutineScope()//escopo corotina
     HorarioDosAlarmes(vm,calbackSnackbar, windowSizeClass = windowSizeClass)//botão horario dos alarmes ao clicar aparesera o alarma
     Spacer(Modifier.padding(3.dp))//espaçamento entre os componentes
-    DataDasFolgas(vm,disparaDialogoDatas,windowSizeClass)//botão data das folgas ao clicar aparesera a data das folgas
+    ModeloDeEscala(vm,windowSizeClass,calbackInteresticial)//botão modelo de escala ao clicar aparesera o modelo de escala
     Spacer(Modifier.padding(3.dp))//espaçamento entre os componentes
-    Ferias(vm=vm,vm.estadosVm.transicaoFerias,scopo,disparaDialogoFerias,windowSizeClass)//botão Ferias ao clicar aparesera as Ferias
+    DataDasFolgas(vm,disparaDialogoDatas,windowSizeClass,calbackInteresticial)//botão data das folgas ao clicar aparesera a data das folgas
     Spacer(Modifier.padding(8.dp))//espaçamento entre os componentes
-    ModeloDeEscala(vm,windowSizeClass)//botão modelo de escala ao clicar aparesera o modelo de escala
+    Ferias(vm=vm,vm.estadosVm.transicaoFerias,scopo,disparaDialogoFerias,windowSizeClass,calbackInteresticial)//botão Ferias ao clicar aparesera as Ferias
+    Spacer(Modifier.padding(10.dp))
+    NativoAdmob(modifier = Modifier)
     Spacer(Modifier.padding(40.dp))
 }
 }

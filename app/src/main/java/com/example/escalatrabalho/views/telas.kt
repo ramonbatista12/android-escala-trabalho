@@ -1,7 +1,9 @@
 package com.example.escalatrabalho.views
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.Orientation
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowColumn
 import androidx.compose.foundation.layout.FlowRow
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 
@@ -63,6 +66,7 @@ import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.escalatrabalho.R
+import com.example.escalatrabalho.admob.NativoAdmob
 import com.example.escalatrabalho.enums.TelaNavegacaoSimples
 import com.example.escalatrabalho.enums.TelaNavegacaoSinplesAlturaCompacta
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
@@ -72,10 +76,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalLayoutApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "UnusedBoxWithConstraintsScope")
 @Composable
-fun telainicial(vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
+fun telainicial(vm:ViewModelTelas,windowSizeClass: WindowSizeClass,calbackInteresticial:()->Unit){
       val scop = rememberCoroutineScope()
 
      //seguindo as dicas do google que estudei adicionei os seguites modificadores de nivel superio eles tem tabem referentes de baixo nivel
@@ -101,36 +106,46 @@ fun telainicial(vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
                                    // apesar de ter melhorado a repsonsividade ainda tem casos em que o layout nao se ajusta bem
                                    if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT)
                                                  // maioria dos smartphones
-                                                 larguraCompacta(vm = vm, scop = scop, windowSizeClass = windowSizeClass, m = Modifier)
+                                                 larguraCompacta(vm = vm, scop = scop, windowSizeClass = windowSizeClass, m = Modifier,padding = it,calbackInteresticial)
                              else if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED)
                                                 //maioria dos pc no modo paizagem
-                                                larguraExpandida(vm = vm, scop = scop, windowSizeClass = windowSizeClass)
+                                                larguraExpandida(vm = vm, scop = scop, windowSizeClass = windowSizeClass,calbackInteresticial)
                              else if(windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM){
                                   if (windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.COMPACT) {
                                                //maioria dos celulares no modo paizagem
-                                                larguraMediaAlturaCompacta(vm = vm, scop = scop, windowSizeClass = windowSizeClass)
+                                                larguraMediaAlturaCompacta(vm = vm, scop = scop, windowSizeClass = windowSizeClass,calbackInteresticial)
                                                 Log.e("texte ","largura media altura compacta")
                                   }
+
+
                                   else{      //maioria dos tablets no modo retrato
-                                               larguraMedia(vm = vm, scop = scop, windowSizeClass = windowSizeClass)
+                                               larguraMedia(vm = vm, scop = scop, windowSizeClass = windowSizeClass,calbackInteresticial)
                                        }
                              }
+
          }
 
 
- dialogoDatasFolgas( acaoFechar = {vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value},vm = vm)
- dialogoDatasFerrias(vm = vm, acaoFechar = {vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value})
+ dialogoDatasFolgas( acaoFechar = {
+     calbackInteresticial()
+     vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value
+                                  },vm = vm)
+ dialogoDatasFerrias(vm = vm, acaoFechar = {
+     calbackInteresticial()
+     vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value
+ })
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
- fun larguraCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass,m:Modifier) {
+ fun larguraCompacta(vm:ViewModelTelas, scop:CoroutineScope, windowSizeClass: WindowSizeClass, m:Modifier, padding: PaddingValues, calbackInteresticial: () -> Unit) {
      LaunchedEffect(Unit) {
          Log.e("texte ","largura compacta")
      }
-    Box(modifier = Modifier.fillMaxSize())
+    Box(modifier = Modifier.fillMaxSize().padding(paddingValues = padding))
     {
                      when (vm.estadosVm.telas.value) {
-                                      TelaNavegacaoSimples.calendario ->
+                                      TelaNavegacaoSimples.calendario ->{
                                                        Column(
                                                            horizontalAlignment = Alignment.CenterHorizontally,
                                                            modifier = Modifier.fillMaxSize()
@@ -142,6 +157,8 @@ fun telainicial(vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
                                                            Spacer(Modifier.padding(3.dp))
                                                            calendario(m = Modifier, vm = vm, windowSizeClass)
                                                        }
+                                                     NativoAdmob(modifier = Modifier.align(Alignment.BottomCenter))
+                                      }
 
                                      TelaNavegacaoSimples.comfig ->
                                                        config(m = Modifier.align(Alignment.TopCenter)
@@ -153,31 +170,42 @@ fun telainicial(vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
                                                                }
                                                            },
                                                            disparaDialogoFerias = {
+                                                               calbackInteresticial()
                                                                scop.launch {
                                                                    vm.estadosVm.disparaDialogoFerias.value =
                                                                        !vm.estadosVm.disparaDatass.value
                                                                }
                                                            },
                                                            calbackSnackbar = { it ->
+                                                               calbackInteresticial()
                                                                scop.launch {
                                                                   vm.hostState.showSnackbar(
                                                                        message = it,
                                                                        duration = SnackbarDuration.Short
                                                                    )
                                                                }
-                                                           }, vm = vm, windowSizeClass)
+                                                           }, vm = vm, windowSizeClass,calbackInteresticial)
 
                      }
+
     }
 }
+@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun larguraExpandida(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass){
+fun larguraExpandida(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass,calbackInteresticial: () -> Unit){
+    val scop= rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+      scop.launch { vm.estadosVm.transicaoData.targetState=true
+                    vm.estadosVm.transicaoModeloTrabalho.targetState=true
+                    vm.estadosVm.transicaoFerias.targetState=true }
+    }
     PermanentNavigationDrawer(drawerContent = {
                                        if(windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.COMPACT)
                                            Column(modifier = Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Center) {
                                                IconButton(onClick = {
+                                                   calbackInteresticial()
                                                    scop.launch {
                                                        vm.estadosVm.telasAlturaCompacta.value = TelaNavegacaoSinplesAlturaCompacta.relogio
                                                    }
@@ -189,20 +217,10 @@ fun larguraExpandida(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: Wind
                                                        modifier = Modifier.height(30.dp)
                                                    )
                                                }
+
                                                IconButton(onClick = {
                                                    scop.launch {
-                                                       vm.estadosVm.telasAlturaCompacta.value = TelaNavegacaoSinplesAlturaCompacta.selecoes
-                                                   }
-                                               }){
-                                                   //responsavel por navegar para tela de configuracao
-                                                   Icon(
-                                                       painterResource(R.drawable.baseline_checklist_24),
-                                                       contentDescription = "selecoes",
-                                                       modifier = Modifier.height(30.dp)
-                                                   )
-                                               }
-                                               IconButton(onClick = {
-                                                   scop.launch {
+                                                       calbackInteresticial()
                                                        vm.estadosVm.telasAlturaCompacta.value = TelaNavegacaoSinplesAlturaCompacta.datasFolgas
                                                    }
                                                }){
@@ -222,90 +240,110 @@ fun larguraExpandida(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: Wind
             vm.estadosVm.telasAlturaCompacta.value= TelaNavegacaoSinplesAlturaCompacta.relogio}
             FlowRow {
                                     calendario(m=Modifier,vm=vm,windowSizeClass)
-                                    Spacer(modifier=Modifier.padding(8.dp))
+                                    Spacer(modifier=Modifier.padding(2.dp))
                                    if (windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.COMPACT){
-                                       Box(modifier = Modifier.fillMaxWidth(0.6f), contentAlignment = Alignment.Center){ painelExpandidoAlturaCompacta(vm,scop,windowSizeClass)}
+                                       Box(modifier = Modifier.fillMaxWidth(0.6f), contentAlignment = Alignment.Center){
+                                           painelExpandidoAlturaCompacta(vm,scop,windowSizeClass,calbackInteresticial)}
                                    }
                                    else{
-                                          FlowColumn {
-                                              HorarioDosAlarmes(vm,calbackSnackbar = { it->vm.hostState.showSnackbar(it)},windowSizeClass)
+                                          FlowColumn   {
+                                              HorarioDosAlarmes(vm,calbackSnackbar = { it->
+                                                  calbackInteresticial()
+                                                  vm.hostState.showSnackbar(it)},windowSizeClass)
                                               ModeloDeEscala(vm = vm,
-                                              windowSizeClass = windowSizeClass)}
+                                              windowSizeClass = windowSizeClass,calbackInteresticial)
+                                          }
                                            Spacer(modifier=Modifier.padding(8.dp))
                                            FlowColumn {
                                                Ferias(vm=vm,stadoTransicao = vm.estadosVm.transicaoFerias,
                                                    scope = scop,
                                                    diparaDialogoFerias = {
+                                                       calbackInteresticial()
                                                        vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value
                                                    },
-                                                   windowSizeClass )
+                                                   windowSizeClass ,calbackInteresticial)
 
                                                DataDasFolgas(vm = vm,
                                                    diparaDialogoDatas = {
+                                                       calbackInteresticial()
                                                        scop.launch {  vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value}
                                                    } ,
-                                                   windowSizeClass)
+                                                   windowSizeClass,calbackInteresticial)
                                            }
 
                                        }
                                    }
+                                   NativoAdmob(Modifier.align(Alignment.BottomEnd))
 
                      }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass){
+fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass,calbackInteresticial: () -> Unit){
     FlowRow {
 
         when (val tela = vm.estadosVm.telasAlturaCompacta.value) {
             TelaNavegacaoSinplesAlturaCompacta.calendario ->{}
 
 
-            TelaNavegacaoSinplesAlturaCompacta.relogio ->
-                TimePickerAlturaCompacta(vm =vm ,calbackSnackbar = {vm.hostState.showSnackbar(it)},windowSizeClass)
+            TelaNavegacaoSinplesAlturaCompacta.relogio ->{
+                HorarioDosAlarmesAuturaCompacta(vm =vm
+                    ,calbackSnackbar = { it->
+                        calbackInteresticial()
+                        vm.hostState.showSnackbar(it)},
+                    windowSizeClass)
+                ModeloDeEscalaAlturaCompacta(
+                        vm = vm,
+                       windowSizeClass = windowSizeClass,calbackInteresticial
+                )
 
-            TelaNavegacaoSinplesAlturaCompacta.selecoes->{
+            }
+
+
+            TelaNavegacaoSinplesAlturaCompacta.datasFolgas->{
                 Spacer(Modifier.padding(3.dp))
                 FeriasAlturaCompacta(vm=vm,
                     stadoTransicao = vm.estadosVm.transicaoFerias,
                     scope = scop,
                     diparaDialogoFerias = {
+                        calbackInteresticial()
                         vm.estadosVm.disparaDialogoFerias.value =
                             !vm.estadosVm.disparaDialogoFerias.value
                     },
-                    windowSizeClass
+                    windowSizeClass,calbackInteresticial
                 )
-                Spacer(Modifier.padding(10.dp))
-                ModeloDeEscalaAlturaCompacta(
-                    vm = vm,
-                    windowSizeClass = windowSizeClass
-                )
-                Spacer(Modifier.padding(3.dp))
-
-            }
-            TelaNavegacaoSinplesAlturaCompacta.datasFolgas->
+                Spacer(Modifier.padding(2.dp))
                 DataDasFolgasAlturaCompacta(
                     vm = vm,
                     diparaDialogoDatas = {
+                        calbackInteresticial()
                         scop.launch {
                             vm.estadosVm.disparaDatass.value =
                                 !vm.estadosVm.disparaDatass.value
                         }
                     },
-                    windowSizeClass
+                    windowSizeClass,calbackInteresticial
                 )
+
+
+            }
+            TelaNavegacaoSinplesAlturaCompacta.selecoes->{}
+
         }
 
     }
 }
 
 
+
+@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
- fun larguraMedia(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass){
+ fun larguraMedia(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass,calbackInteresticial: () -> Unit){
     BoxWithConstraints(modifier=Modifier.fillMaxSize().scrollable(state = rememberScrollState(0), orientation = Orientation.Vertical)){
 
         Column {
@@ -315,9 +353,11 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
                                   calendario(m=Modifier,vm=vm,windowSizeClass)
                                   FlowRow(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                                  Column {
-                                                     HorarioDosAlarmes(vm,calbackSnackbar = { it->},windowSizeClass)
+                                                     HorarioDosAlarmes(vm,calbackSnackbar = { it->
+                                                         calbackInteresticial()
+                                                     },windowSizeClass)
                                                      ModeloDeEscala(vm = vm,
-                                                     windowSizeClass = windowSizeClass)
+                                                     windowSizeClass = windowSizeClass,calbackInteresticial)
                                                  }
 
                                                    Spacer(modifier=Modifier.padding(8.dp))
@@ -325,26 +365,40 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
                                                                 Ferias(vm=vm,
                                                                     stadoTransicao = vm.estadosVm.transicaoFerias,
                                                                     scope = scop,
-                                                                    diparaDialogoFerias = {
+                                                                    diparaDialogoFerias = {calbackInteresticial()
                                                                         vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value
                                                                     },
-                                                                    windowSizeClass )
+                                                                    windowSizeClass,calbackInteresticial )
                                                                 Spacer(modifier=Modifier.padding(3.dp))
 
 
                                                                 DataDasFolgas(vm = vm,
-                                                                    diparaDialogoDatas = {
+                                                                    diparaDialogoDatas = {calbackInteresticial()
                                                                         scop.launch {  vm.estadosVm.disparaDatass.value=!vm.estadosVm.disparaDatass.value}
                                                                     } ,
-                                                                    windowSizeClass)
+                                                                    windowSizeClass,calbackInteresticial)
                                                             }
                                   }
+
+
                      }
+        NativoAdmob(modifier = Modifier.align(Alignment.BottomEnd))
     }
 }
+
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
- fun larguraMediaAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass){
+ fun larguraMediaAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass,calbackInteresticial: () -> Unit){
+   val scop = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+       scop.launch {
+           vm.estadosVm.transicaoData.targetState=true
+           vm.estadosVm.transicaoModeloTrabalho.targetState=true
+           vm.estadosVm.transicaoFerias.targetState=true  }
+
+    }
+
     Box (modifier=Modifier.fillMaxSize()){
 
                    val drawerState = rememberDrawerState(DrawerValue.Open)
@@ -378,18 +432,7 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
                                                                                               modifier = Modifier.height(30.dp)
                                                                                           )
                                                                                          }
-                                                                IconButton(onClick = {
-                                                                               scop.launch {
-                                                                                   vm.estadosVm.telasAlturaCompacta.value = TelaNavegacaoSinplesAlturaCompacta.selecoes
-                                                                               }
-                                                                }){
-                                                                    //responsavel por navegar para tela de configuracao
-                                                                                Icon(
-                                                                                    painterResource(R.drawable.baseline_checklist_24),
-                                                                                    contentDescription = "selecoes",
-                                                                                    modifier = Modifier.height(30.dp)
-                                                                                )
-                                                                }
+
                                                                IconButton(onClick = {
                                                                                     scop.launch {
                                                                                         vm.estadosVm.telasAlturaCompacta.value = TelaNavegacaoSinplesAlturaCompacta.datasFolgas
@@ -415,31 +458,34 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
                                               windowSizeClass
                                                                   )
 
-                                          TelaNavegacaoSinplesAlturaCompacta.relogio ->
-                                                TimePickerAlturaCompacta(vm =vm ,calbackSnackbar = { it->vm.hostState.showSnackbar(it)},windowSizeClass)
-
+                                          TelaNavegacaoSinplesAlturaCompacta.relogio ->{
+                                                HorarioDosAlarmesAuturaCompacta(vm =vm
+                                                                ,calbackSnackbar = { it->vm.hostState.showSnackbar(it)},
+                                                                 windowSizeClass)
+                                                ModeloDeEscalaAlturaCompacta(vm = vm,
+                                                                            windowSizeClass = windowSizeClass, calbackInteresticial = calbackInteresticial)
+                                          }
                                           TelaNavegacaoSinplesAlturaCompacta.selecoes->{
                                                 Spacer(Modifier.padding(3.dp))
-                                                 FeriasAlturaCompacta(
-                                                        vm = vm,
-                                                        stadoTransicao = vm.estadosVm.transicaoFerias,
-                                                        scope = scop,
-                                                        diparaDialogoFerias = {
-                                                            vm.estadosVm.disparaDialogoFerias.value =
-                                                                !vm.estadosVm.disparaDialogoFerias.value
-                                                        },
-                                                        windowSizeClass
-                                                        )
+
                                               Spacer(Modifier.padding(3.dp))
-                                                 ModeloDeEscalaAlturaCompacta(
-                                                               vm = vm,
-                                                               windowSizeClass = windowSizeClass
-                                                                )
+
                                               Spacer(Modifier.padding(3.dp))
 
                                           }
-                                          TelaNavegacaoSinplesAlturaCompacta.datasFolgas->
-                                                  DataDasFolgasAlturaCompacta(
+                                          TelaNavegacaoSinplesAlturaCompacta.datasFolgas->{
+                                              FeriasAlturaCompacta(
+                                                  vm = vm,
+                                                  stadoTransicao = vm.estadosVm.transicaoFerias,
+                                                  scope = scop,
+                                                  diparaDialogoFerias = {
+                                                      vm.estadosVm.disparaDialogoFerias.value =
+                                                          !vm.estadosVm.disparaDialogoFerias.value
+                                                  },
+                                                  windowSizeClass, calbackInteresticial = calbackInteresticial
+                                              )
+                                              Spacer(Modifier.padding(2.dp))
+                                              DataDasFolgasAlturaCompacta(
                                                                             vm = vm,
                                                                             diparaDialogoDatas = {
                                                                                 scop.launch {
@@ -447,8 +493,8 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
                                                                                         !vm.estadosVm.disparaDatass.value
                                                                                 }
                                                                             },
-                                                                            windowSizeClass
-                                                                            )
+                                                                            windowSizeClass,calbackInteresticial
+                                                                            )}
                                       }
 
                                   }
@@ -456,6 +502,7 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
 
     }
 }
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 //dialogo de datas de folgas responsavel por permirtir a selecao das folgas
@@ -471,13 +518,16 @@ fun dialogoDatasFolgas(acaoFechar:()->Unit,vm:ViewModelTelas){
                  // pois esiste a nessesitade de receber um nuimerro e comverter ele em uma date
 
                  val cal = Calendar.getInstance()
+                 if(estate.selectedDateMillis!=null){
                  cal.timeInMillis=estate.selectedDateMillis!!
+
                  vm.inserirDatasFolgas(
                      DatasFolgas(0,
                          cal.get(Calendar.DAY_OF_MONTH)?:11,
                          cal.get(Calendar.MONTH)?:1,
                          cal.get(Calendar.YEAR)?:2024
-                     ))
+                     ))}
+                 else vm.estadosVm.disparaDatass.value=false
              }, modifier = Modifier.align(Alignment.TopEnd) ) {
                  Icon(painterResource(R.drawable.baseline_save_24),"salvar")//aparesera quando for clicavel novamente
                  Text("Salvar Data")
@@ -498,6 +548,7 @@ fun dialogoDatasFolgas(acaoFechar:()->Unit,vm:ViewModelTelas){
 
 }
 }
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 //dialogo de datas de Ferias responsavel por permirtir a selecao das Ferias
@@ -505,6 +556,7 @@ fun dialogoDatasFerrias(vm: ViewModelTelas,acaoFechar:()->Unit){
     if(vm.estadosVm.disparaDialogoFerias.value) Surface {
         ModalBottomSheet(onDismissRequest = acaoFechar) {  var estate = rememberDateRangePickerState()
             TextButton(onClick ={
+                if(estate.selectedStartDateMillis!=null&&estate.selectedEndDateMillis!=null){
                 var calendar=Calendar.getInstance()
                 calendar.timeInMillis=estate.selectedStartDateMillis!!
                 val diaInicio=calendar.get(Calendar.DAY_OF_MONTH)
@@ -524,7 +576,7 @@ fun dialogoDatasFerrias(vm: ViewModelTelas,acaoFechar:()->Unit){
                                             mesInici = mesInicio+1,
                                             anoFim = anoFim,
                                             anoInici = anoInicio,
-                                            check = true ))
+                                            check = true ))}
             }) {
                 Icon(painterResource(R.drawable.baseline_save_24),"salvar icone")
                 Text("Salvar Intervalo Das Ferias")
@@ -538,6 +590,7 @@ fun dialogoDatasFerrias(vm: ViewModelTelas,acaoFechar:()->Unit){
 
     }
 }
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 //barra de navegacao responsavel por navegar entre as telas
 fun barraSuperior(vm:ViewModelTelas){

@@ -16,6 +16,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import com.example.escalatrabalho.classesResultados.Requisicaoweb
+import com.example.escalatrabalho.enums.IdsDeModelosDeEscala
 import com.example.escalatrabalho.enums.NomesDeModelosDeEscala
 import com.example.escalatrabalho.repositorio.OpicionaiSealedClassess.OpicionalModelo1236
 import com.example.escalatrabalho.repositorio.OpicionaiSealedClassess.OpicionalModeloSegSex
@@ -325,9 +326,9 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {//f
             var count =repositorioModeloDeTrabalho.count()//melhor maneira que achei para saber se alista ta vasia
             if (count == 0) { //quando vasia eu crio e insiro os valores do check
                 var l = listOf(
-                    ModeloDeEScala(1, NomesDeModelosDeEscala.Modelo1236.nome, false),
-                    ModeloDeEScala(2, NomesDeModelosDeEscala.Modelo61.nome, false),
-                    ModeloDeEScala(3, NomesDeModelosDeEscala.ModeloSegSex.nome, false))
+                    ModeloDeEScala(IdsDeModelosDeEscala.IdModelo1236.id, NomesDeModelosDeEscala.Modelo1236.nome, false),
+                    ModeloDeEScala(IdsDeModelosDeEscala.IdModelo61.id, NomesDeModelosDeEscala.Modelo61.nome, false),
+                    ModeloDeEScala(IdsDeModelosDeEscala.IdModeloSegSex.id, NomesDeModelosDeEscala.ModeloSegSex.nome, false))
                     repositorioModeloDeTrabalho.insert(l)
                             }
 
@@ -335,23 +336,23 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {//f
                  when{
                      modeloDeTrabalho.modelo ==NomesDeModelosDeEscala.Modelo1236.nome && modeloDeTrabalho.check->{
                          var l = listOf(
-                             ModeloDeEScala(1, NomesDeModelosDeEscala.Modelo1236.nome, true),
-                             ModeloDeEScala(2, NomesDeModelosDeEscala.Modelo61.nome, false),
-                             ModeloDeEScala(3, NomesDeModelosDeEscala.ModeloSegSex.nome, false))
+                             ModeloDeEScala(IdsDeModelosDeEscala.IdModelo1236.id, NomesDeModelosDeEscala.Modelo1236.nome, true),
+                             ModeloDeEScala(IdsDeModelosDeEscala.IdModelo61.id, NomesDeModelosDeEscala.Modelo61.nome, false),
+                             ModeloDeEScala(IdsDeModelosDeEscala.IdModeloSegSex.id, NomesDeModelosDeEscala.ModeloSegSex.nome, false))
                          repositorioModeloDeTrabalho.updatelista(l)
                      }
                      modeloDeTrabalho.modelo==NomesDeModelosDeEscala.Modelo61.nome && modeloDeTrabalho.check->{
                          var l = listOf(
-                             ModeloDeEScala(1, NomesDeModelosDeEscala.Modelo1236.nome, false),
-                             ModeloDeEScala(2, NomesDeModelosDeEscala.Modelo61.nome, true),
-                             ModeloDeEScala(3, NomesDeModelosDeEscala.ModeloSegSex.nome, false))
+                             ModeloDeEScala(IdsDeModelosDeEscala.IdModelo1236.id,  NomesDeModelosDeEscala.Modelo1236.nome, false),
+                             ModeloDeEScala(IdsDeModelosDeEscala.IdModelo61.id,  NomesDeModelosDeEscala.Modelo61.nome, true),
+                             ModeloDeEScala(IdsDeModelosDeEscala.IdModeloSegSex.id, NomesDeModelosDeEscala.ModeloSegSex.nome, false))
                          repositorioModeloDeTrabalho.updatelista(l)
                      }
                      modeloDeTrabalho.modelo==NomesDeModelosDeEscala.ModeloSegSex.nome && modeloDeTrabalho.check->{
                          var l = listOf(
-                             ModeloDeEScala(1, NomesDeModelosDeEscala.Modelo1236.nome, false),
-                             ModeloDeEScala(2, NomesDeModelosDeEscala.Modelo1236.nome, false),
-                             ModeloDeEScala(3, NomesDeModelosDeEscala.ModeloSegSex.nome, true))
+                             ModeloDeEScala(IdsDeModelosDeEscala.IdModelo1236.id, NomesDeModelosDeEscala.Modelo1236.nome, false),
+                             ModeloDeEScala(IdsDeModelosDeEscala.IdModelo61.id, NomesDeModelosDeEscala.Modelo1236.nome, false),
+                             ModeloDeEScala(IdsDeModelosDeEscala.IdModeloSegSex.id, NomesDeModelosDeEscala.ModeloSegSex.nome, true))
                          repositorioModeloDeTrabalho.updatelista(l)
                      }
                      else ->{repositorioModeloDeTrabalho.update(modeloDeTrabalho)}
@@ -367,9 +368,15 @@ class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {//f
             val contagem =repositorioOpcionais.contaDiasOpcionais()
             if(contagem==0){//se vasio eu insiro
                 val lista = arrayListOf<DiasOpcionais>(
-                    DiasOpcionais(id=1,"12/36",OpicionalModelo1236.Vasio.opcao),
-                    DiasOpcionais(id=2,"6/1",OpicionalModelo1236.Vasio.opcao),
-                    DiasOpcionais(id=3,"seg-sext",OpicionalModelo1236.Vasio.opcao)
+                    DiasOpcionais(id=IdsDeModelosDeEscala.IdModelo1236.id,
+                                   NomesDeModelosDeEscala.Modelo1236.nome,
+                                   OpicionalModelo1236.Vasio.opcao),
+                    DiasOpcionais(id=IdsDeModelosDeEscala.IdModelo61.id,
+                                  NomesDeModelosDeEscala.Modelo61.nome,
+                                  OpicionalModelo1236.Vasio.opcao),
+                    DiasOpcionais(id=IdsDeModelosDeEscala.IdModeloSegSex.id,
+                                  NomesDeModelosDeEscala.ModeloSegSex.nome,
+                                  OpicionalModelo1236.Vasio.opcao)
                 )
                 repositorioOpcionais.inserirLista(lista)
 

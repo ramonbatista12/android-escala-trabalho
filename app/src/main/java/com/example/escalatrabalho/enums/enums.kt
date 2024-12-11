@@ -20,6 +20,7 @@ sealed class MensagemNoticacaoWork(val mensagem:String){
     object Folga:MensagemNoticacaoWork("nao agendarei alarme  voce estara de folga")
     object compensado:MensagemNoticacaoWork("nao agendarei alarme  o dia de trabalho foi compensado")
     object Feriado:MensagemNoticacaoWork("nao agendarei alarme amanha e feriado Feriado")
+    object FeriasInicio:MensagemNoticacaoWork("Amanha comeca suas  Ferias")
     object feriadoTrabalhado:MensagemNoticacaoWork("agendarei um alarme para o prosimo feriado")
     object Ferias:MensagemNoticacaoWork("nao agendarei alarme hoje voce esta de Ferias")
     object ultimoDiaFerias:MensagemNoticacaoWork("ultimo dia de ferias !!!!")
@@ -31,5 +32,11 @@ sealed class NomesDeModelosDeEscala(val nome:String){
     object Modelo61:NomesDeModelosDeEscala("6/1")
     object ModeloSegSex:NomesDeModelosDeEscala("seg-sext")
 
+}
+
+sealed class IdsDeModelosDeEscala(val id:Int){
+    object IdModelo1236:IdsDeModelosDeEscala(1)
+    object IdModelo61:IdsDeModelosDeEscala(2)
+    object IdModeloSegSex:IdsDeModelosDeEscala(3)
 }
 
