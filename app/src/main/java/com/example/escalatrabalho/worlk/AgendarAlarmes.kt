@@ -13,15 +13,14 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
-import androidx.work.Worker
 import androidx.work.WorkerParameters
+import com.example.escalatrabalho.ActivitSpecialDadosData
 import com.example.escalatrabalho.R
 import com.example.escalatrabalho.applicatio.AplicationCuston
 import com.example.escalatrabalho.repositorio.RepositorioExecutado
-import com.example.escalatrabalho.alarmemanager.BroadcastRacever
+import com.example.escalatrabalho.broadcasts.BroadcastRacever
 import com.example.escalatrabalho.enums.MensagemNoticacaoWork
 import com.example.escalatrabalho.enums.NomesDeModelosDeEscala
-import com.example.escalatrabalho.repositorio.OpicionaiSealedClassess.OpicionalModelo1236
 import com.example.escalatrabalho.repositorio.RepositorioPrincipal
 import com.example.escalatrabalho.repositorio.repositoriodeDatas.DiasChecagen
 import com.example.escalatrabalho.repositorio.repositoriodeDatas.SemanaDia
@@ -31,18 +30,13 @@ import com.example.escalatrabalho.roomComfigs.Ferias
 import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
 import com.example.escalatrabalho.roomComfigs.ModeloDeEScala
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.internal.wait
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.Calendar
 
 val Tag = "AgendarAlarmes"
 
@@ -201,10 +195,12 @@ val Tag = "AgendarAlarmes"
 
 
         fun criarCanalNotificacao(mensagem:String){
+            val intent = Intent(this.c,ActivitSpecialDadosData::class.java)
              notificao= NotificationCompat.Builder(this.c , "canal")
             .setSmallIcon(R.drawable.baseline_access_alarms_24)
             .setContentTitle("escala trabalho")
             .setContentText(mensagem)
+            //.setContentIntent(PendingIntent.getActivity(this.c,0,intent,PendingIntent.FLAG_IMMUTABLE))
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .build()
          }

@@ -43,6 +43,20 @@ class MainViewModel(val repositorio :RepositorioPrincipal) : ViewModel() {
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
         initialValue = true
     )
+    val bateriaOptimizacao =MutableStateFlow(false)
+    val _bateriaOptimizacao:SharedFlow<Boolean> =bateriaOptimizacao.stateIn(
+        scope = scop,
+        started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+        initialValue = false
+    )
+    val dialogBateria = mutableStateOf(if (bateriaOptimizacao.value) false else true)
+
+    fun mudarEstadoBateria(it: Boolean) {
+        Log.i("teste", "mudarEstadoBateria: $it")
+        bateriaOptimizacao.value = it
+        dialogBateria.value = if (bateriaOptimizacao.value) false else true
+    }
+
     fun mudarEstadoNotificacao(it: Boolean) {
         Log.i("teste", "mudarEstadoNotificacao: $it")
         estadoPermicaoNotificacao.value = it
@@ -50,6 +64,8 @@ class MainViewModel(val repositorio :RepositorioPrincipal) : ViewModel() {
 
 
     }
+
+
 
     fun mudarEstadoPermicaoEspecial(it: Boolean) {
         Log.i("teste", "mudarEstadoPermicaoEspecial: $it")

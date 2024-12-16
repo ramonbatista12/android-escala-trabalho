@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Escala trabalho</string>
     <string name="title_activity_alarrme">ActivityAlarrme</string>
+    <string name="title_activity_activit_special_dados_data">ActivitSpecialDadosData</string>
 </resources>

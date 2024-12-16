@@ -66,6 +66,7 @@ import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.example.escalatrabalho.R
+import com.example.escalatrabalho.admob.NativeEspandida
 import com.example.escalatrabalho.admob.NativoAdmob
 import com.example.escalatrabalho.enums.TelaNavegacaoSimples
 import com.example.escalatrabalho.enums.TelaNavegacaoSinplesAlturaCompacta
@@ -119,7 +120,7 @@ fun telainicial(vm:ViewModelTelas,windowSizeClass: WindowSizeClass,calbackIntere
 
 
                                   else{      //maioria dos tablets no modo retrato
-                                               larguraMedia(vm = vm, scop = scop, windowSizeClass = windowSizeClass,calbackInteresticial)
+                                               larguraMedia(vm = vm, scop = scop, windowSizeClass = windowSizeClass, padingValues = it,calbackInteresticial)
                                        }
                              }
 
@@ -157,7 +158,7 @@ fun telainicial(vm:ViewModelTelas,windowSizeClass: WindowSizeClass,calbackIntere
                                                            Spacer(Modifier.padding(3.dp))
                                                            calendario(m = Modifier, vm = vm, windowSizeClass)
                                                        }
-                                                     NativoAdmob(modifier = Modifier.align(Alignment.BottomCenter))
+                                                     NativoAdmob(modifier = Modifier.align(Alignment.BottomCenter),windowSizeClass)
                                       }
 
                                      TelaNavegacaoSimples.comfig ->
@@ -199,7 +200,9 @@ fun larguraExpandida(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: Wind
     LaunchedEffect(Unit) {
       scop.launch { vm.estadosVm.transicaoData.targetState=true
                     vm.estadosVm.transicaoModeloTrabalho.targetState=true
-                    vm.estadosVm.transicaoFerias.targetState=true }
+                    vm.estadosVm.transicaoFerias.targetState=true
+      Log.i("texte tela ","largura expandida")
+      }
     }
     PermanentNavigationDrawer(drawerContent = {
                                        if(windowSizeClass.windowHeightSizeClass==WindowHeightSizeClass.COMPACT)
@@ -273,7 +276,8 @@ fun larguraExpandida(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: Wind
 
                                        }
                                    }
-                                   NativoAdmob(Modifier.align(Alignment.BottomEnd))
+        //NativoAdmob(Modifier.align(Alignment.BottomEnd),windowSizeClass)
+        NativeEspandida(modifier =  Modifier.align(Alignment.BottomEnd))
 
                      }
     }
@@ -343,15 +347,15 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
- fun larguraMedia(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass,calbackInteresticial: () -> Unit){
-    BoxWithConstraints(modifier=Modifier.fillMaxSize().scrollable(state = rememberScrollState(0), orientation = Orientation.Vertical)){
+ fun larguraMedia(vm:ViewModelTelas,scop:CoroutineScope,windowSizeClass: WindowSizeClass,padingValues: PaddingValues,calbackInteresticial: () -> Unit){
+    BoxWithConstraints(modifier=Modifier.fillMaxSize().padding(padingValues).scrollable(state = rememberScrollState(0), orientation = Orientation.Vertical)){
 
-        Column {
+        FlowRow {
                                   LaunchedEffect(Unit) {
                                       Log.e("texte ","lagura media")
                                   }
                                   calendario(m=Modifier,vm=vm,windowSizeClass)
-                                  FlowRow(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                  //FlowRow(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                                  Column {
                                                      HorarioDosAlarmes(vm,calbackSnackbar = { it->
                                                          calbackInteresticial()
@@ -361,7 +365,7 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
                                                  }
 
                                                    Spacer(modifier=Modifier.padding(8.dp))
-                                                   FlowColumn  {
+                                                   FlowRow   {
                                                                 Ferias(vm=vm,
                                                                     stadoTransicao = vm.estadosVm.transicaoFerias,
                                                                     scope = scop,
@@ -369,7 +373,7 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
                                                                         vm.estadosVm.disparaDialogoFerias.value=!vm.estadosVm.disparaDialogoFerias.value
                                                                     },
                                                                     windowSizeClass,calbackInteresticial )
-                                                                Spacer(modifier=Modifier.padding(3.dp))
+                                                                Spacer(modifier=Modifier.padding(8.dp))
 
 
                                                                 DataDasFolgas(vm = vm,
@@ -378,11 +382,11 @@ fun painelExpandidoAlturaCompacta(vm:ViewModelTelas,scop:CoroutineScope,windowSi
                                                                     } ,
                                                                     windowSizeClass,calbackInteresticial)
                                                             }
-                                  }
+                              //    }
 
 
                      }
-        NativoAdmob(modifier = Modifier.align(Alignment.BottomEnd))
+        NativoAdmob(modifier = Modifier.align(Alignment.BottomEnd),windowSizeClass)
     }
 }
 

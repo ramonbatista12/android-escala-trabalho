@@ -2,8 +2,12 @@ package com.example.escalatrabalho
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.UriPermission
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
 import android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
 import android.util.Log
 import android.view.View
@@ -27,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -86,7 +91,7 @@ class MainActivity : ComponentActivity() {
                 val stadoDatasColetadas = vmMain._datasColetadas.collectAsState(false)
                 var permicaoEspecial = vmMain._permissaoEspecial.collectAsState(false)
 
-                if (ContextCompat.checkSelfPermission(
+               if (ContextCompat.checkSelfPermission(
                         this,
                         android.Manifest.permission.POST_NOTIFICATIONS
                     ) != android.content.pm.PackageManager.PERMISSION_GRANTED
@@ -105,6 +110,13 @@ class MainActivity : ComponentActivity() {
                     Log.i("Use exact alarm ", "permicao aceita")
                     vmMain.mudarEstadoPermicaoEspecial( true)
                 }
+                val powerManager =getSystemService(POWER_SERVICE) as PowerManager
+
+                 if(powerManager.isIgnoringBatteryOptimizations(packageName)){
+                     vmMain.mudarEstadoBateria(true)
+                 }else{
+                     vmMain.mudarEstadoBateria(false)
+                 }
 
                LaunchedEffect(Unit) {
                    vmMain.checarFeriados()
@@ -127,6 +139,25 @@ class MainActivity : ComponentActivity() {
                 val stateSnak= remember { SnackbarHostState() }
 
                 val state = vmMain.dialog
+                val stateBateria = vmMain.dialogBateria
+                if(stateBateria.value){
+                    AlertDialog(onDismissRequest = {vmMain.mudarEstadoBateria(true)},
+                                confirmButton = {
+                                    Button(onClick = {startActivity(Intent(
+                                        ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+
+                                    )}) {
+                                        Text("Permitir")
+                                    }
+                                },
+                                title = { Text("Insecao de Bateria") },
+                                text = { Text("Para garantir que os alarmes sejam agendados de forma confiável, mesmo quando o dispositivo estiver em modo de espera, o aplicativo precisa da permissão para ignorar as otimizações de bateria. Toque em 'Permitir' para conceder essa permissão.") },
+                                dismissButton = {
+                                    Button(onClick = { vmMain.mudarEstadoBateria(true) }) {
+                                        Text("Cancelar")
+                                    }
+                                })
+                }
                 if (state.value) {
                     AlertDialog(onDismissRequest = { vmMain.dialog.value = false },
                         confirmButton = {
@@ -180,6 +211,7 @@ class MainActivity : ComponentActivity() {
 
 
                 }
+
                 val snackbarHost= SnackbarHost(stateSnak, modifier = Modifier)
 
 
@@ -229,7 +261,7 @@ class MainActivity : ComponentActivity() {
             )
     }
     fun ComponentActivity.enableEdgeToEdge(//aqui eu manipulo a cor de status bar e navigation bar do sistema android deixei ambos transparentes
-        statusBar:SystemBarStyle = SystemBarStyle.auto(android.graphics.Color.BLACK,android.graphics.Color.TRANSPARENT)
+        statusBar:SystemBarStyle = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT,android.graphics.Color.TRANSPARENT)
         ,navigationBar:SystemBarStyle = SystemBarStyle.auto(android.graphics.Color.TRANSPARENT,android.graphics.Color.TRANSPARENT)) {
 
 

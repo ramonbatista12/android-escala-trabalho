@@ -5,9 +5,18 @@ import android.content.res.Resources.Theme
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -16,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -34,18 +44,25 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.motionEventSpy
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
+import com.example.escalatrabalho.admob.NativeEspandida
 import com.example.escalatrabalho.admob.NativoAdmob
+import com.example.escalatrabalho.classesResultados.ResultadosVisualizacaoDatas
 import com.example.escalatrabalho.repositorio.repositoriodeDatas.Datas
 import com.example.escalatrabalho.viewModel.ViewModelTelas
 import com.example.escalatrabalho.viewModel.modelosParaView.visulizacaoDatas
 import kotlinx.coroutines.flow.map
+import okhttp3.internal.wait
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -58,7 +75,7 @@ fun calendario(m:Modifier, vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
     //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
     // a documetacao diss que ate esse momento o uso de windowsize class e o mais indicado quandose referre a classes que cauculam o tamanho de janelas
     val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
-              else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 1.0f
+              else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.4f
               else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.3F
               else 1.0f
     val altura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
@@ -68,6 +85,18 @@ fun calendario(m:Modifier, vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
     LaunchedEffect(Unit) {
         Log.i("calendario teste drobravel","largura ${windowSizeClass.windowWidthSizeClass},autura ${windowSizeClass.windowHeightSizeClass}")
     }
+    val offset = with(LocalDensity.current){
+        300.dp.toPx()
+    }
+    val brushList= listOf(Color.Gray,Color.White,Color.DarkGray,Color.Gray,Color.White)
+    val infiniteTransition= rememberInfiniteTransition()
+    val animacaoBrush=infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = offset,
+        animationSpec = infiniteRepeatable(tween(durationMillis = 1000, easing = LinearEasing), repeatMode = RepeatMode.Restart)
+    )
+
+    val brush =Brush.horizontalGradient(colors = brushList,startX = animacaoBrush.value,endX = animacaoBrush.value+offset)
 
     var colunasDesc = remember {
         if(windowSizeClass.windowHeightSizeClass== WindowHeightSizeClass.COMPACT)
@@ -77,8 +106,9 @@ fun calendario(m:Modifier, vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
     LazyVerticalGrid(columns = GridCells.Fixed(7),
         horizontalArrangement = Arrangement.spacedBy(1.3.dp),
         verticalArrangement = Arrangement.spacedBy(1.3 .dp),
-        modifier= m.fillMaxHeight(altura)
-                   .fillMaxWidth(largura)
+        modifier= m
+            .fillMaxHeight(altura)
+            .fillMaxWidth(largura)
 
     ) {
         items(items = colunasDesc.value, span ={ GridItemSpan(1) } )
@@ -87,19 +117,80 @@ fun calendario(m:Modifier, vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
                 Text(it, textAlign = TextAlign.Center,modifier=Modifier.width(80.dp))
 
         }
-        items(items = estado.value){
+        when (val r =estado.value){
+            is ResultadosVisualizacaoDatas.Ok ->{
+                items(items = r.l){
 
-            if(it.mes==vm.numeroMes)
-                if(feriados.value.contains(it.dia)) itrmcalendario2(it.copy(trabalhado = "fer\n ${it.trabalhado}"))
-                else itrmcalendario2(it)
-            else Spacer(Modifier.padding(20.dp))
+                if(it.mes==vm.numeroMes)
+                    if(feriados.value.contains(it.dia)) itrmcalendario2(it.copy(trabalhado = "fer\n ${it.trabalhado}"))
+                    else itrmcalendario2(it)
+                else Spacer(Modifier.padding(20.dp))
+            }}
+            is ResultadosVisualizacaoDatas.caregando ->{
+                val items = Array(30){0}
+                items(items = items ){
+                    Trespontos(Modifier,Color.DarkGray)
+                }
+            }
+            is ResultadosVisualizacaoDatas.erro ->{}
+
         }
+
+
 
     }
 
 
 
+
 }
+
+@Composable
+
+fun Trespontos(modifier: Modifier =Modifier,color: Color= Color.White){
+    //eu estva estudando animacoes de load e resolvi adicionar esta ao appp
+    val infiniteTransition1= rememberInfiniteTransition()
+    val infiniteTransition2= rememberInfiniteTransition()
+    val infiniteTransition3= rememberInfiniteTransition()
+    val desfoque1 =infiniteTransition1.animateFloat(initialValue = 1f, targetValue = 0f, animationSpec = infiniteRepeatable(
+        tween(1000), repeatMode = RepeatMode.Restart
+    ))
+    val desfoque2 =infiniteTransition2.animateFloat(initialValue = 1f, targetValue = 0f, animationSpec = infiniteRepeatable(
+        tween(1500),repeatMode = RepeatMode.Restart
+    ))
+    val desfoque3 =infiniteTransition3.animateFloat(initialValue = 1f, targetValue = 0f, animationSpec = infiniteRepeatable(
+        tween(2000),repeatMode = RepeatMode.Restart
+    ))
+    Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically, modifier = Modifier.size(90.dp)) {
+
+        Box(modifier=Modifier.size(5.dp).graphicsLayer {
+            scaleX=desfoque1.value
+            scaleY=desfoque1.value
+            alpha=desfoque1.value
+        }.drawBehind {
+            drawCircle(color= Color.DarkGray)
+        })
+        Spacer(Modifier.padding(3.dp))
+        Box(modifier=Modifier.size(10.dp).graphicsLayer {
+            scaleX=desfoque2.value
+            scaleY=desfoque2.value
+            alpha=desfoque2.value
+        }.drawBehind {
+            drawCircle(color= Color.DarkGray)
+        })
+        Spacer(Modifier.padding(3.dp))
+        Box(modifier=Modifier.size(15.dp).graphicsLayer {
+            scaleX=desfoque3.value
+            scaleY=desfoque3.value
+            alpha=desfoque3.value
+        }.drawBehind {
+            drawCircle(color= Color.DarkGray)
+        })
+        Spacer(Modifier.padding(3.dp))
+    }
+
+}
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun calendarioSmallSmall(m:Modifier, vm:ViewModelTelas,windowSizeClass: WindowSizeClass){
@@ -118,10 +209,23 @@ fun calendarioSmallSmall(m:Modifier, vm:ViewModelTelas,windowSizeClass: WindowSi
             mutableStateOf(listOf("dm","sg","tr","qa","qi","sx","sb"))
         else mutableStateOf(listOf("dom","seg","ter","qua","quin","sex","sab"))
     } //usei esse list para criar o cabesalho dias da semana
+    val offset = with(LocalDensity.current){
+        300.dp.toPx()
+    }
+    val brushList= listOf(Color.White,Color.LightGray,Color.DarkGray)
+    val infiniteTransition= rememberInfiniteTransition()
+    val animacaoBrush=infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = offset,
+        animationSpec = infiniteRepeatable(tween(durationMillis = 2000, easing = LinearEasing), repeatMode = RepeatMode.Restart)
+    )
+    val brush =Brush.verticalGradient(colors = brushList,startY = animacaoBrush.value,endY = animacaoBrush.value+offset)
+
     LazyVerticalGrid(columns = GridCells.Fixed(7),
         horizontalArrangement = Arrangement.spacedBy(1.3.dp),
         verticalArrangement = Arrangement.spacedBy(1.3 .dp),
-        modifier= m.fillMaxHeight(altura)
+        modifier= m
+            .fillMaxHeight(altura)
             .fillMaxWidth(largura)
 
     ) {
@@ -131,12 +235,25 @@ fun calendarioSmallSmall(m:Modifier, vm:ViewModelTelas,windowSizeClass: WindowSi
             Text(it, textAlign = TextAlign.Center,modifier=Modifier.width(80.dp))
 
         }
-        items(items = estado.value){
-          if(it.mes==vm.numeroMes)
-              if(feriados.value.contains(it.dia)) itrmcalendario2(it.copy(trabalhado = "fer\n ${it.trabalhado}"))
-              else itrmcalendario2(it)
-          else Spacer(Modifier.padding(20.dp))
+        when (val r =estado.value){
+            is ResultadosVisualizacaoDatas.Ok ->{
+                items(items = r.l){
+                    if(it.mes==vm.numeroMes)
+                        if(feriados.value.contains(it.dia)) itrmcalendario2(it.copy(trabalhado = "fer\n ${it.trabalhado}"))
+                        else itrmcalendario2(it)
+                    else Spacer(Modifier.padding(20.dp))
+                }}
+            is ResultadosVisualizacaoDatas.caregando ->{
+                val items = Array(30){0}
+                items(items = items ){
+                    Spacer(modifier = Modifier
+                        .padding(20.dp)
+                        .background(brush = brush))
+                }
+            }
+            is ResultadosVisualizacaoDatas.erro->{}
         }
+
 
     }
 
@@ -209,7 +326,7 @@ Column(modifier = m
     Spacer(Modifier.padding(8.dp))//espaçamento entre os componentes
     Ferias(vm=vm,vm.estadosVm.transicaoFerias,scopo,disparaDialogoFerias,windowSizeClass,calbackInteresticial)//botão Ferias ao clicar aparesera as Ferias
     Spacer(Modifier.padding(10.dp))
-    NativoAdmob(modifier = Modifier)
+    NativoAdmob(modifier = Modifier,windowSizeClass)
     Spacer(Modifier.padding(40.dp))
 }
 }

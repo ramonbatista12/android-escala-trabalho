@@ -1,4 +1,4 @@
-package com.example.escalatrabalho.alarmemanager
+package com.example.escalatrabalho.broadcasts
 
 import android.annotation.SuppressLint
 import android.content.Context

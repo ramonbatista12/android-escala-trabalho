@@ -23,11 +23,12 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.example.escalatrabalho.alarmemanager.BroadcastRacever
+import com.example.escalatrabalho.broadcasts.BroadcastRacever
 import com.example.escalatrabalho.applicatio.AplicationCuston
 import com.example.escalatrabalho.classesResultados.ResultadosDatasFolgas
 import com.example.escalatrabalho.classesResultados.ResultadosSalvarDatasFolgas
 import com.example.escalatrabalho.classesResultados.ResultadosSalvarHora
+import com.example.escalatrabalho.classesResultados.ResultadosVisualizacaoDatas
 import com.example.escalatrabalho.enums.IdsDeModelosDeEscala
 import com.example.escalatrabalho.enums.NomesDeModelosDeEscala
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
@@ -52,12 +53,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Duration
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.concurrent.TimeUnit
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 @RequiresApi(Build.VERSION_CODES.O)
 class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val workManager: WorkManager):ViewModel() {
@@ -95,11 +93,14 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
         initialValue = mdcheck(3, false)
              )
 
-    val fluxoViewCalendario = repositorio.fluxoDatasTrabalhado
+    val fluxoViewCalendario = repositorio.fluxoDatasTrabalhado.map {
+        if(it.isEmpty()) ResultadosVisualizacaoDatas.caregando
+        else ResultadosVisualizacaoDatas.Ok(it)
+    }
         .stateIn(
         scope = scopo,
         started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
+        initialValue = ResultadosVisualizacaoDatas.caregando
                )
     val fluxoDiasOpcionais = repositorio.fluxoOpcionais
         .stateIn(
@@ -141,7 +142,7 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
             )
                 .addTag("agendamento de alarmes")
             workManager.enqueueUniquePeriodicWork("agendamento de alarmes",
-                ExistingPeriodicWorkPolicy.KEEP,mk.build())
+                ExistingPeriodicWorkPolicy.UPDATE,mk.build())
 
 
             val timer =LocalDateTime.now()
@@ -153,7 +154,7 @@ class ViewModelTelas(private val repositorio: RepositorioPrincipal, private val 
                                                                                 .setInitialDelay(duracao)
                                                                                 .addTag("checagem de horario")
                                                                                  .build()
-             workManager.enqueueUniquePeriodicWork("checagem de horario",ExistingPeriodicWorkPolicy.KEEP, workchecagem)
+             workManager.enqueueUniquePeriodicWork("checagem de horario",ExistingPeriodicWorkPolicy.UPDATE, workchecagem)
 
 
         }

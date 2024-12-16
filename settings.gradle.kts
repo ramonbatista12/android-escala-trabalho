@@ -22,4 +22,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Escala trabalho"
 include(":app")
- 

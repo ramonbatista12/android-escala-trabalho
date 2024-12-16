@@ -176,7 +176,7 @@ fun HorarioDosAlarmesAuturaCompacta(vm: ViewModelTelas, calbackSnackbar: suspend
     // a documetacao diss que ate esse momento o uso de windowsize class e o mais indicado quandose referre a classes que cauculam o tamanho de janelas
     val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
     else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.4f
-    else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.5F
+    else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.4F
     else 1.0f
     val altura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1f
     else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 1.0f
@@ -256,7 +256,7 @@ fun DataDasFolgas(vm:ViewModelTelas, diparaDialogoDatas:()->Unit, windowSizeClas
     //  lembrando que a os ife elses representam a fracao com base no windowSizeClass que e cauculado por currentWindowAdaptiveInfo().windowSizeClass
     // a documetacao diss que ate esse momento o uso de windowsize class e o mais indicado quandose referre a classes que cauculam o tamanho de janelas
     val largura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
-              else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.5f
+              else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.MEDIUM) 0.4f
               else if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.EXPANDED) 0.3F
               else 1.0f
     val altura =  if (windowSizeClass.windowWidthSizeClass==WindowWidthSizeClass.COMPACT) 1.0f
@@ -611,11 +611,11 @@ fun FeriasAlturaCompacta(vm :ViewModelTelas, stadoTransicao: MutableTransitionSt
                         Column  {
                             Text(text = "Ferias " )
 
-                            Switch(checked = checkFerias,
+                            Switch(checked = ferias.value.check,
                                 onCheckedChange = {
                                     calbackInteresticial()
                                     scope.launch {
-                                        if(!checkFerias) diparaDialogoFerias()
+                                        if(it) diparaDialogoFerias()
                                        else vm.apagarFerias()
                                     }
                                 })

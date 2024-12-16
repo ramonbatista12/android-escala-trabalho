@@ -52,7 +52,7 @@ import kotlinx.coroutines.withContext
 
 
 //classe repositorioPrincipal responsavel por gerenciar todos os repositorios
-class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {//fim da classe
+open class RepositorioPrincipal(val bd: RoomDb,val datasFeriados: CalendarioApi) {//fim da classe
     val escopo = CoroutineScope(Dispatchers.IO)
     // variaveis privadas pois as outras classes nao presisao delas
     private val tabelaFormatacaoDatas = arrayOf("tb", "fg", "cp")                      //tabela representa trabalhado folga compensado

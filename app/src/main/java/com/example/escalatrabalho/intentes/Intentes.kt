@@ -4,10 +4,9 @@ import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
 import android.app.PendingIntent
-import com.example.escalatrabalho.alarmemanager.BroadcastRacever
+import com.example.escalatrabalho.broadcasts.BroadcastRacever
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 class IntenteAlarmes(var c:Context?){
     final val  RequestCod=0

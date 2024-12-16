@@ -487,7 +487,7 @@ class WorkAuxiliarDecisoes {
 
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun checaHorarioParaAgendadmento(horario:HorioDosAlarmes):Boolean{
+    fun checaHorarioParaAgendadmento(horario:HorioDosAlarmes):Boolean{
        val horarioAtual=LocalTime.now()
        val localTaimer=LocalTime.of(horario.hora,horario.minuto)
        if(horarioAtual.isBefore(localTaimer)){

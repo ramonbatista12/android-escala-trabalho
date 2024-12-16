@@ -2,19 +2,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission
+        android:name="android.permission.USE_EXACT_ALARM"
+        android:minSdkVersion="31" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
-
-
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
 
     <application
         android:name=".applicatio.AplicationCuston"
@@ -26,16 +28,24 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.EscalaTrabalho"
+        android:appCategory="productivity"
+        
         tools:targetApi="31">
+        <activity
+            android:name=".ActivitSpecialDadosData"
+            android:exported="false"
+            android:label="@string/title_activity_activit_special_dados_data"
+            android:theme="@style/Theme.EscalaTrabalho" />
         <!-- Sample AdMob app ID: ca-app-pub-3940256099942544~3347511713 -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-1950503385379483~2521883874"/>
+            android:value="ca-app-pub-1950503385379483~2521883874" />
+
         <activity
             android:name=".ActivityAlarrme"
+            android:excludeFromRecents="true"
             android:exported="false"
             android:label="@string/title_activity_alarrme"
-            android:excludeFromRecents="true"
             android:taskAffinity="com.example.escalatrabalho.ActivityAlarrme"
             android:theme="@style/Theme.EscalaTrabalho" />
         <activity
@@ -52,7 +62,7 @@
         </activity>
 
         <receiver
-            android:name=".alarmemanager.BroadcastRacever"
+            android:name=".broadcasts.BroadcastRacever"
             android:exported="false" />
         <receiver
             android:name=".serviceAlarme.BroadcastsService"
@@ -62,7 +72,8 @@
                 <action android:name="SONECA" />
             </intent-filter>
         </receiver>
-        <receiver android:name="com.example.escalatrabalho.alarmemanager.BroadcastBoot"
+        <receiver
+            android:name=".broadcasts.BroadcastBoot"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

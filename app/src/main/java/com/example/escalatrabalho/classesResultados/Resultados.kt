@@ -3,17 +3,18 @@ package com.example.escalatrabalho.classesResultados
 import com.example.escalatrabalho.repositorio.repositoriodeDatas.Datas
 import com.example.escalatrabalho.roomComfigs.DatasFolgas
 import com.example.escalatrabalho.roomComfigs.HorioDosAlarmes
+import com.example.escalatrabalho.viewModel.modelosParaView.visulizacaoDatas
 
 //aqui estao os resultados que serao usados no app para mostrar as informacoes
 //eles serao usados para representatar esdtados como caregando erro etc....
 
 
 //usado para reprensentar estados  ok caregando e erro  das datas
-sealed interface Resultados {
+sealed interface ResultadosVisualizacaoDatas {
 
-   data class Ok(val l:List<Datas>): Resultados
-   data object caregando: Resultados
-   data  object  erro: Resultados
+   data class Ok(val l:List< visulizacaoDatas>): ResultadosVisualizacaoDatas
+   data object caregando: ResultadosVisualizacaoDatas
+   data  object  erro: ResultadosVisualizacaoDatas
 }
 
 

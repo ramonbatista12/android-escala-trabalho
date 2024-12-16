@@ -7,11 +7,9 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import android.media.MediaPlayer
+import android.media.AudioAttributes
 import android.media.Ringtone
 import android.media.RingtoneManager
 import android.os.Binder
@@ -23,7 +21,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.escalatrabalho.ActivityAlarrme
 import com.example.escalatrabalho.R
-import com.example.escalatrabalho.alarmemanager.BroadcastRacever
+import com.example.escalatrabalho.broadcasts.BroadcastRacever
 
 class ServicoAlarme:Service() {
     lateinit var notificao: Notification
@@ -60,7 +58,7 @@ class ServicoAlarme:Service() {
     }
 
     @SuppressLint("ForegroundServiceType")
-    @RequiresApi(Build.VERSION_CODES.O)
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate() {
 
         Log.i("servico","oncreate")
@@ -71,11 +69,14 @@ class ServicoAlarme:Service() {
 
         val ringtoneUri=RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
         ringtone=RingtoneManager.getRingtone(this,ringtoneUri)
+        ringtone.audioAttributes= AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build()
+        ringtone.volume=1f
         ringtone.isLooping=true
         ringtone.play()
 
 
     }
+    @SuppressLint("SuspiciousIndentation")
     override fun onDestroy() {
         Log.i("servico","ondestroy")
 
